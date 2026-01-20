@@ -1,0 +1,37 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import { TrainingForm } from '@/components/features/trainings/TrainingForm';
+import { db, trainings } from '@/lib/db';
+import { eq, and } from 'drizzle-orm';
+
+const { id } = Astro.params;
+const user = Astro.locals.user;
+
+if (!id || !user) {
+  return Astro.redirect('/trainings');
+}
+
+const [training] = await db
+  .select()
+  .from(trainings)
+  .where(and(eq(trainings.id, id), eq(trainings.userId, user.id)));
+
+if (!training) {
+  return Astro.redirect('/trainings');
+}
+---
+
+<AppLayout title="Edytuj trening">
+  <div class="max-w-xl mx-auto">
+    <div class="mb-6">
+      <a href={`/trainings/${id}`} class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+        &larr; Powrót do szczegółów
+      </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <h1 class="text-2xl font-bold text-gray-900 mb-6">Edytuj trening</h1>
+      <TrainingForm training={training} client:load />
+    </div>
+  </div>
+</AppLayout>

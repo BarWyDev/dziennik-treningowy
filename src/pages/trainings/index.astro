@@ -1,0 +1,23 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import { TrainingList } from '@/components/features/trainings/TrainingList';
+---
+
+<AppLayout title="Treningi">
+  <div class="max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Moje treningi</h1>
+      <a
+        href="/trainings/new"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Dodaj trening
+      </a>
+    </div>
+
+    <TrainingList client:load />
+  </div>
+</AppLayout>

@@ -1,0 +1,14 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import { Dashboard } from '@/components/features/dashboard/Dashboard';
+
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect('/auth/login');
+}
+---
+
+<AppLayout title="Dashboard">
+  <Dashboard userName={user.name} client:load />
+</AppLayout>

@@ -1,0 +1,19 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import { TrainingForm } from '@/components/features/trainings/TrainingForm';
+---
+
+<AppLayout title="Dodaj trening">
+  <div class="max-w-xl mx-auto">
+    <div class="mb-6">
+      <a href="/trainings" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+        &larr; Powrót do listy treningów
+      </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <h1 class="text-2xl font-bold text-gray-900 mb-6">Dodaj nowy trening</h1>
+      <TrainingForm client:load />
+    </div>
+  </div>
+</AppLayout>

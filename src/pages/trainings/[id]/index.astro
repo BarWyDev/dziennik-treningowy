@@ -1,0 +1,37 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import { TrainingDetails } from '@/components/features/trainings/TrainingDetails';
+import { db, trainings, trainingTypes } from '@/lib/db';
+import { eq, and } from 'drizzle-orm';
+
+const { id } = Astro.params;
+const user = Astro.locals.user;
+
+if (!id || !user) {
+  return Astro.redirect('/trainings');
+}
+
+const [result] = await db
+  .select({
+    training: trainings,
+    trainingType: trainingTypes,
+  })
+  .from(trainings)
+  .leftJoin(trainingTypes, eq(trainings.trainingTypeId, trainingTypes.id))
+  .where(and(eq(trainings.id, id), eq(trainings.userId, user.id)));
+
+if (!result) {
+  return Astro.redirect('/trainings');
+}
+
+const training = {
+  ...result.training,
+  trainingType: result.trainingType,
+};
+---
+
+<AppLayout title={training.trainingType?.name || 'Trening'}>
+  <div class="max-w-3xl mx-auto">
+    <TrainingDetails training={training} client:load />
+  </div>
+</AppLayout>

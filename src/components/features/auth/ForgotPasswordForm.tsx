@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { forgetPassword } from '@/lib/auth-client';
+import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validations/auth';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { Alert } from '@/components/ui/Alert';
+
+export function ForgotPasswordForm() {
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  const onSubmit = async (data: ForgotPasswordInput) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await forgetPassword({
+        email: data.email,
+        redirectTo: '/auth/reset-password',
+      });
+
+      if (result.error) {
+        setError(result.error.message || 'Wystąpił błąd');
+        return;
+      }
+
+      setSuccess(true);
+    } catch {
+      setError('Wystąpił błąd podczas wysyłania emaila');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="text-center">
+        <Alert variant="success" title="Email wysłany!">
+          <p>
+            Jeśli konto z podanym adresem email istnieje, otrzymasz wiadomość z
+            linkiem do resetowania hasła.
+          </p>
+        </Alert>
+        <p className="mt-6 text-sm text-gray-600">
+          <a href="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
+            Wróć do strony logowania
+          </a>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {error && <Alert variant="error">{error}</Alert>}
+
+      <p className="text-sm text-gray-600">
+        Podaj swój adres email, a wyślemy Ci link do resetowania hasła.
+      </p>
+
+      <div>
+        <Label htmlFor="email" required>
+          Email
+        </Label>
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          placeholder="jan@example.com"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+      </div>
+
+      <Button type="submit" className="w-full" isLoading={isLoading}>
+        Wyślij link resetujący
+      </Button>
+
+      <p className="text-center text-sm text-gray-600">
+        <a href="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
+          Wróć do logowania
+        </a>
+      </p>
+    </form>
+  );
+}

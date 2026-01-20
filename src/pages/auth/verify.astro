@@ -1,0 +1,58 @@
+---
+import '@/styles/globals.css';
+import { Alert } from '@/components/ui/Alert';
+
+const error = Astro.url.searchParams.get('error');
+const success = !error;
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weryfikacja email - Dziennik Treningowy</title>
+  </head>
+  <body class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+      <h1 class="text-center text-3xl font-bold text-gray-900">Dziennik Treningowy</h1>
+      <h2 class="mt-6 text-center text-2xl font-semibold text-gray-900">
+        Weryfikacja email
+      </h2>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="bg-white py-8 px-4 shadow-sm rounded-xl sm:px-10 border border-gray-200">
+        {success ? (
+          <div class="text-center">
+            <Alert variant="success" title="Email zweryfikowany!">
+              <p>Twój adres email został pomyślnie zweryfikowany. Możesz się teraz zalogować.</p>
+            </Alert>
+            <a
+              href="/auth/login"
+              class="mt-6 inline-block text-primary-600 hover:text-primary-500 font-medium"
+            >
+              Przejdź do logowania
+            </a>
+          </div>
+        ) : (
+          <div class="text-center">
+            <Alert variant="error" title="Błąd weryfikacji">
+              <p>
+                {error === 'expired'
+                  ? 'Link weryfikacyjny wygasł. Zaloguj się, aby otrzymać nowy link.'
+                  : 'Wystąpił błąd podczas weryfikacji. Spróbuj ponownie lub skontaktuj się z pomocą.'}
+              </p>
+            </Alert>
+            <a
+              href="/auth/login"
+              class="mt-6 inline-block text-primary-600 hover:text-primary-500 font-medium"
+            >
+              Przejdź do logowania
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import { GoalList } from '@/components/features/goals/GoalList';
+---
+
+<AppLayout title="Cele">
+  <div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Moje cele</h1>
+      <p class="text-gray-600 mt-1">Wyznaczaj cele i śledź swoje postępy</p>
+    </div>
+
+    <GoalList client:load />
+  </div>
+</AppLayout>
