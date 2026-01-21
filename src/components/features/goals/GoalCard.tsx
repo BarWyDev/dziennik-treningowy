@@ -16,6 +16,7 @@ interface Goal {
 interface GoalCardProps {
   goal: Goal;
   onUpdate: () => void;
+  onEdit: (goal: Goal) => void;
 }
 
 function formatDate(dateString: string): string {
@@ -33,7 +34,7 @@ function getProgress(current: number | null | undefined, target: number | null |
   return Math.min(100, Math.round((currentVal / target) * 100));
 }
 
-export function GoalCard({ goal, onUpdate }: GoalCardProps) {
+export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const progress = getProgress(goal.currentValue, goal.targetValue);
@@ -163,6 +164,16 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
               </svg>
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(goal)}
+            title="Edytuj cel"
+          >
+            <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </Button>
           <Button
             variant="ghost"
             size="sm"

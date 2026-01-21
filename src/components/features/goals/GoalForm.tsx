@@ -1,36 +1,61 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createGoalSchema, type CreateGoalInput } from '@/lib/validations/goal';
+import { createGoalSchema, updateGoalSchema, type CreateGoalInput, type UpdateGoalInput } from '@/lib/validations/goal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Alert } from '@/components/ui/Alert';
 
+interface Goal {
+  id: string;
+  title: string;
+  description?: string | null;
+  targetValue?: number | null;
+  currentValue?: number | null;
+  unit?: string | null;
+  deadline?: string | null;
+  status: string;
+}
+
 interface GoalFormProps {
+  goal?: Goal;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export function GoalForm({ onSuccess, onCancel }: GoalFormProps) {
+export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const isEditMode = !!goal;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateGoalInput>({
-    resolver: zodResolver(createGoalSchema),
+  } = useForm<CreateGoalInput | UpdateGoalInput>({
+    resolver: zodResolver(isEditMode ? updateGoalSchema : createGoalSchema),
+    defaultValues: goal ? {
+      title: goal.title,
+      description: goal.description || '',
+      targetValue: goal.targetValue || undefined,
+      currentValue: goal.currentValue || 0,
+      unit: goal.unit || '',
+      deadline: goal.deadline || '',
+    } : undefined,
   });
 
-  const onSubmit = async (data: CreateGoalInput) => {
+  const onSubmit = async (data: CreateGoalInput | UpdateGoalInput) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/goals', {
-        method: 'POST',
+      const url = isEditMode ? `/api/goals/${goal.id}` : '/api/goals';
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
@@ -101,6 +126,23 @@ export function GoalForm({ onSuccess, onCancel }: GoalFormProps) {
         </div>
       </div>
 
+      {isEditMode && (
+        <div>
+          <Label htmlFor="currentValue">Aktualny postęp</Label>
+          <Input
+            id="currentValue"
+            type="number"
+            min="0"
+            placeholder="np. 25"
+            error={errors.currentValue?.message}
+            {...register('currentValue', { valueAsNumber: true })}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Wprowadź ile już osiągnąłeś z wartości docelowej
+          </p>
+        </div>
+      )}
+
       <div>
         <Label htmlFor="deadline">Termin (opcjonalnie)</Label>
         <Input
@@ -113,7 +155,7 @@ export function GoalForm({ onSuccess, onCancel }: GoalFormProps) {
 
       <div className="flex gap-3 pt-2">
         <Button type="submit" isLoading={isLoading} className="flex-1">
-          Dodaj cel
+          {isEditMode ? 'Zapisz zmiany' : 'Dodaj cel'}
         </Button>
         <Button type="button" variant="secondary" onClick={onCancel}>
           Anuluj

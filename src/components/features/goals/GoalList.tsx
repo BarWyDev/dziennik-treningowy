@@ -24,6 +24,7 @@ export function GoalList() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
   const fetchGoals = async () => {
@@ -53,7 +54,12 @@ export function GoalList() {
 
   const handleFormSuccess = () => {
     setShowForm(false);
+    setEditingGoal(null);
     fetchGoals();
+  };
+
+  const handleEdit = (goal: Goal) => {
+    setEditingGoal(goal);
   };
 
   if (isLoading) {
@@ -125,7 +131,7 @@ export function GoalList() {
         ) : (
           <div className="space-y-3">
             {activeGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} />
+              <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} onEdit={handleEdit} />
             ))}
           </div>
         )}
@@ -139,7 +145,7 @@ export function GoalList() {
           </h2>
           <div className="space-y-3">
             {achievedGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} />
+              <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} onEdit={handleEdit} />
             ))}
           </div>
         </div>
@@ -172,16 +178,30 @@ export function GoalList() {
           {showArchived && (
             <div className="mt-4 space-y-3 opacity-60">
               {archivedGoals.map((goal) => (
-                <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} />
+                <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} onEdit={handleEdit} />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Add Goal Dialog */}
-      <Dialog isOpen={showForm} onClose={() => setShowForm(false)} title="Dodaj nowy cel">
-        <GoalForm onSuccess={handleFormSuccess} onCancel={() => setShowForm(false)} />
+      {/* Add/Edit Goal Dialog */}
+      <Dialog
+        isOpen={showForm || !!editingGoal}
+        onClose={() => {
+          setShowForm(false);
+          setEditingGoal(null);
+        }}
+        title={editingGoal ? 'Edytuj cel' : 'Dodaj nowy cel'}
+      >
+        <GoalForm
+          goal={editingGoal || undefined}
+          onSuccess={handleFormSuccess}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingGoal(null);
+          }}
+        />
       </Dialog>
     </div>
   );

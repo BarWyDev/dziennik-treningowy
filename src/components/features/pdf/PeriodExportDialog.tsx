@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { generateWeeklyReport } from '@/lib/pdf/weekly-report';
@@ -7,23 +7,23 @@ import { generateMonthlyReport } from '@/lib/pdf/monthly-report';
 interface Training {
   id: string;
   date: string;
+  time?: string | null;
   durationMinutes: number;
-  notes?: string | null;
-  rating?: number | null;
+  ratingOverall: number;
+  ratingPhysical?: number | null;
+  ratingEnergy?: number | null;
+  ratingMotivation?: number | null;
+  ratingDifficulty?: number | null;
   caloriesBurned?: number | null;
   trainingType?: {
     name: string;
   } | null;
 }
 
-interface PeriodExportDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 type ReportType = 'weekly' | 'monthly';
 
-export function PeriodExportDialog({ isOpen, onClose }: PeriodExportDialogProps) {
+export function PeriodExportDialog() {
+  const [isOpen, setIsOpen] = useState(false);
   const [reportType, setReportType] = useState<ReportType>('weekly');
   const [isExporting, setIsExporting] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(() => {
@@ -34,6 +34,12 @@ export function PeriodExportDialog({ isOpen, onClose }: PeriodExportDialogProps)
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-period-export', handleOpen);
+    return () => window.removeEventListener('open-period-export', handleOpen);
+  }, []);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -82,7 +88,7 @@ export function PeriodExportDialog({ isOpen, onClose }: PeriodExportDialogProps)
         });
       }
 
-      onClose();
+      setIsOpen(false);
     } catch (error) {
       console.error('Error exporting report:', error);
     } finally {
@@ -91,7 +97,7 @@ export function PeriodExportDialog({ isOpen, onClose }: PeriodExportDialogProps)
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Eksportuj raport">
+    <Dialog isOpen={isOpen} onClose={() => setIsOpen(false)} title="Eksportuj raport">
       <div className="space-y-4">
         <div className="flex gap-2">
           <button
@@ -161,7 +167,7 @@ export function PeriodExportDialog({ isOpen, onClose }: PeriodExportDialogProps)
             </svg>
             Eksportuj PDF
           </Button>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={() => setIsOpen(false)}>
             Anuluj
           </Button>
         </div>

@@ -90,8 +90,23 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { trainingTypeId, date, durationMinutes, notes, rating, caloriesBurned } =
-      validation.data;
+    const {
+      trainingTypeId,
+      date,
+      time,
+      durationMinutes,
+      ratingOverall,
+      ratingPhysical,
+      ratingEnergy,
+      ratingMotivation,
+      ratingDifficulty,
+      trainingGoal,
+      mostSatisfiedWith,
+      improveNextTime,
+      howToImprove,
+      notes,
+      caloriesBurned,
+    } = validation.data;
 
     const [newTraining] = await db
       .insert(trainings)
@@ -99,9 +114,18 @@ export const POST: APIRoute = async ({ request }) => {
         userId: session.user.id,
         trainingTypeId,
         date,
+        time,
         durationMinutes,
+        ratingOverall,
+        ratingPhysical,
+        ratingEnergy,
+        ratingMotivation,
+        ratingDifficulty,
+        trainingGoal,
+        mostSatisfiedWith,
+        improveNextTime,
+        howToImprove,
         notes,
-        rating,
         caloriesBurned,
       })
       .returning();

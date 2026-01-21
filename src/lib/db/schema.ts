@@ -88,9 +88,24 @@ export const trainings = pgTable('trainings', {
     .notNull()
     .references(() => trainingTypes.id),
   date: date('date').notNull(),
+  time: text('time'), // HH:MM format
   durationMinutes: integer('duration_minutes').notNull(),
+
+  // Multi-category ratings (1-5 scale)
+  ratingOverall: integer('rating_overall').notNull(), // Required
+  ratingPhysical: integer('rating_physical'), // Optional
+  ratingEnergy: integer('rating_energy'), // Optional
+  ratingMotivation: integer('rating_motivation'), // Optional
+  ratingDifficulty: integer('rating_difficulty'), // Optional
+
+  // Reflection/Coaching fields
+  trainingGoal: text('training_goal'), // Mój cel na trening
+  mostSatisfiedWith: text('most_satisfied_with'), // Z czego jestem najbardziej zadowolony
+  improveNextTime: text('improve_next_time'), // Co następnym razem chcę zrobić lepiej
+  howToImprove: text('how_to_improve'), // Jak mogę to zrobić
+
+  // Other fields
   notes: text('notes'),
-  rating: integer('rating'),
   caloriesBurned: integer('calories_burned'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

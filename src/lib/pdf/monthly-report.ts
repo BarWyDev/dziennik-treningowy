@@ -1,4 +1,5 @@
-import { createPDF, addHeader, addFooter, formatDuration } from './common';
+import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText } from './common';
+import autoTable from 'jspdf-autotable';
 
 interface TrainingType {
   name: string;
@@ -6,9 +7,13 @@ interface TrainingType {
 
 interface Training {
   date: string;
+  time?: string | null;
   durationMinutes: number;
-  notes?: string | null;
-  rating?: number | null;
+  ratingOverall: number;
+  ratingPhysical?: number | null;
+  ratingEnergy?: number | null;
+  ratingMotivation?: number | null;
+  ratingDifficulty?: number | null;
   caloriesBurned?: number | null;
   trainingType?: TrainingType | null;
 }
@@ -32,9 +37,17 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
   // Summary
   const totalDuration = trainings.reduce((acc, t) => acc + t.durationMinutes, 0);
   const totalCalories = trainings.reduce((acc, t) => acc + (t.caloriesBurned || 0), 0);
-  const avgRating =
-    trainings.filter((t) => t.rating).reduce((acc, t) => acc + (t.rating || 0), 0) /
-      trainings.filter((t) => t.rating).length || 0;
+  const avgOverall = trainings.reduce((acc, t) => acc + t.ratingOverall, 0) / trainings.length || 0;
+
+  const physicalRatings = trainings.filter((t) => t.ratingPhysical);
+  const avgPhysical = physicalRatings.length > 0
+    ? physicalRatings.reduce((acc, t) => acc + (t.ratingPhysical || 0), 0) / physicalRatings.length
+    : 0;
+
+  const energyRatings = trainings.filter((t) => t.ratingEnergy);
+  const avgEnergy = energyRatings.length > 0
+    ? energyRatings.reduce((acc, t) => acc + (t.ratingEnergy || 0), 0) / energyRatings.length
+    : 0;
 
   // Training types breakdown
   const typeBreakdown = trainings.reduce(
@@ -51,20 +64,22 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
   );
 
   doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont('times', 'bold');
   doc.setTextColor(31, 41, 55);
-  doc.text('Podsumowanie', 14, yPos);
+  doc.text(sanitizePolishText('Podsumowanie'), 14, yPos);
   yPos += 8;
 
   const summaryData = [
-    ['Liczba treningów', trainings.length.toString()],
-    ['Łączny czas', formatDuration(totalDuration)],
-    ['Średni czas treningu', trainings.length > 0 ? formatDuration(Math.round(totalDuration / trainings.length)) : '-'],
+    ['Liczba treningow', trainings.length.toString()],
+    ['Laczny czas', formatDuration(totalDuration)],
+    ['Sredni czas treningu', trainings.length > 0 ? formatDuration(Math.round(totalDuration / trainings.length)) : '-'],
     ['Spalone kalorie', totalCalories > 0 ? `${totalCalories} kcal` : '-'],
-    ['Średnia ocena', avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-'],
-  ];
+    ['Sr. zadowolenie', avgOverall > 0 ? avgOverall.toFixed(1) + '/5' : '-'],
+    ['Sr. samopoczucie', avgPhysical > 0 ? avgPhysical.toFixed(1) + '/5' : '-'],
+    ['Sr. energia', avgEnergy > 0 ? avgEnergy.toFixed(1) + '/5' : '-'],
+  ].map(row => row.map(cell => sanitizePolishText(cell)));
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: yPos,
     head: [],
     body: summaryData,
@@ -85,17 +100,17 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
   // Training types breakdown
   if (Object.keys(typeBreakdown).length > 0) {
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Podział wg typu treningu', 14, yPos);
+    doc.setFont('times', 'bold');
+    doc.text(sanitizePolishText('Podzial wg typu treningu'), 14, yPos);
     yPos += 8;
 
     const typeData = Object.entries(typeBreakdown)
       .sort((a, b) => b[1].count - a[1].count)
-      .map(([type, data]) => [type, data.count.toString(), formatDuration(data.duration)]);
+      .map(([type, data]) => [sanitizePolishText(type), data.count.toString(), formatDuration(data.duration)]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
-      head: [['Typ', 'Liczba', 'Czas']],
+      head: [[sanitizePolishText('Typ'), 'Liczba', 'Czas']],
       body: typeData,
       theme: 'striped',
       headStyles: {
@@ -116,8 +131,8 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
   // Trainings table
   if (trainings.length > 0) {
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Lista treningów', 14, yPos);
+    doc.setFont('times', 'bold');
+    doc.text(sanitizePolishText('Lista treningow'), 14, yPos);
     yPos += 8;
 
     const tableData = trainings.map((t) => [
@@ -125,15 +140,15 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
         day: 'numeric',
         month: 'short',
       }),
-      t.trainingType?.name || 'Trening',
+      sanitizePolishText(t.trainingType?.name || 'Trening'),
       formatDuration(t.durationMinutes),
-      t.rating ? `${t.rating}/5` : '-',
+      `${t.ratingOverall}/5`,
       t.caloriesBurned ? `${t.caloriesBurned}` : '-',
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
-      head: [['Data', 'Typ', 'Czas', 'Ocena', 'Kalorie']],
+      head: [[sanitizePolishText('Data'), sanitizePolishText('Typ'), 'Czas', 'Ocena', 'Kalorie']],
       body: tableData,
       theme: 'striped',
       headStyles: {
@@ -156,14 +171,14 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
     });
   } else {
     doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('times', 'normal');
     doc.setTextColor(107, 114, 128);
-    doc.text('Brak treningów w tym miesiącu.', 14, yPos);
+    doc.text(sanitizePolishText('Brak treningow w tym miesiacu.'), 14, yPos);
   }
 
   addFooter(doc);
 
   const monthStr = month.toString().padStart(2, '0');
-  const fileName = `raport_miesięczny_${year}_${monthStr}.pdf`;
+  const fileName = sanitizePolishText(`raport_miesieczny_${year}_${monthStr}.pdf`);
   doc.save(fileName);
 }

@@ -8,9 +8,18 @@ interface TrainingType {
 
 interface Training {
   date: string;
+  time?: string | null;
   durationMinutes: number;
+  ratingOverall: number;
+  ratingPhysical?: number | null;
+  ratingEnergy?: number | null;
+  ratingMotivation?: number | null;
+  ratingDifficulty?: number | null;
+  trainingGoal?: string | null;
+  mostSatisfiedWith?: string | null;
+  improveNextTime?: string | null;
+  howToImprove?: string | null;
   notes?: string | null;
-  rating?: number | null;
   caloriesBurned?: number | null;
   trainingType?: TrainingType | null;
 }

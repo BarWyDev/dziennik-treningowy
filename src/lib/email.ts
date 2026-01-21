@@ -1,10 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const fromEmail = process.env.EMAIL_FROM || 'noreply@example.com';
-const appName = process.env.PUBLIC_APP_NAME || 'Dziennik Treningowy';
+const resendApiKey = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const fromEmail = import.meta.env.EMAIL_FROM || process.env.EMAIL_FROM || 'noreply@example.com';
+const appName = import.meta.env.PUBLIC_APP_NAME || process.env.PUBLIC_APP_NAME || 'Dziennik Treningowy';
 
 export async function sendVerificationEmail(email: string, verificationUrl: string) {
+  if (!resend) {
+    console.warn('Resend API key not configured. Skipping email sending. Verification URL:', verificationUrl);
+    return;
+  }
+  
   try {
     await resend.emails.send({
       from: `${appName} <${fromEmail}>`,
@@ -44,6 +50,11 @@ export async function sendVerificationEmail(email: string, verificationUrl: stri
 }
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
+  if (!resend) {
+    console.warn('Resend API key not configured. Skipping email sending. Reset URL:', resetUrl);
+    return;
+  }
+  
   try {
     await resend.emails.send({
       from: `${appName} <${fromEmail}>`,
