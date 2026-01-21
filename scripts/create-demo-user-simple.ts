@@ -3,7 +3,13 @@ import postgres from 'postgres';
 import { users } from '../src/lib/db/schema';
 import crypto from 'crypto';
 
-const connectionString = process.env.DATABASE_URL || 'postgres://postgres:ufRW2nXNu6@mws03.mikr.us:52088/postgres';
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('❌ DATABASE_URL environment variable is not set');
+  console.log('💡 Run: export DATABASE_URL="your-database-url"');
+  process.exit(1);
+}
 
 const client = postgres(connectionString);
 const db = drizzle(client);
