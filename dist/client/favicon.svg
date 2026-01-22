@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+    <!-- Background circle -->
+    <circle cx="64" cy="64" r="60" fill="#2563eb"/>
+    
+    <!-- Dumbbell icon -->
+    <g fill="#ffffff">
+        <!-- Left weight -->
+        <rect x="20" y="45" width="12" height="38" rx="2"/>
+        <rect x="18" y="50" width="16" height="6" rx="1"/>
+        <rect x="18" y="72" width="16" height="6" rx="1"/>
+        
+        <!-- Bar -->
+        <rect x="32" y="60" width="64" height="8" rx="2"/>
+        
+        <!-- Right weight -->
+        <rect x="96" y="45" width="12" height="38" rx="2"/>
+        <rect x="94" y="50" width="16" height="6" rx="1"/>
+        <rect x="94" y="72" width="16" height="6" rx="1"/>
+        
+        <!-- Plus sign (motivational) -->
+        <rect x="60" y="90" width="8" height="20" rx="2"/>
+        <rect x="54" y="96" width="20" height="8" rx="2"/>
+    </g>
+    
+    <style>
+        @media (prefers-color-scheme: light) {
+            circle { fill: #2563eb; }
+            g { fill: #ffffff; }
+        }
+        @media (prefers-color-scheme: dark) {
+            circle { fill: #3b82f6; }
+            g { fill: #ffffff; }
+        }
+    </style>
+</svg>
