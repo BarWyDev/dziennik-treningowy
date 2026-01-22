@@ -13,7 +13,7 @@ Training Diary (Dziennik Treningowy) - A full-stack fitness tracking application
 pnpm install                    # Install dependencies
 cp .env.example .env            # Create environment file (configure DATABASE_URL, BETTER_AUTH_SECRET, RESEND_API_KEY)
 pnpm db:push                    # Push schema to database
-pnpm db:seed                    # Seed default training types (9 types: Siłowy, Cardio, HIIT, etc.)
+pnpm db:seed                    # Seed default training types (11 types: Siłowy, Cardio, HIIT, CrossFit, Dwubój, etc.)
 ```
 
 ### Development
@@ -31,6 +31,7 @@ pnpm db:migrate                 # Run migrations
 pnpm db:push                    # Push schema changes directly (dev only)
 pnpm db:studio                  # Open Drizzle Studio GUI
 pnpm db:seed                    # Seed default training types
+pnpm db:clean-duplicates        # Clean duplicate training types from database
 ```
 
 ### Code Quality
@@ -63,10 +64,12 @@ src/
 │   │   ├── dashboard.ts       # Dashboard summary data
 │   │   ├── trainings/         # Training CRUD + filters
 │   │   ├── training-types/    # Training type management
-│   │   └── goals/             # Goal CRUD + achieve/archive
+│   │   ├── goals/             # Goal CRUD + achieve/archive
+│   │   └── personal-records/  # Personal records CRUD + stats
 │   ├── auth/                  # Auth pages (login, register, reset, verify)
 │   ├── trainings/             # Training pages (list, new, view, edit)
 │   ├── goals/                 # Goals management page
+│   ├── personal-records/      # Personal records tracking page
 │   └── dashboard/             # User dashboard
 ├── components/
 │   ├── features/              # Feature-specific components
@@ -74,6 +77,7 @@ src/
 │   │   ├── trainings/        # 9 training-related components
 │   │   ├── goals/            # 4 goal-related components
 │   │   ├── dashboard/        # 5 dashboard components
+│   │   ├── personal-records/ # 4 personal records components
 │   │   └── pdf/              # Export functionality
 │   ├── layout/               # Navbar, MobileMenu, UserMenu
 │   └── ui/                   # Reusable primitives (Button, Input, Dialog, etc.)
@@ -105,6 +109,7 @@ src/
   - Ratings (1-5 scale): ratingOverall (required), ratingPhysical, ratingEnergy, ratingMotivation, ratingDifficulty
   - Reflection: trainingGoal, mostSatisfiedWith, improveNextTime, howToImprove, notes
 - `goals` - Fitness goals (userId, title, description, targetValue, unit, deadline, status, isArchived, achievedAt)
+- `personal_records` - Personal best achievements (userId, activityName, result, unit, date, notes)
 
 **Key Constraints**:
 - Goals: Max 5 active goals per user (enforced in API, not DB)
@@ -147,6 +152,11 @@ All API routes in `src/pages/api/` follow this pattern:
 - `POST /api/goals/[id]/achieve` - Mark goal as achieved
 - `POST /api/goals/[id]/archive` - Archive goal
 - `GET /api/dashboard` - Get dashboard summary (recent trainings, week stats, active goals)
+- `GET /api/personal-records?sortBy=date&sortOrder=desc` - Get personal records with sorting
+- `POST /api/personal-records` - Create personal record
+- `GET /api/personal-records/stats` - Get records statistics (total count, last record)
+- `PUT /api/personal-records/[id]` - Update personal record (ownership check)
+- `DELETE /api/personal-records/[id]` - Delete personal record (ownership check)
 
 ### Component Patterns
 
@@ -202,7 +212,9 @@ When modifying schema (`src/lib/db/schema.ts`):
 4. Or use `pnpm db:push` for direct schema push (dev only, skips migrations)
 
 When seeding data:
-- `pnpm db:seed` runs `scripts/seed-training-types.ts` to insert 9 default training types
+- `pnpm db:seed` runs `scripts/seed-training-types.ts` to insert 11 default training types (Siłowy, Cardio, HIIT, Rozciąganie, Pływanie, Bieganie, Rower, Sporty zespołowe, CrossFit, Dwubój, Inne)
+- Script is idempotent - checks if types exist before inserting, preventing duplicates
+- `pnpm db:clean-duplicates` removes any duplicate default training types that may have been created
 
 ### PDF Export
 

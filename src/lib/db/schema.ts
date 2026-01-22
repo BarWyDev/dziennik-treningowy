@@ -129,6 +129,20 @@ export const goals = pgTable('goals', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const personalRecords = pgTable('personal_records', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  activityName: text('activity_name').notNull(),
+  result: text('result').notNull(), // Store as text to support decimals and flexible formatting
+  unit: text('unit').notNull(),
+  date: date('date').notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // ============================================
 // Relations
 // ============================================
@@ -139,6 +153,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   trainings: many(trainings),
   trainingTypes: many(trainingTypes),
   goals: many(goals),
+  personalRecords: many(personalRecords),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -181,6 +196,13 @@ export const goalsRelations = relations(goals, ({ one }) => ({
   }),
 }));
 
+export const personalRecordsRelations = relations(personalRecords, ({ one }) => ({
+  user: one(users, {
+    fields: [personalRecords.userId],
+    references: [users.id],
+  }),
+}));
+
 // ============================================
 // Types
 // ============================================
@@ -202,3 +224,6 @@ export type NewTraining = typeof trainings.$inferInsert;
 
 export type Goal = typeof goals.$inferSelect;
 export type NewGoal = typeof goals.$inferInsert;
+
+export type PersonalRecord = typeof personalRecords.$inferSelect;
+export type NewPersonalRecord = typeof personalRecords.$inferInsert;

@@ -17,6 +17,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'Treningi', href: '/trainings' },
   { name: 'Cele', href: '/goals' },
+  { name: 'Rekordy', href: '/personal-records' },
 ];
 
 export function Navbar({ user }: NavbarProps) {

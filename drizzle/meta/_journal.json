@@ -8,6 +8,13 @@
       "when": 1768986364025,
       "tag": "0000_low_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769073923320,
+      "tag": "0001_same_devos",
+      "breakpoints": true
     }
   ]
 }

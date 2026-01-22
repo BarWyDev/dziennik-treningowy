@@ -1,6 +1,11 @@
+import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq, and } from 'drizzle-orm';
 import postgres from 'postgres';
 import { trainingTypes } from '../src/lib/db/schema';
+
+// Load environment variables from .env file
+config();
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -62,6 +67,18 @@ const defaultTrainingTypes = [
     isDefault: true,
   },
   {
+    name: 'CrossFit',
+    description: 'Funkcjonalny trening o wysokiej intensywności łączący elementy siłowe i wytrzymałościowe',
+    icon: 'flame',
+    isDefault: true,
+  },
+  {
+    name: 'Dwubój',
+    description: 'Trening siłowy - wyciskanie leżąc i martwy ciąg',
+    icon: 'weight',
+    isDefault: true,
+  },
+  {
     name: 'Inne',
     description: 'Inne rodzaje aktywności fizycznej',
     icon: 'activity',
@@ -74,10 +91,25 @@ async function seed() {
 
   try {
     for (const trainingType of defaultTrainingTypes) {
-      await db
-        .insert(trainingTypes)
-        .values(trainingType)
-        .onConflictDoNothing();
+      // Check if this default training type already exists
+      const [existing] = await db
+        .select()
+        .from(trainingTypes)
+        .where(
+          and(
+            eq(trainingTypes.name, trainingType.name),
+            eq(trainingTypes.isDefault, true)
+          )
+        )
+        .limit(1);
+
+      if (existing) {
+        console.log(`Training type "${trainingType.name}" already exists, skipping...`);
+        continue;
+      }
+
+      await db.insert(trainingTypes).values(trainingType);
+      console.log(`Added training type: ${trainingType.name}`);
     }
 
     console.log('Successfully seeded default training types!');
