@@ -3,7 +3,10 @@ import { z } from 'zod';
 export const createTrainingSchema = z.object({
   trainingTypeId: z.string().uuid('Wybierz typ treningu'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty'),
-  time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Nieprawidłowy format czasu (HH:MM)').optional(),
+  time: z.string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Nieprawidłowy format czasu (HH:MM)')
+    .or(z.literal(''))
+    .optional(),
   durationMinutes: z
     .number()
     .min(1, 'Czas trwania musi wynosić co najmniej 1 minutę')
@@ -55,7 +58,13 @@ export const createTrainingSchema = z.object({
 
   // Other fields
   notes: z.string().max(1000, 'Notatki mogą mieć maksymalnie 1000 znaków').optional(),
-  caloriesBurned: z.number().min(0).max(10000).optional(),
+  caloriesBurned: z
+    .number()
+    .min(0, 'Kalorie nie mogą być ujemne')
+    .max(10000, 'Wartość kalorii jest za wysoka')
+    .optional()
+    .or(z.nan())
+    .transform((val) => (isNaN(val as number) ? undefined : val)),
 });
 
 export const updateTrainingSchema = createTrainingSchema.partial();

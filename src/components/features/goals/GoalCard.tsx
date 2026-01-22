@@ -93,15 +93,15 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm border p-5 ${
-        isAchieved ? 'border-success-200 bg-success-50/50' : 'border-gray-200'
+      className={`bg-white dark:bg-[#161b22] rounded-xl shadow-sm border p-5 ${
+        isAchieved ? 'border-success-200 dark:border-success-700 bg-success-50/50 dark:bg-success-900/20' : 'border-gray-200 dark:border-gray-800'
       }`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
             {isAchieved && (
-              <svg className="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 lg:w-6 lg:h-6 text-success-500 dark:text-success-400" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -109,27 +109,27 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
                 />
               </svg>
             )}
-            <h3 className={`font-semibold ${isAchieved ? 'text-success-800' : 'text-gray-900'}`}>
+            <h3 className={`text-base lg:text-lg font-semibold ${isAchieved ? 'text-success-800 dark:text-success-300' : 'text-gray-900 dark:text-gray-100'}`}>
               {goal.title}
             </h3>
           </div>
 
           {goal.description && (
-            <p className="text-sm text-gray-600 mt-1">{goal.description}</p>
+            <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400 mt-1">{goal.description}</p>
           )}
 
           {hasTarget && (
             <div className="mt-3">
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600">
+              <div className="flex items-center justify-between text-sm lg:text-base mb-1">
+                <span className="text-gray-600 dark:text-gray-400">
                   {goal.currentValue || 0} / {goal.targetValue} {goal.unit}
                 </span>
-                <span className="font-medium text-gray-900">{progress}%</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${
-                    isAchieved ? 'bg-success-500' : 'bg-primary-600'
+                    isAchieved ? 'bg-success-500 dark:bg-success-400' : 'bg-primary-600 dark:bg-primary-500'
                   }`}
                   style={{ width: `${progress}%` }}
                 />
@@ -138,13 +138,13 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
           )}
 
           {goal.deadline && (
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 mt-2">
               Termin: {formatDate(goal.deadline)}
             </p>
           )}
 
           {goal.achievedAt && (
-            <p className="text-xs text-success-600 mt-2">
+            <p className="text-xs lg:text-sm text-success-600 dark:text-success-400 mt-2">
               Osiągnięto: {formatDate(goal.achievedAt)}
             </p>
           )}

@@ -68,7 +68,7 @@ export function LoginForm() {
           </Label>
           <a
             href="/auth/forgot-password"
-            className="text-sm text-primary-600 hover:text-primary-500"
+            className="text-sm lg:text-base text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
           >
             Zapomniałeś hasła?
           </a>
@@ -87,9 +87,9 @@ export function LoginForm() {
         Zaloguj się
       </Button>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm lg:text-base text-gray-600 dark:text-gray-400">
         Nie masz konta?{' '}
-        <a href="/auth/register" className="text-primary-600 hover:text-primary-500 font-medium">
+        <a href="/auth/register" className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-medium">
           Zarejestruj się
         </a>
       </p>

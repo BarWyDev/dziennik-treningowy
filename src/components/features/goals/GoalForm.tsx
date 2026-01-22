@@ -94,12 +94,12 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
         <textarea
           id="description"
           rows={2}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           placeholder="Krótki opis celu..."
           {...register('description')}
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-error-600">{errors.description.message}</p>
+          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.description.message}</p>
         )}
       </div>
 
@@ -137,7 +137,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
             error={errors.currentValue?.message}
             {...register('currentValue', { valueAsNumber: true })}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs lg:text-sm text-gray-500 dark:text-gray-400">
             Wprowadź ile już osiągnąłeś z wartości docelowej
           </p>
         </div>

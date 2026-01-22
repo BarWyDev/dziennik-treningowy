@@ -138,7 +138,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
           Typ treningu
         </Label>
         {isLoadingTypes ? (
-          <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+          <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
         ) : (
           <Select
             id="trainingTypeId"
@@ -197,18 +197,18 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         <textarea
           id="trainingGoal"
           rows={2}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           placeholder="Co chcesz osiągnąć podczas tego treningu?"
           {...register('trainingGoal')}
         />
         {errors.trainingGoal && (
-          <p className="mt-1 text-sm text-error-600">{errors.trainingGoal.message}</p>
+          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.trainingGoal.message}</p>
         )}
       </div>
 
       {/* Multi-category Ratings */}
-      <div className="space-y-4 border-t border-gray-200 pt-4">
-        <h3 className="font-medium text-gray-900">Oceny (skala 1-5)</h3>
+      <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h3 className="font-medium text-base lg:text-lg text-gray-900 dark:text-gray-100">Oceny (skala 1-5)</h3>
 
         <div>
           <Label required>Ogólne zadowolenie</Label>
@@ -287,20 +287,20 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       </div>
 
       {/* Reflection Fields */}
-      <div className="space-y-4 border-t border-gray-200 pt-4">
-        <h3 className="font-medium text-gray-900">Refleksja po treningu</h3>
+      <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h3 className="font-medium text-base lg:text-lg text-gray-900 dark:text-gray-100">Refleksja po treningu</h3>
 
         <div>
           <Label htmlFor="mostSatisfiedWith">Z czego jestem najbardziej zadowolony?</Label>
           <textarea
             id="mostSatisfiedWith"
             rows={2}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="Co poszło najlepiej?"
             {...register('mostSatisfiedWith')}
           />
           {errors.mostSatisfiedWith && (
-            <p className="mt-1 text-sm text-error-600">{errors.mostSatisfiedWith.message}</p>
+            <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.mostSatisfiedWith.message}</p>
           )}
         </div>
 
@@ -309,12 +309,12 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
           <textarea
             id="improveNextTime"
             rows={2}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="Nad czym chcesz popracować?"
             {...register('improveNextTime')}
           />
           {errors.improveNextTime && (
-            <p className="mt-1 text-sm text-error-600">{errors.improveNextTime.message}</p>
+            <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.improveNextTime.message}</p>
           )}
         </div>
 
@@ -323,18 +323,18 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
           <textarea
             id="howToImprove"
             rows={2}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="Konkretne kroki do poprawy..."
             {...register('howToImprove')}
           />
           {errors.howToImprove && (
-            <p className="mt-1 text-sm text-error-600">{errors.howToImprove.message}</p>
+            <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.howToImprove.message}</p>
           )}
         </div>
       </div>
 
       {/* Other Fields */}
-      <div className="border-t border-gray-200 pt-4">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <div>
           <Label htmlFor="caloriesBurned">Spalone kalorie (opcjonalnie)</Label>
           <Input
@@ -354,12 +354,12 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         <textarea
           id="notes"
           rows={3}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           placeholder="Inne obserwacje lub notatki..."
           {...register('notes')}
         />
         {errors.notes && (
-          <p className="mt-1 text-sm text-error-600">{errors.notes.message}</p>
+          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.notes.message}</p>
         )}
       </div>
 

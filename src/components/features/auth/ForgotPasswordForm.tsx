@@ -53,8 +53,8 @@ export function ForgotPasswordForm() {
             linkiem do resetowania hasła.
           </p>
         </Alert>
-        <p className="mt-6 text-sm text-gray-600">
-          <a href="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
+        <p className="mt-6 text-sm lg:text-base text-gray-600 dark:text-gray-400">
+          <a href="/auth/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-medium">
             Wróć do strony logowania
           </a>
         </p>
@@ -66,7 +66,7 @@ export function ForgotPasswordForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && <Alert variant="error">{error}</Alert>}
 
-      <p className="text-sm text-gray-600">
+      <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400">
         Podaj swój adres email, a wyślemy Ci link do resetowania hasła.
       </p>
 
@@ -88,8 +88,8 @@ export function ForgotPasswordForm() {
         Wyślij link resetujący
       </Button>
 
-      <p className="text-center text-sm text-gray-600">
-        <a href="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
+      <p className="text-center text-sm lg:text-base text-gray-600 dark:text-gray-400">
+        <a href="/auth/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-medium">
           Wróć do logowania
         </a>
       </p>

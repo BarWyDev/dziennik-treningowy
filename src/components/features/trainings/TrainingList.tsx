@@ -81,9 +81,9 @@ export function TrainingList() {
         <TrainingFilters filters={filters} onFiltersChange={handleFiltersChange} />
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
+            <div key={i} className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 animate-pulse">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" />
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
             </div>
           ))}
         </div>

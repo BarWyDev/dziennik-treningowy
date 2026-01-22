@@ -30,7 +30,7 @@ export function DeleteConfirmDialog({
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title={title}>
-      <p className="text-gray-600 mb-6">{message}</p>
+      <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm lg:text-base">{message}</p>
       <div className="flex gap-4">
         <Button
           variant="danger"

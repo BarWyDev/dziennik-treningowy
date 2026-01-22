@@ -26,16 +26,16 @@ export function RatingInput({ value, onChange, error }: RatingInputProps) {
           <button
             key={rating}
             type="button"
-            className="p-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded"
+            className="p-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
             onMouseEnter={() => setHoveredRating(rating)}
             onMouseLeave={() => setHoveredRating(null)}
             onClick={() => handleClick(rating)}
           >
             <svg
-              className={`w-8 h-8 transition-colors ${
+              className={`w-8 h-8 lg:w-9 lg:h-9 transition-colors ${
                 rating <= displayRating
-                  ? 'text-yellow-400 fill-yellow-400'
-                  : 'text-gray-300'
+                  ? 'text-yellow-400 fill-yellow-400 dark:text-yellow-500 dark:fill-yellow-500'
+                  : 'text-gray-300 dark:text-gray-700'
               }`}
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -51,11 +51,11 @@ export function RatingInput({ value, onChange, error }: RatingInputProps) {
         ))}
       </div>
       {value && (
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm lg:text-base text-gray-500 dark:text-gray-400">
           Ocena: {value}/5 (kliknij ponownie, aby usunąć)
         </p>
       )}
-      {error && <p className="mt-1 text-sm text-error-600">{error}</p>}
+      {error && <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{error}</p>}
     </div>
   );
 }

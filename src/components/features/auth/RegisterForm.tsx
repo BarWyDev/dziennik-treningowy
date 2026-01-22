@@ -54,8 +54,8 @@ export function RegisterForm() {
             skrzynkę pocztową i kliknij w link, aby aktywować konto.
           </p>
         </Alert>
-        <p className="mt-6 text-sm text-gray-600">
-          <a href="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
+        <p className="mt-6 text-sm lg:text-base text-gray-600 dark:text-gray-400">
+          <a href="/auth/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-medium">
             Wróć do strony logowania
           </a>
         </p>
@@ -107,7 +107,7 @@ export function RegisterForm() {
           error={errors.password?.message}
           {...register('password')}
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs lg:text-sm text-gray-500 dark:text-gray-400">
           Min. 8 znaków, wielka i mała litera oraz cyfra
         </p>
       </div>
@@ -130,9 +130,9 @@ export function RegisterForm() {
         Zarejestruj się
       </Button>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm lg:text-base text-gray-600 dark:text-gray-400">
         Masz już konto?{' '}
-        <a href="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
+        <a href="/auth/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-medium">
           Zaloguj się
         </a>
       </p>

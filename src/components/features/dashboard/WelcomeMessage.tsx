@@ -15,10 +15,10 @@ export function WelcomeMessage({ userName }: WelcomeMessageProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">
+      <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100">
         {greeting}, {firstName}!
       </h1>
-      <p className="text-gray-600 mt-1">
+      <p className="text-gray-600 dark:text-gray-400 mt-1 text-base lg:text-lg">
         Sprawdź swoje postępy i zaplanuj kolejny trening.
       </p>
     </div>

@@ -68,10 +68,10 @@ export function GoalList() {
         {[...Array(2)].map((_, i) => (
           <div
             key={i}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 animate-pulse"
+            className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 animate-pulse"
           >
-            <div className="h-5 bg-gray-200 rounded w-1/3 mb-3" />
-            <div className="h-4 bg-gray-200 rounded w-2/3" />
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-3" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
           </div>
         ))}
       </div>
@@ -85,13 +85,13 @@ export function GoalList() {
       {/* Active Goals */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
             Aktywne cele ({activeGoals.length}/{MAX_ACTIVE_GOALS})
           </h2>
           {canAddGoal && (
             <Button size="sm" onClick={() => setShowForm(true)}>
               <svg
-                className="w-4 h-4 mr-1"
+                className="w-4 h-4 lg:w-5 lg:h-5 mr-1"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -109,9 +109,9 @@ export function GoalList() {
         </div>
 
         {activeGoals.length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+          <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 lg:h-14 lg:w-14 text-gray-400 dark:text-gray-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -123,7 +123,7 @@ export function GoalList() {
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
               />
             </svg>
-            <p className="mt-2 text-gray-600">Brak aktywnych celów</p>
+            <p className="mt-2 text-sm lg:text-base text-gray-600 dark:text-gray-400">Brak aktywnych celów</p>
             <Button size="sm" className="mt-4" onClick={() => setShowForm(true)}>
               Dodaj pierwszy cel
             </Button>
@@ -140,7 +140,7 @@ export function GoalList() {
       {/* Achieved Goals */}
       {achievedGoals.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Osiągnięte cele ({achievedGoals.length})
           </h2>
           <div className="space-y-3">
@@ -156,11 +156,11 @@ export function GoalList() {
         <div>
           <button
             type="button"
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
+            className="flex items-center gap-2 text-sm lg:text-base text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             onClick={() => setShowArchived(!showArchived)}
           >
             <svg
-              className={`w-4 h-4 transition-transform ${showArchived ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 lg:w-5 lg:h-5 transition-transform ${showArchived ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

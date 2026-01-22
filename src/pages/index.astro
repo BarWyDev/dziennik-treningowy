@@ -10,46 +10,110 @@ import '@/styles/globals.css';
     <title>Dziennik Treningowy - Śledź swoje treningi i osiągaj cele</title>
     <meta name="description" content="Darmowa aplikacja do śledzenia treningów. Zapisuj swoje ćwiczenia, wyznaczaj cele i obserwuj postępy." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      // Prevent flash of unstyled content (FOUC) for dark mode
+      (function() {
+        const theme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (theme === 'dark' || (!theme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
-  <body class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50">
+  <body class="min-h-screen bg-white dark:bg-[#0d1117] transition-colors">
     <!-- Navigation -->
-    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-gray-200 dark:border-gray-800">
       <div class="flex justify-between items-center">
-        <div class="text-2xl font-bold text-primary-600">
+        <div class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Dziennik Treningowy
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            id="theme-toggle"
+            class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Przełącz tryb ciemny"
+          >
+            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </button>
           <a
             href="/auth/login"
-            class="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+            class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors"
+            style="font-size: 14px;"
           >
             Zaloguj się
           </a>
           <a
             href="/auth/register"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+            class="inline-flex items-center px-4 py-2 font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-500 rounded-md transition-colors"
+            style="font-size: 14px;"
           >
             Rozpocznij za darmo
           </a>
         </div>
       </div>
     </nav>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        if (!themeToggleBtn || !themeToggleDarkIcon || !themeToggleLightIcon) {
+          return;
+        }
+        
+        // Show correct icon on load
+        const isDark = document.documentElement.classList.contains('dark');
+        if (isDark) {
+          themeToggleLightIcon.classList.remove('hidden');
+          themeToggleDarkIcon.classList.add('hidden');
+        } else {
+          themeToggleDarkIcon.classList.remove('hidden');
+          themeToggleLightIcon.classList.add('hidden');
+        }
+        
+        themeToggleBtn.addEventListener('click', function() {
+          const currentlyDark = document.documentElement.classList.contains('dark');
+          
+          if (currentlyDark) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeToggleDarkIcon.classList.remove('hidden');
+            themeToggleLightIcon.classList.add('hidden');
+          } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeToggleLightIcon.classList.remove('hidden');
+            themeToggleDarkIcon.classList.add('hidden');
+          }
+        });
+      });
+    </script>
 
     <!-- Hero Section -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
       <div class="text-center">
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white tracking-tight">
           Śledź swoje treningi,
-          <span class="text-primary-600 block mt-2">osiągaj cele</span>
+          <span class="text-primary-600 dark:text-primary-400 block mt-2">osiągaj cele</span>
         </h1>
-        <p class="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+        <p class="mt-6 text-lg sm:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
           Prosty i intuicyjny dziennik treningowy. Zapisuj swoje ćwiczenia,
           wyznaczaj cele i obserwuj swoje postępy dzień po dniu.
         </p>
         <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
           <a
             href="/auth/register"
-            class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-lg shadow-primary-600/25"
+            class="inline-flex items-center justify-center px-8 py-3 text-base lg:text-lg font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 rounded-lg transition-colors shadow-lg shadow-primary-600/25"
           >
             Rozpocznij za darmo
             <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +122,7 @@ import '@/styles/globals.css';
           </a>
           <a
             href="/auth/login"
-            class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors border border-gray-300"
+            class="inline-flex items-center justify-center px-8 py-3 text-base lg:text-lg font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600"
           >
             Mam już konto
           </a>
@@ -67,44 +131,44 @@ import '@/styles/globals.css';
 
       <!-- Features -->
       <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+          <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          <h3 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-2">
             Zapisuj treningi
           </h3>
-          <p class="text-gray-600">
+          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
             Szybko dodawaj treningi z różnych kategorii. Wybierz typ, czas trwania i oceń swoje samopoczucie.
           </p>
         </div>
 
-        <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+          <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          <h3 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-2">
             Wyznaczaj cele
           </h3>
-          <p class="text-gray-600">
+          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
             Ustaw cele treningowe i śledź swój postęp. Motywuj się do regularnych ćwiczeń.
           </p>
         </div>
 
-        <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+          <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          <h3 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-2">
             Eksportuj do PDF
           </h3>
-          <p class="text-gray-600">
+          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
             Generuj raporty tygodniowe i miesięczne w formacie PDF. Analizuj swoje postępy.
           </p>
         </div>
@@ -112,8 +176,8 @@ import '@/styles/globals.css';
     </main>
 
     <!-- Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-200">
-      <p class="text-center text-gray-500 text-sm">
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-200 dark:border-gray-700">
+      <p class="text-center text-gray-500 dark:text-gray-400 text-sm lg:text-base">
         &copy; {new Date().getFullYear()} Dziennik Treningowy. Wszystkie prawa zastrzeżone.
       </p>
     </footer>

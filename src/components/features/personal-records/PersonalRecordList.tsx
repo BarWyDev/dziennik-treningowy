@@ -68,14 +68,14 @@ export function PersonalRecordList() {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">Ładowanie...</div>;
+    return <div className="text-center py-8 text-gray-600 dark:text-gray-400 text-base lg:text-lg">Ładowanie...</div>;
   }
 
   if (records.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">Nie masz jeszcze żadnych rekordów osobistych.</p>
-        <p className="text-gray-400 mt-2">Dodaj swój pierwszy rekord używając formularza powyżej!</p>
+        <p className="text-gray-500 dark:text-gray-400 text-lg lg:text-xl">Nie masz jeszcze żadnych rekordów osobistych.</p>
+        <p className="text-gray-400 dark:text-gray-500 mt-2 text-base lg:text-lg">Dodaj swój pierwszy rekord używając formularza powyżej!</p>
       </div>
     );
   }

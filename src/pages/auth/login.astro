@@ -10,17 +10,26 @@ import { LoginForm } from '@/components/features/auth/LoginForm';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Logowanie - Dziennik Treningowy</title>
     <meta name="description" content="Zaloguj się do Dziennika Treningowego" />
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (theme === 'dark' || (!theme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
-  <body class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <body class="min-h-screen bg-gray-50 dark:bg-[#0d1117] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
-      <h1 class="text-center text-3xl font-bold text-gray-900">Dziennik Treningowy</h1>
-      <h2 class="mt-6 text-center text-2xl font-semibold text-gray-900">
+      <h1 class="text-center text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">Dziennik Treningowy</h1>
+      <h2 class="mt-6 text-center text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-gray-100">
         Zaloguj się
       </h2>
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow-sm rounded-xl sm:px-10 border border-gray-200">
+      <div class="bg-white dark:bg-[#161b22] py-8 px-4 shadow-sm rounded-xl sm:px-10 border border-gray-200 dark:border-gray-800">
         <LoginForm client:load />
       </div>
     </div>

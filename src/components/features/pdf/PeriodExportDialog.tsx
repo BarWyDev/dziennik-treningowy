@@ -102,10 +102,10 @@ export function PeriodExportDialog() {
         <div className="flex gap-2">
           <button
             type="button"
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm lg:text-base font-medium transition-colors ${
               reportType === 'weekly'
                 ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
             onClick={() => setReportType('weekly')}
           >
@@ -113,10 +113,10 @@ export function PeriodExportDialog() {
           </button>
           <button
             type="button"
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm lg:text-base font-medium transition-colors ${
               reportType === 'monthly'
                 ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
             onClick={() => setReportType('monthly')}
           >
@@ -126,26 +126,26 @@ export function PeriodExportDialog() {
 
         {reportType === 'weekly' ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm lg:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
               Wybierz tydzień
             </label>
             <input
               type="week"
               value={selectedWeek}
               onChange={(e) => setSelectedWeek(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+              className="w-full px-3 py-2 text-sm lg:text-base border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
             />
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm lg:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
               Wybierz miesiąc
             </label>
             <input
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+              className="w-full px-3 py-2 text-sm lg:text-base border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
             />
           </div>
         )}

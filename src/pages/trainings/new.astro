@@ -6,13 +6,13 @@ import { TrainingForm } from '@/components/features/trainings/TrainingForm';
 <AppLayout title="Dodaj trening">
   <div class="max-w-xl mx-auto">
     <div class="mb-6">
-      <a href="/trainings" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+      <a href="/trainings" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm lg:text-base font-medium">
         &larr; Powrót do listy treningów
       </a>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">Dodaj nowy trening</h1>
+    <div class="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Dodaj nowy trening</h1>
       <TrainingForm client:load />
     </div>
   </div>

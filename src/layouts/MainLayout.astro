@@ -17,8 +17,19 @@ const { title, description = 'Śledź swoje treningi i osiągaj cele' } = Astro.
     <title>{title} - Dziennik Treningowy</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      // Prevent flash of unstyled content (FOUC) for dark mode
+      (function() {
+        const theme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (theme === 'dark' || (!theme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
-  <body class="min-h-screen bg-gray-50">
+  <body class="min-h-screen bg-white dark:bg-[#0d1117]">
     <slot />
   </body>
 </html>

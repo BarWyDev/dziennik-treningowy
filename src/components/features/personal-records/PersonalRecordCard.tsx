@@ -40,39 +40,38 @@ export function PersonalRecordCard({ record, onEdit, onDelete }: PersonalRecordC
   });
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{record.activityName}</h3>
-          <p className="text-sm text-gray-500 mt-1">{formattedDate}</p>
+          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">{record.activityName}</h3>
+          <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-1">{formattedDate}</p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold text-blue-600">
-            {record.result} <span className="text-sm font-normal text-gray-600">{record.unit}</span>
+          <p className="text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400">
+            {record.result} <span className="text-sm lg:text-base font-normal text-gray-600 dark:text-gray-400">{record.unit}</span>
           </p>
         </div>
       </div>
 
       {record.notes && (
         <div className="mb-4">
-          <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">{record.notes}</p>
+          <p className="text-sm lg:text-base text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">{record.notes}</p>
         </div>
       )}
 
-      <div className="flex gap-2 pt-4 border-t border-gray-100">
+      <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => onEdit(record)}
         >
           Edytuj
         </Button>
         <Button
-          variant="outline"
+          variant="danger"
           size="sm"
           onClick={handleDelete}
           disabled={isDeleting}
-          className="text-red-600 hover:text-red-700 hover:border-red-300"
         >
           {isDeleting ? 'Usuwanie...' : 'Usuń'}
         </Button>
