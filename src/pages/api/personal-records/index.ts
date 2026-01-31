@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { db, personalRecords } from '@/lib/db';
+import { db, personalRecords, mediaAttachments } from '@/lib/db';
 import { createPersonalRecordSchema } from '@/lib/validations/personal-record';
 import { auth } from '@/lib/auth';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, inArray } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
@@ -41,7 +41,33 @@ export const GET: APIRoute = async ({ request, url }) => {
       .where(eq(personalRecords.userId, session.user.id))
       .orderBy(orderByClause);
 
-    return new Response(JSON.stringify(records), {
+    // Pobierz media dla wszystkich rekordów jednym zapytaniem
+    const recordIds = records.map((r) => r.id);
+    let allMedia: any[] = [];
+
+    if (recordIds.length > 0) {
+      allMedia = await db
+        .select()
+        .from(mediaAttachments)
+        .where(inArray(mediaAttachments.personalRecordId, recordIds));
+    }
+
+    // Pogrupuj media według personalRecordId
+    const mediaByRecord = allMedia.reduce((acc, media) => {
+      if (!media.personalRecordId) return acc;
+      if (!acc[media.personalRecordId]) {
+        acc[media.personalRecordId] = [];
+      }
+      acc[media.personalRecordId].push(media);
+      return acc;
+    }, {} as Record<string, typeof allMedia>);
+
+    const recordsWithMedia = records.map((record) => ({
+      ...record,
+      media: mediaByRecord[record.id] || [],
+    }));
+
+    return new Response(JSON.stringify(recordsWithMedia), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -78,7 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { activityName, result, unit, date, notes } = validation.data;
+    const { activityName, result, unit, date, notes, mediaIds } = validation.data;
 
     const [newRecord] = await db
       .insert(personalRecords)
@@ -91,6 +117,19 @@ export const POST: APIRoute = async ({ request }) => {
         notes: notes || null,
       })
       .returning();
+
+    // Powiąż media z rekordem
+    if (mediaIds && mediaIds.length > 0) {
+      await db
+        .update(mediaAttachments)
+        .set({ personalRecordId: newRecord.id })
+        .where(
+          and(
+            inArray(mediaAttachments.id, mediaIds),
+            eq(mediaAttachments.userId, session.user.id)
+          )
+        );
+    }
 
     return new Response(JSON.stringify(newRecord), {
       status: 201,

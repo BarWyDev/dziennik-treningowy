@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPersonalRecordSchema, type CreatePersonalRecordInput } from '@/lib/validations/personal-record';
@@ -6,6 +6,17 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Alert } from '@/components/ui/Alert';
+import { MediaUpload } from '@/components/features/media/MediaUpload';
+import type { UploadedFile } from '@/lib/validations/media';
+
+interface MediaAttachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: 'image' | 'video';
+  mimeType: string;
+  fileSize: number;
+}
 
 interface PersonalRecord {
   id: string;
@@ -14,6 +25,7 @@ interface PersonalRecord {
   unit: string;
   date: string;
   notes?: string | null;
+  media?: MediaAttachment[];
 }
 
 interface PersonalRecordFormProps {
@@ -24,6 +36,7 @@ interface PersonalRecordFormProps {
 export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedMedia, setUploadedMedia] = useState<UploadedFile[]>([]);
 
   const isEditing = !!record;
 
@@ -43,6 +56,13 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
     },
   });
 
+  // Załaduj istniejące media podczas edycji
+  useEffect(() => {
+    if (record?.media) {
+      setUploadedMedia(record.media);
+    }
+  }, [record]);
+
   const onSubmit = async (data: CreatePersonalRecordInput) => {
     setIsLoading(true);
     setError(null);
@@ -51,10 +71,16 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
       const url = isEditing ? `/api/personal-records/${record.id}` : '/api/personal-records';
       const method = isEditing ? 'PUT' : 'POST';
 
+      // Dodaj mediaIds do payload
+      const payload = {
+        ...data,
+        mediaIds: uploadedMedia.map((m) => m.id),
+      };
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -73,6 +99,19 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
       setError(err instanceof Error ? err.message : 'Wystąpił nieoczekiwany błąd');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleMediaUpload = (files: UploadedFile[]) => {
+    setUploadedMedia(files);
+  };
+
+  const handleMediaRemove = async (fileId: string) => {
+    try {
+      await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
+      setUploadedMedia((prev) => prev.filter((f) => f.id !== fileId));
+    } catch (error) {
+      console.error('Error removing media:', error);
     }
   };
 
@@ -145,6 +184,20 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
         {errors.notes && (
           <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.notes.message}</p>
         )}
+      </div>
+
+      {/* Media Upload */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <Label>Zdjęcia i filmy (opcjonalnie)</Label>
+        <div className="mt-2">
+          <MediaUpload
+            entityType="personal-record"
+            entityId={record?.id}
+            existingMedia={uploadedMedia}
+            onUploadComplete={handleMediaUpload}
+            onRemove={handleMediaRemove}
+          />
+        </div>
       </div>
 
       <div className="flex gap-3">

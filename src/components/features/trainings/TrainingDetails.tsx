@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { ExportButton } from '@/components/features/pdf/ExportButton';
+import { MediaGallery } from '@/components/features/media/MediaGallery';
+import type { MediaAttachment } from '@/lib/db/schema';
 
 interface TrainingType {
   id: string;
@@ -27,6 +29,7 @@ interface Training {
   notes?: string | null;
   caloriesBurned?: number | null;
   trainingType?: TrainingType | null;
+  media?: MediaAttachment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -77,6 +80,19 @@ function RatingStars({ rating }: { rating: number }) {
 export function TrainingDetails({ training }: TrainingDetailsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [media, setMedia] = useState<MediaAttachment[]>(training.media || []);
+
+  const handleMediaDelete = async (mediaId: string) => {
+    try {
+      const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Nie udało się usunąć pliku');
+      }
+      setMedia((prev) => prev.filter((m) => m.id !== mediaId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -266,6 +282,20 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Media Gallery */}
+          {media.length > 0 && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <h3 className="font-semibold text-base lg:text-lg text-gray-900 dark:text-gray-100 mb-4">
+                Zdjęcia i filmy
+              </h3>
+              <MediaGallery
+                media={media}
+                onDelete={handleMediaDelete}
+                canDelete={true}
+              />
             </div>
           )}
 

@@ -1,7 +1,16 @@
+import { normalizeMediaUrl } from '@/lib/utils/media';
+
 interface TrainingType {
   id: string;
   name: string;
   icon?: string | null;
+}
+
+interface MediaAttachment {
+  id: string;
+  fileUrl: string;
+  fileType: string;
+  fileName: string;
 }
 
 interface Training {
@@ -12,6 +21,7 @@ interface Training {
   rating?: number | null;
   caloriesBurned?: number | null;
   trainingType?: TrainingType | null;
+  media?: MediaAttachment[];
 }
 
 interface TrainingCardProps {
@@ -38,6 +48,10 @@ function formatDate(dateString: string): string {
 }
 
 export function TrainingCard({ training }: TrainingCardProps) {
+  const images = training.media?.filter((m) => m.fileType === 'image') || [];
+  const videos = training.media?.filter((m) => m.fileType === 'video') || [];
+  const hasMedia = images.length > 0 || videos.length > 0;
+
   return (
     <a
       href={`/trainings/${training.id}`}
@@ -74,6 +88,41 @@ export function TrainingCard({ training }: TrainingCardProps) {
           )}
         </div>
       </div>
+
+      {/* Media preview - pokazuje miniatury */}
+      {hasMedia && (
+        <div className="mt-3 flex gap-2 items-center">
+          <div className="flex -space-x-2 overflow-hidden">
+            {images.slice(0, 3).map((img) => (
+              <img
+                key={img.id}
+                src={normalizeMediaUrl(img.fileUrl)}
+                alt={img.fileName}
+                className="inline-block h-10 w-10 rounded-lg ring-2 ring-white dark:ring-gray-800 object-cover"
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            {images.length > 0 && (
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {images.length}
+              </span>
+            )}
+            {videos.length > 0 && (
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                {videos.length}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {training.notes && (
         <p className="mt-3 text-sm lg:text-base text-gray-600 dark:text-gray-300 line-clamp-2">{training.notes}</p>
       )}

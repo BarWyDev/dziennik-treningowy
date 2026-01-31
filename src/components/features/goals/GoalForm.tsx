@@ -43,7 +43,9 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
       currentValue: goal.currentValue || 0,
       unit: goal.unit || '',
       deadline: goal.deadline || '',
-    } : undefined,
+    } : {
+      currentValue: 0,
+    },
   });
 
   const onSubmit = async (data: CreateGoalInput | UpdateGoalInput) => {
@@ -126,31 +128,33 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
         </div>
       </div>
 
-      {isEditMode && (
-        <div>
-          <Label htmlFor="currentValue">Aktualny postęp</Label>
-          <Input
-            id="currentValue"
-            type="number"
-            min="0"
-            placeholder="np. 25"
-            error={errors.currentValue?.message}
-            {...register('currentValue', { valueAsNumber: true })}
-          />
-          <p className="mt-1 text-xs lg:text-sm text-gray-500 dark:text-gray-400">
-            Wprowadź ile już osiągnąłeś z wartości docelowej
-          </p>
-        </div>
-      )}
+      <div>
+        <Label htmlFor="currentValue">Aktualny postęp</Label>
+        <Input
+          id="currentValue"
+          type="number"
+          min="0"
+          placeholder="np. 0"
+          error={errors.currentValue?.message}
+          {...register('currentValue', { valueAsNumber: true })}
+        />
+        <p className="mt-1 text-xs lg:text-sm text-gray-500 dark:text-gray-400">
+          Wprowadź ile już osiągnąłeś z wartości docelowej (domyślnie 0)
+        </p>
+      </div>
 
       <div>
         <Label htmlFor="deadline">Termin (opcjonalnie)</Label>
         <Input
           id="deadline"
           type="date"
+          min={new Date().toISOString().split('T')[0]}
           error={errors.deadline?.message}
           {...register('deadline')}
         />
+        <p className="mt-1 text-xs lg:text-sm text-gray-500 dark:text-gray-400">
+          Data nie może być wcześniejsza niż dzisiaj
+        </p>
       </div>
 
       <div className="flex gap-3 pt-2">

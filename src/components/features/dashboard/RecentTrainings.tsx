@@ -46,11 +46,11 @@ function formatDuration(minutes: number): string {
 export function RecentTrainings({ trainings }: RecentTrainingsProps) {
   if (trainings.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-        <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Ostatnie treningi</h2>
-        <div className="text-center py-6">
+      <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 xl:p-5">
+        <h2 className="text-base lg:text-lg xl:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Ostatnie treningi</h2>
+        <div className="text-center py-4 xl:py-6">
           <svg
-            className="mx-auto h-12 w-12 lg:h-14 lg:w-14 text-gray-400 dark:text-gray-600"
+            className="mx-auto h-10 w-10 lg:h-12 lg:w-12 xl:h-12 xl:w-12 text-gray-400 dark:text-gray-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -62,10 +62,10 @@ export function RecentTrainings({ trainings }: RecentTrainingsProps) {
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
             />
           </svg>
-          <p className="mt-2 text-sm lg:text-base text-gray-500 dark:text-gray-400">Brak treningów do wyświetlenia</p>
+          <p className="mt-2 text-xs lg:text-sm xl:text-sm text-gray-500 dark:text-gray-400">Brak treningów do wyświetlenia</p>
           <a
             href="/trainings/new"
-            className="mt-3 inline-block text-sm lg:text-base text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+            className="mt-2 inline-block text-xs lg:text-sm xl:text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
           >
             Dodaj pierwszy trening
           </a>
@@ -75,31 +75,31 @@ export function RecentTrainings({ trainings }: RecentTrainingsProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">Ostatnie treningi</h2>
+    <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 xl:p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base lg:text-lg xl:text-lg font-semibold text-gray-900 dark:text-gray-100">Ostatnie treningi</h2>
         <a
           href="/trainings"
-          className="text-sm lg:text-base text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+          className="text-xs lg:text-sm xl:text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
         >
           Zobacz wszystkie
         </a>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {trainings.map((training) => (
           <a
             key={training.id}
             href={`/trainings/${training.id}`}
-            className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-between p-2.5 xl:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <div>
-              <p className="font-medium text-gray-900 dark:text-gray-100 text-base lg:text-lg">
+              <p className="font-medium text-gray-900 dark:text-gray-100 text-sm lg:text-base xl:text-base">
                 {training.trainingType?.name || 'Trening'}
               </p>
-              <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400">{formatDate(training.date)}</p>
+              <p className="text-xs lg:text-sm xl:text-sm text-gray-500 dark:text-gray-400">{formatDate(training.date)}</p>
             </div>
-            <span className="text-sm lg:text-base font-medium text-primary-600 dark:text-primary-400">
+            <span className="text-xs lg:text-sm xl:text-sm font-medium text-primary-600 dark:text-primary-400">
               {formatDuration(training.durationMinutes)}
             </span>
           </a>

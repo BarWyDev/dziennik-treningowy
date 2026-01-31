@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { DeleteConfirmDialog } from '@/components/features/trainings/DeleteConfirmDialog';
+import { MediaGallery } from '@/components/features/media/MediaGallery';
+import type { MediaAttachment } from '@/lib/db/schema';
 
 interface PersonalRecord {
   id: string;
@@ -8,6 +11,7 @@ interface PersonalRecord {
   unit: string;
   date: string;
   notes?: string | null;
+  media?: MediaAttachment[];
   createdAt: Date | string;
 }
 
@@ -19,17 +23,29 @@ interface PersonalRecordCardProps {
 
 export function PersonalRecordCard({ record, onEdit, onDelete }: PersonalRecordCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [media, setMedia] = useState<MediaAttachment[]>(record.media || []);
+
+  const handleMediaDelete = async (mediaId: string) => {
+    try {
+      const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Nie udało się usunąć pliku');
+      }
+      setMedia((prev) => prev.filter((m) => m.id !== mediaId));
+    } catch (error) {
+      console.error('Error deleting media:', error);
+    }
+  };
 
   const handleDelete = async () => {
-    if (!confirm('Czy na pewno chcesz usunąć ten rekord?')) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await onDelete(record.id);
     } catch (error) {
       setIsDeleting(false);
+    } finally {
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -59,6 +75,16 @@ export function PersonalRecordCard({ record, onEdit, onDelete }: PersonalRecordC
         </div>
       )}
 
+      {media.length > 0 && (
+        <div className="mb-4">
+          <MediaGallery
+            media={media}
+            onDelete={handleMediaDelete}
+            canDelete={true}
+          />
+        </div>
+      )}
+
       <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
         <Button
           variant="secondary"
@@ -70,12 +96,20 @@ export function PersonalRecordCard({ record, onEdit, onDelete }: PersonalRecordC
         <Button
           variant="danger"
           size="sm"
-          onClick={handleDelete}
+          onClick={() => setIsDeleteDialogOpen(true)}
           disabled={isDeleting}
         >
-          {isDeleting ? 'Usuwanie...' : 'Usuń'}
+          Usuń
         </Button>
       </div>
+
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Usuń rekord osobisty"
+        message="Czy na pewno chcesz usunąć ten rekord osobisty? Tej operacji nie można cofnąć."
+      />
     </div>
   );
 }

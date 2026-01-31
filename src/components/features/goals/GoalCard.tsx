@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { DeleteConfirmDialog } from '@/components/features/trainings/DeleteConfirmDialog';
 
 interface Goal {
   id: string;
@@ -11,6 +12,7 @@ interface Goal {
   deadline?: string | null;
   status: string;
   achievedAt?: string | null;
+  createdAt: string;
 }
 
 interface GoalCardProps {
@@ -34,12 +36,44 @@ function getProgress(current: number | null | undefined, target: number | null |
   return Math.min(100, Math.round((currentVal / target) * 100));
 }
 
+function getTimeProgress(createdAt: string, deadline: string | null | undefined): number {
+  if (!deadline) return 0;
+
+  const now = new Date();
+  const start = new Date(createdAt);
+  const end = new Date(deadline);
+
+  const totalTime = end.getTime() - start.getTime();
+  const elapsedTime = now.getTime() - start.getTime();
+
+  if (totalTime <= 0) return 100;
+
+  const progress = (elapsedTime / totalTime) * 100;
+  return Math.min(100, Math.max(0, Math.round(progress)));
+}
+
+function getRemainingDays(deadline: string | null | undefined): number | null {
+  if (!deadline) return null;
+
+  const now = new Date();
+  const end = new Date(deadline);
+
+  const diffTime = end.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+}
+
 export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const progress = getProgress(goal.currentValue, goal.targetValue);
+  const valueProgress = getProgress(goal.currentValue, goal.targetValue);
+  const timeProgress = getTimeProgress(goal.createdAt, goal.deadline);
+  const remainingDays = getRemainingDays(goal.deadline);
   const isAchieved = goal.status === 'achieved';
   const hasTarget = goal.targetValue && goal.targetValue > 0;
+  const hasDeadline = !!goal.deadline;
 
   const handleAchieve = async () => {
     setIsLoading(true);
@@ -74,8 +108,6 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Czy na pewno chcesz usunąć ten cel?')) return;
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/goals/${goal.id}`, {
@@ -88,6 +120,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
       console.error('Error deleting goal');
     } finally {
       setIsLoading(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -119,28 +152,49 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
           )}
 
           {hasTarget && (
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-sm lg:text-base mb-1">
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-sm lg:text-base">
                 <span className="text-gray-600 dark:text-gray-400">
-                  {goal.currentValue || 0} / {goal.targetValue} {goal.unit}
+                  Postęp: {goal.currentValue || 0} / {goal.targetValue} {goal.unit}
                 </span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">{progress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full transition-all ${
-                    isAchieved ? 'bg-success-500 dark:bg-success-400' : 'bg-primary-600 dark:bg-primary-500'
-                  }`}
-                  style={{ width: `${progress}%` }}
-                />
+                <span className="font-medium text-gray-900 dark:text-gray-100">{valueProgress}%</span>
               </div>
             </div>
           )}
 
-          {goal.deadline && (
-            <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Termin: {formatDate(goal.deadline)}
-            </p>
+          {hasDeadline && (
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-sm lg:text-base mb-1">
+                <span className="text-gray-600 dark:text-gray-400">
+                  {remainingDays !== null && remainingDays > 0 && (
+                    <span>Pozostało {remainingDays} {remainingDays === 1 ? 'dzień' : remainingDays < 5 ? 'dni' : 'dni'}</span>
+                  )}
+                  {remainingDays !== null && remainingDays === 0 && (
+                    <span className="text-warning-600 dark:text-warning-400 font-medium">Ostatni dzień!</span>
+                  )}
+                  {remainingDays !== null && remainingDays < 0 && (
+                    <span className="text-error-600 dark:text-error-400 font-medium">Termin minął</span>
+                  )}
+                </span>
+                <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400">
+                  do {formatDate(goal.deadline!)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${
+                    isAchieved
+                      ? 'bg-success-500 dark:bg-success-400'
+                      : timeProgress >= 100
+                      ? 'bg-error-500 dark:bg-error-400'
+                      : timeProgress >= 75
+                      ? 'bg-warning-500 dark:bg-warning-400'
+                      : 'bg-primary-600 dark:bg-primary-500'
+                  }`}
+                  style={{ width: `${timeProgress}%` }}
+                />
+              </div>
+            </div>
           )}
 
           {goal.achievedAt && (
@@ -188,8 +242,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleDelete}
-            isLoading={isLoading}
+            onClick={() => setIsDeleteDialogOpen(true)}
             title="Usuń"
           >
             <svg className="w-4 h-4 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,6 +251,14 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
           </Button>
         </div>
       </div>
+
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Usuń cel"
+        message="Czy na pewno chcesz usunąć ten cel? Tej operacji nie można cofnąć."
+      />
     </div>
   );
 }

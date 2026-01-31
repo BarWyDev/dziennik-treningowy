@@ -9,11 +9,22 @@ import { Select } from '@/components/ui/Select';
 import { Alert } from '@/components/ui/Alert';
 import { RatingInput } from './RatingInput';
 import { DurationPicker } from './DurationPicker';
+import { MediaUpload } from '@/components/features/media/MediaUpload';
+import type { UploadedFile } from '@/lib/validations/media';
 
 interface TrainingType {
   id: string;
   name: string;
   isDefault: boolean;
+}
+
+interface MediaAttachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: 'image' | 'video';
+  mimeType: string;
+  fileSize: number;
 }
 
 interface Training {
@@ -33,6 +44,7 @@ interface Training {
   howToImprove?: string | null;
   notes?: string | null;
   caloriesBurned?: number | null;
+  media?: MediaAttachment[];
 }
 
 interface TrainingFormProps {
@@ -45,6 +57,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([]);
   const [isLoadingTypes, setIsLoadingTypes] = useState(true);
+  const [uploadedMedia, setUploadedMedia] = useState<UploadedFile[]>([]);
 
   const isEditing = !!training;
 
@@ -91,7 +104,12 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
     };
 
     fetchTrainingTypes();
-  }, []);
+
+    // Załaduj istniejące media podczas edycji
+    if (training?.media) {
+      setUploadedMedia(training.media);
+    }
+  }, [training]);
 
   const onSubmit = async (data: CreateTrainingInput) => {
     setIsLoading(true);
@@ -101,10 +119,22 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       const url = isEditing ? `/api/trainings/${training.id}` : '/api/trainings';
       const method = isEditing ? 'PUT' : 'POST';
 
+      // Dodaj mediaIds do payload
+      const payload = {
+        ...data,
+        mediaIds: uploadedMedia.map((m) => m.id),
+      };
+
+      console.log('Wysyłanie treningu z mediami:', {
+        uploadedMedia,
+        mediaIds: payload.mediaIds,
+        payload,
+      });
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -128,6 +158,19 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
     value: type.id,
     label: type.name,
   }));
+
+  const handleMediaUpload = (files: UploadedFile[]) => {
+    setUploadedMedia(files);
+  };
+
+  const handleMediaRemove = async (fileId: string) => {
+    try {
+      await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
+      setUploadedMedia((prev) => prev.filter((f) => f.id !== fileId));
+    } catch (error) {
+      console.error('Error removing media:', error);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -361,6 +404,20 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         {errors.notes && (
           <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.notes.message}</p>
         )}
+      </div>
+
+      {/* Media Upload */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <Label>Zdjęcia i filmy (opcjonalnie)</Label>
+        <div className="mt-2">
+          <MediaUpload
+            entityType="training"
+            entityId={training?.id}
+            existingMedia={uploadedMedia}
+            onUploadComplete={handleMediaUpload}
+            onRemove={handleMediaRemove}
+          />
+        </div>
       </div>
 
       <div className="flex gap-4">

@@ -5,6 +5,13 @@ import { Select } from '@/components/ui/Select';
 import { Label } from '@/components/ui/Label';
 import { Dialog } from '@/components/ui/Dialog';
 
+interface MediaAttachment {
+  id: string;
+  fileUrl: string;
+  fileType: string;
+  fileName: string;
+}
+
 interface PersonalRecord {
   id: string;
   activityName: string;
@@ -12,6 +19,7 @@ interface PersonalRecord {
   unit: string;
   date: string;
   notes?: string | null;
+  media?: MediaAttachment[];
   createdAt: Date | string;
 }
 

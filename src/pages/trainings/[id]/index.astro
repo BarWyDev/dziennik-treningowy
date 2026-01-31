@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@/layouts/AppLayout.astro';
 import { TrainingDetails } from '@/components/features/trainings/TrainingDetails';
-import { db, trainings, trainingTypes } from '@/lib/db';
+import { db, trainings, trainingTypes, mediaAttachments } from '@/lib/db';
 import { eq, and } from 'drizzle-orm';
 
 const { id } = Astro.params;
@@ -24,9 +24,16 @@ if (!result) {
   return Astro.redirect('/trainings');
 }
 
+// Pobierz media załączniki
+const media = await db
+  .select()
+  .from(mediaAttachments)
+  .where(eq(mediaAttachments.trainingId, id));
+
 const training = {
   ...result.training,
   trainingType: result.trainingType,
+  media,
 };
 ---
 

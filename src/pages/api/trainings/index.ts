@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { db, trainings, trainingTypes } from '@/lib/db';
+import { db, trainings, trainingTypes, mediaAttachments } from '@/lib/db';
 import { createTrainingSchema } from '@/lib/validations/training';
 import { auth } from '@/lib/auth';
-import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, inArray } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
@@ -48,9 +48,31 @@ export const GET: APIRoute = async ({ request, url }) => {
       .limit(limit)
       .offset(offset);
 
+    // Pobierz media dla wszystkich treningów jednym zapytaniem
+    const trainingIds = results.map((r) => r.training.id);
+    let allMedia: any[] = [];
+
+    if (trainingIds.length > 0) {
+      allMedia = await db
+        .select()
+        .from(mediaAttachments)
+        .where(inArray(mediaAttachments.trainingId, trainingIds));
+    }
+
+    // Pogrupuj media według trainingId
+    const mediaByTraining = allMedia.reduce((acc, media) => {
+      if (!media.trainingId) return acc;
+      if (!acc[media.trainingId]) {
+        acc[media.trainingId] = [];
+      }
+      acc[media.trainingId].push(media);
+      return acc;
+    }, {} as Record<string, typeof allMedia>);
+
     const data = results.map((r) => ({
       ...r.training,
       trainingType: r.trainingType,
+      media: mediaByTraining[r.training.id] || [],
     }));
 
     return new Response(JSON.stringify({ data, page, limit }), {
@@ -106,6 +128,7 @@ export const POST: APIRoute = async ({ request }) => {
       howToImprove,
       notes,
       caloriesBurned,
+      mediaIds,
     } = validation.data;
 
     const [newTraining] = await db
@@ -129,6 +152,28 @@ export const POST: APIRoute = async ({ request }) => {
         caloriesBurned,
       })
       .returning();
+
+    // Powiąż media z treningiem
+    if (mediaIds && mediaIds.length > 0) {
+      console.log('Przypisywanie mediów do treningu:', {
+        trainingId: newTraining.id,
+        mediaIds,
+        userId: session.user.id,
+      });
+
+      const updated = await db
+        .update(mediaAttachments)
+        .set({ trainingId: newTraining.id })
+        .where(
+          and(
+            inArray(mediaAttachments.id, mediaIds),
+            eq(mediaAttachments.userId, session.user.id)
+          )
+        )
+        .returning();
+
+      console.log('Zaktualizowane media:', updated);
+    }
 
     return new Response(JSON.stringify(newTraining), {
       status: 201,

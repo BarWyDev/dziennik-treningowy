@@ -7,12 +7,23 @@ export const createGoalSchema = z.object({
     .max(100, 'Tytuł może mieć maksymalnie 100 znaków'),
   description: z.string().max(500, 'Opis może mieć maksymalnie 500 znaków').optional(),
   targetValue: z.number().min(1, 'Wartość docelowa musi być większa od 0').optional(),
+  currentValue: z.number().min(0, 'Aktualny postęp nie może być ujemny').optional(),
   unit: z.string().max(20, 'Jednostka może mieć maksymalnie 20 znaków').optional(),
-  deadline: z.string().optional(),
+  deadline: z.string().optional().refine(
+    (date) => {
+      if (!date) return true;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(date);
+      selectedDate.setHours(0, 0, 0, 0);
+      return selectedDate >= today;
+    },
+    { message: 'Data deadline nie może być wcześniejsza niż dzisiaj' }
+  ),
 });
 
 export const updateGoalSchema = createGoalSchema.partial().extend({
-  currentValue: z.number().min(0).optional(),
+  currentValue: z.number().min(0, 'Aktualny postęp nie może być ujemny').optional(),
 });
 
 export type CreateGoalInput = z.infer<typeof createGoalSchema>;

@@ -84,7 +84,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { title, description, targetValue, unit, deadline } = validation.data;
+    const { title, description, targetValue, currentValue, unit, deadline } = validation.data;
 
     const [newGoal] = await db
       .insert(goals)
@@ -93,6 +93,7 @@ export const POST: APIRoute = async ({ request }) => {
         title,
         description,
         targetValue,
+        currentValue: currentValue || 0,
         unit,
         deadline,
         status: 'active',

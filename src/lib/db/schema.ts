@@ -143,6 +143,29 @@ export const personalRecords = pgTable('personal_records', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const mediaAttachments = pgTable('media_attachments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  // Polimorficzne relacje - attachment należy do jednego rodzica
+  trainingId: uuid('training_id').references(() => trainings.id, { onDelete: 'cascade' }),
+  personalRecordId: uuid('personal_record_id').references(() => personalRecords.id, {
+    onDelete: 'cascade',
+  }),
+
+  // Metadane pliku
+  fileName: text('file_name').notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileType: text('file_type').notNull(), // 'image' | 'video'
+  mimeType: text('mime_type').notNull(),
+  fileSize: integer('file_size').notNull(), // rozmiar w bajtach
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // ============================================
 // Relations
 // ============================================
@@ -154,6 +177,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   trainingTypes: many(trainingTypes),
   goals: many(goals),
   personalRecords: many(personalRecords),
+  mediaAttachments: many(mediaAttachments),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -178,7 +202,7 @@ export const trainingTypesRelations = relations(trainingTypes, ({ one, many }) =
   trainings: many(trainings),
 }));
 
-export const trainingsRelations = relations(trainings, ({ one }) => ({
+export const trainingsRelations = relations(trainings, ({ one, many }) => ({
   user: one(users, {
     fields: [trainings.userId],
     references: [users.id],
@@ -187,6 +211,7 @@ export const trainingsRelations = relations(trainings, ({ one }) => ({
     fields: [trainings.trainingTypeId],
     references: [trainingTypes.id],
   }),
+  mediaAttachments: many(mediaAttachments),
 }));
 
 export const goalsRelations = relations(goals, ({ one }) => ({
@@ -196,10 +221,26 @@ export const goalsRelations = relations(goals, ({ one }) => ({
   }),
 }));
 
-export const personalRecordsRelations = relations(personalRecords, ({ one }) => ({
+export const personalRecordsRelations = relations(personalRecords, ({ one, many }) => ({
   user: one(users, {
     fields: [personalRecords.userId],
     references: [users.id],
+  }),
+  mediaAttachments: many(mediaAttachments),
+}));
+
+export const mediaAttachmentsRelations = relations(mediaAttachments, ({ one }) => ({
+  user: one(users, {
+    fields: [mediaAttachments.userId],
+    references: [users.id],
+  }),
+  training: one(trainings, {
+    fields: [mediaAttachments.trainingId],
+    references: [trainings.id],
+  }),
+  personalRecord: one(personalRecords, {
+    fields: [mediaAttachments.personalRecordId],
+    references: [personalRecords.id],
   }),
 }));
 
@@ -227,3 +268,6 @@ export type NewGoal = typeof goals.$inferInsert;
 
 export type PersonalRecord = typeof personalRecords.$inferSelect;
 export type NewPersonalRecord = typeof personalRecords.$inferInsert;
+
+export type MediaAttachment = typeof mediaAttachments.$inferSelect;
+export type NewMediaAttachment = typeof mediaAttachments.$inferInsert;

@@ -32,23 +32,42 @@ export function createPDF(): jsPDF {
   return doc;
 }
 
+// Generate star rating visualization with circles (dots)
+export function generateStarRating(rating: number): string {
+  // Using filled circles for rated and small circles for unrated
+  const filled = '\u2022'; // • (bullet point)
+  const empty = '\u00B7'; // · (middle dot - smaller)
+
+  let result = '';
+  for (let i = 0; i < 5; i++) {
+    if (i > 0) result += ' '; // Add space between dots
+    result += i < rating ? filled : empty;
+  }
+  return result;
+}
+
+// Yellow/gold color for rating indicators (matching UI yellow-500)
+export const STAR_COLOR = [234, 179, 8] as const; // yellow-500
+
 export function addHeader(doc: jsPDF, title: string, subtitle?: string): number {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Title
-  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
   doc.setTextColor(37, 99, 235); // primary-600
   doc.text(sanitizePolishText(title), pageWidth / 2, 20, { align: 'center' });
 
   // Subtitle
   if (subtitle) {
-    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(13);
     doc.setTextColor(107, 114, 128); // gray-500
-    doc.text(sanitizePolishText(subtitle), pageWidth / 2, 28, { align: 'center' });
-    return 40;
+    doc.text(sanitizePolishText(subtitle), pageWidth / 2, 30, { align: 'center' });
+    return 42;
   }
 
-  return 32;
+  return 34;
 }
 
 export function addFooter(doc: jsPDF): void {
@@ -58,7 +77,8 @@ export function addFooter(doc: jsPDF): void {
 
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
     doc.setTextColor(156, 163, 175); // gray-400
 
     // Page number

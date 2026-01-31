@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { mediaIdsSchema } from './media';
 
 export const createTrainingSchema = z.object({
   trainingTypeId: z.string().uuid('Wybierz typ treningu'),
@@ -65,6 +66,9 @@ export const createTrainingSchema = z.object({
     .optional()
     .or(z.nan())
     .transform((val) => (isNaN(val as number) ? undefined : val)),
+
+  // Media attachments
+  mediaIds: mediaIdsSchema,
 });
 
 export const updateTrainingSchema = createTrainingSchema.partial();

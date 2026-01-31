@@ -14,11 +14,11 @@ export function WelcomeMessage({ userName }: WelcomeMessageProps) {
   const firstName = userName.split(' ')[0];
 
   return (
-    <div>
-      <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100">
+    <div className="mb-1">
+      <h1 className="text-2xl lg:text-3xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100">
         {greeting}, {firstName}!
       </h1>
-      <p className="text-gray-600 dark:text-gray-400 mt-1 text-base lg:text-lg">
+      <p className="text-gray-600 dark:text-gray-400 mt-0.5 text-sm lg:text-base xl:text-base">
         Sprawdź swoje postępy i zaplanuj kolejny trening.
       </p>
     </div>

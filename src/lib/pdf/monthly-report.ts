@@ -1,4 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText } from './common';
+import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR } from './common';
 import autoTable from 'jspdf-autotable';
 
 interface TrainingType {
@@ -63,11 +63,11 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
     {} as Record<string, { count: number; duration: number }>
   );
 
-  doc.setFontSize(14);
-  doc.setFont('times', 'bold');
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
   doc.setTextColor(31, 41, 55);
   doc.text(sanitizePolishText('Podsumowanie'), 14, yPos);
-  yPos += 8;
+  yPos += 10;
 
   const summaryData = [
     ['Liczba treningow', trainings.length.toString()],
@@ -85,12 +85,12 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
     body: summaryData,
     theme: 'striped',
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 60 },
+      0: { fontStyle: 'bold', cellWidth: 65 },
       1: { cellWidth: 'auto' },
     },
     styles: {
-      fontSize: 10,
-      cellPadding: 3,
+      fontSize: 11,
+      cellPadding: 4,
     },
     margin: { left: 14, right: 14 },
   });
@@ -99,10 +99,10 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
 
   // Training types breakdown
   if (Object.keys(typeBreakdown).length > 0) {
-    doc.setFontSize(14);
-    doc.setFont('times', 'bold');
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
     doc.text(sanitizePolishText('Podzial wg typu treningu'), 14, yPos);
-    yPos += 8;
+    yPos += 10;
 
     const typeData = Object.entries(typeBreakdown)
       .sort((a, b) => b[1].count - a[1].count)
@@ -117,10 +117,11 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
         fillColor: [37, 99, 235],
         textColor: 255,
         fontStyle: 'bold',
+        fontSize: 11,
       },
       styles: {
-        fontSize: 10,
-        cellPadding: 3,
+        fontSize: 11,
+        cellPadding: 4,
       },
       margin: { left: 14, right: 14 },
     });
@@ -130,10 +131,10 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
 
   // Trainings table
   if (trainings.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont('times', 'bold');
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
     doc.text(sanitizePolishText('Lista treningow'), 14, yPos);
-    yPos += 8;
+    yPos += 10;
 
     const tableData = trainings.map((t) => [
       new Date(t.date).toLocaleDateString('pl-PL', {
@@ -142,7 +143,7 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
       }),
       sanitizePolishText(t.trainingType?.name || 'Trening'),
       formatDuration(t.durationMinutes),
-      `${t.ratingOverall}/5`,
+      generateStarRating(t.ratingOverall),
       t.caloriesBurned ? `${t.caloriesBurned}` : '-',
     ]);
 
@@ -155,23 +156,24 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
         fillColor: [37, 99, 235],
         textColor: 255,
         fontStyle: 'bold',
+        fontSize: 11,
       },
       styles: {
-        fontSize: 9,
-        cellPadding: 3,
+        fontSize: 10,
+        cellPadding: 4,
       },
       columnStyles: {
         0: { cellWidth: 30 },
         1: { cellWidth: 50 },
         2: { cellWidth: 30 },
-        3: { cellWidth: 20 },
+        3: { cellWidth: 35, textColor: STAR_COLOR, fontSize: 13 },
         4: { cellWidth: 25 },
       },
       margin: { left: 14, right: 14 },
     });
   } else {
     doc.setFontSize(11);
-    doc.setFont('times', 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(107, 114, 128);
     doc.text(sanitizePolishText('Brak treningow w tym miesiacu.'), 14, yPos);
   }

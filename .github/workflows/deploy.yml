@@ -1,0 +1,119 @@
+name: Deploy to Mikrus
+
+on:
+  # Automatyczny deploy przy push do main
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.ai/**'
+      - 'DEPLOYMENT.md'
+
+  # Możliwość manualnego uruchomienia
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout kodu
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 3. Setup Node.js z cache
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      # 4. Instalacja dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 5. Build aplikacji (na runner z 7 GB RAM!)
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      # 6. Weryfikacja buildu
+      - name: Verify build
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed - dist/ directory not found"
+            exit 1
+          fi
+          echo "✅ Build successful"
+          echo "📦 Build size:"
+          du -sh dist/
+
+      # 7. Deploy do Mikrus przez SCP
+      - name: Deploy to Mikrus via SCP
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.MIKRUS_SSH_KEY }}
+          SSH_HOST: ${{ secrets.MIKRUS_HOST }}
+          SSH_USER: ${{ secrets.MIKRUS_USER }}
+          SSH_PORT: ${{ secrets.MIKRUS_PORT }}
+        run: |
+          # Przygotuj SSH key
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Dodaj host do known_hosts (unikaj prompt)
+          ssh-keyscan -p ${SSH_PORT:-22} -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
+
+          echo "📤 Uploading dist/ to Mikrus..."
+
+          # Backup starego dist/ na serwerze (safety)
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd ~/apps/dziennik-treningowy && [ -d dist ] && cp -r dist dist.backup.$(date +%Y%m%d_%H%M%S) || true"
+
+          # Upload nowego dist/
+          scp -P ${SSH_PORT:-22} -r dist/ $SSH_USER@$SSH_HOST:~/apps/dziennik-treningowy/
+
+          echo "✅ Upload complete"
+
+      # 8. Restart aplikacji przez PM2
+      - name: Restart application
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.MIKRUS_SSH_KEY }}
+          SSH_HOST: ${{ secrets.MIKRUS_HOST }}
+          SSH_USER: ${{ secrets.MIKRUS_USER }}
+          SSH_PORT: ${{ secrets.MIKRUS_PORT }}
+        run: |
+          echo "🔄 Restarting PM2 application..."
+
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd ~/apps/dziennik-treningowy && pm2 restart dziennik-treningowy"
+
+          echo "✅ Application restarted"
+
+      # 9. Healthcheck
+      - name: Healthcheck
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          echo "🏥 Checking if application is running..."
+          sleep 5  # Poczekaj 5 sekund na restart
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${APP_URL:-http://trening.byst.re} || echo "000")
+
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "301" ] || [ "$HTTP_STATUS" = "302" ]; then
+            echo "✅ Application is UP (HTTP $HTTP_STATUS)"
+          else
+            echo "⚠️ Application returned HTTP $HTTP_STATUS"
+            echo "⚠️ Check PM2 logs: ssh $SSH_USER@$SSH_HOST 'pm2 logs dziennik-treningowy --lines 50'"
+          fi
+
+      # 10. Cleanup SSH key
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/id_rsa

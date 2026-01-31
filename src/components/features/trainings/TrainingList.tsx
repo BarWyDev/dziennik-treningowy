@@ -10,6 +10,13 @@ interface TrainingType {
   icon?: string | null;
 }
 
+interface MediaAttachment {
+  id: string;
+  fileUrl: string;
+  fileType: string;
+  fileName: string;
+}
+
 interface Training {
   id: string;
   date: string;
@@ -18,6 +25,7 @@ interface Training {
   rating?: number | null;
   caloriesBurned?: number | null;
   trainingType?: TrainingType | null;
+  media?: MediaAttachment[];
 }
 
 interface Filters {

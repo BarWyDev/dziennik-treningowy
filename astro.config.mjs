@@ -15,7 +15,19 @@ export default defineConfig({
   }),
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    build: {
+      // Wyklucz uploadowane pliki z build
+      rollupOptions: {
+        external: [],
+      },
+    },
+    server: {
+      watch: {
+        // Ignoruj zmiany w folderze uploads
+        ignored: ['**/public/uploads/**']
+      }
+    }
   },
 
   // Disable Astro Dev Toolbar

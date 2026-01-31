@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, trainings, trainingTypes, goals } from '@/lib/db';
+import { db, trainings, trainingTypes, goals, mediaAttachments } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { eq, and, gte, lte, desc, sql, count } from 'drizzle-orm';
 
@@ -41,10 +41,21 @@ export const GET: APIRoute = async ({ request }) => {
       .orderBy(desc(trainings.date), desc(trainings.createdAt))
       .limit(5);
 
-    const recentTrainings = recentTrainingsData.map((r) => ({
-      ...r.training,
-      trainingType: r.trainingType,
-    }));
+    // Fetch media for each recent training
+    const recentTrainings = await Promise.all(
+      recentTrainingsData.map(async (r) => {
+        const media = await db
+          .select()
+          .from(mediaAttachments)
+          .where(eq(mediaAttachments.trainingId, r.training.id));
+
+        return {
+          ...r.training,
+          trainingType: r.trainingType,
+          media,
+        };
+      })
+    );
 
     // Week summary
     const weekTrainings = await db

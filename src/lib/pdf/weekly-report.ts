@@ -1,4 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDateRange, formatDuration, sanitizePolishText } from './common';
+import { createPDF, addHeader, addFooter, formatDateRange, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR } from './common';
 import autoTable from 'jspdf-autotable';
 
 interface TrainingType {
@@ -47,11 +47,11 @@ export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyRe
     ? energyRatings.reduce((acc, t) => acc + (t.ratingEnergy || 0), 0) / energyRatings.length
     : 0;
 
-  doc.setFontSize(14);
-  doc.setFont('times', 'bold');
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
   doc.setTextColor(31, 41, 55);
   doc.text(sanitizePolishText('Podsumowanie'), 14, yPos);
-  yPos += 8;
+  yPos += 10;
 
   const summaryData = [
     ['Liczba treningow', trainings.length.toString()],
@@ -71,12 +71,12 @@ export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyRe
       fillColor: [37, 99, 235],
     },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 50 },
+      0: { fontStyle: 'bold', cellWidth: 55 },
       1: { cellWidth: 'auto' },
     },
     styles: {
-      fontSize: 10,
-      cellPadding: 3,
+      fontSize: 11,
+      cellPadding: 4,
     },
     margin: { left: 14, right: 14 },
   });
@@ -85,10 +85,10 @@ export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyRe
 
   // Trainings table
   if (trainings.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont('times', 'bold');
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
     doc.text(sanitizePolishText('Lista treningow'), 14, yPos);
-    yPos += 8;
+    yPos += 10;
 
     const tableData = trainings.map((t) => [
       new Date(t.date).toLocaleDateString('pl-PL', {
@@ -97,7 +97,7 @@ export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyRe
       }),
       sanitizePolishText(t.trainingType?.name || 'Trening'),
       formatDuration(t.durationMinutes),
-      `${t.ratingOverall}/5`,
+      generateStarRating(t.ratingOverall),
       t.caloriesBurned ? `${t.caloriesBurned}` : '-',
     ]);
 
@@ -110,23 +110,24 @@ export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyRe
         fillColor: [37, 99, 235],
         textColor: 255,
         fontStyle: 'bold',
+        fontSize: 11,
       },
       styles: {
-        fontSize: 9,
-        cellPadding: 3,
+        fontSize: 10,
+        cellPadding: 4,
       },
       columnStyles: {
         0: { cellWidth: 30 },
         1: { cellWidth: 50 },
         2: { cellWidth: 30 },
-        3: { cellWidth: 20 },
+        3: { cellWidth: 35, textColor: STAR_COLOR, fontSize: 13 },
         4: { cellWidth: 25 },
       },
       margin: { left: 14, right: 14 },
     });
   } else {
     doc.setFontSize(11);
-    doc.setFont('times', 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(107, 114, 128);
     doc.text(sanitizePolishText('Brak treningow w tym tygodniu.'), 14, yPos);
   }

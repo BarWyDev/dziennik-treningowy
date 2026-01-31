@@ -22,3 +22,13 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# SSH keys (GitHub Actions)
+github-actions-mikrus
+github-actions-mikrus.pub
+*.pem
+*.key
+
+# User uploads (keep .gitkeep for directory structure)
+public/uploads/*
+!public/uploads/.gitkeep

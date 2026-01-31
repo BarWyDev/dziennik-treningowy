@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
-import { db, personalRecords } from '@/lib/db';
+import { db, personalRecords, mediaAttachments } from '@/lib/db';
 import { updatePersonalRecordSchema } from '@/lib/validations/personal-record';
 import { auth } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
+import { storage } from '@/lib/storage';
 
 export const GET: APIRoute = async ({ request, params }) => {
   try {
@@ -36,7 +37,18 @@ export const GET: APIRoute = async ({ request, params }) => {
       });
     }
 
-    return new Response(JSON.stringify(record), {
+    // Pobierz media załączniki
+    const media = await db
+      .select()
+      .from(mediaAttachments)
+      .where(eq(mediaAttachments.personalRecordId, id));
+
+    const data = {
+      ...record,
+      media,
+    };
+
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -94,14 +106,32 @@ export const PUT: APIRoute = async ({ request, params }) => {
       });
     }
 
+    const { mediaIds, ...recordData } = validation.data;
+
     const [updated] = await db
       .update(personalRecords)
       .set({
-        ...validation.data,
+        ...recordData,
         updatedAt: new Date(),
       })
       .where(eq(personalRecords.id, id))
       .returning();
+
+    // Aktualizuj powiązania z media
+    if (mediaIds !== undefined) {
+      if (mediaIds && mediaIds.length > 0) {
+        // Powiąż nowe media
+        await db
+          .update(mediaAttachments)
+          .set({ personalRecordId: id })
+          .where(
+            and(
+              inArray(mediaAttachments.id, mediaIds),
+              eq(mediaAttachments.userId, session.user.id)
+            )
+          );
+      }
+    }
 
     return new Response(JSON.stringify(updated), {
       status: 200,
@@ -148,6 +178,23 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       });
     }
 
+    // Pobierz wszystkie media załączniki przed usunięciem
+    const media = await db
+      .select()
+      .from(mediaAttachments)
+      .where(eq(mediaAttachments.personalRecordId, id));
+
+    // Usuń fizyczne pliki
+    for (const m of media) {
+      try {
+        await storage.deleteFile(m.fileUrl);
+      } catch (error) {
+        console.error(`Error deleting file ${m.fileUrl}:`, error);
+        // Kontynuuj mimo błędu
+      }
+    }
+
+    // Usuń rekord (ON DELETE CASCADE usunie wpisy z media_attachments)
     await db.delete(personalRecords).where(eq(personalRecords.id, id));
 
     return new Response(JSON.stringify({ success: true }), {

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { mediaIdsSchema } from './media';
 
 export const createPersonalRecordSchema = z.object({
   activityName: z
@@ -19,6 +20,9 @@ export const createPersonalRecordSchema = z.object({
     .max(20, 'Jednostka nie może być dłuższa niż 20 znaków'),
   date: z.string().min(1, 'Data jest wymagana'),
   notes: z.string().max(500, 'Notatki nie mogą być dłuższe niż 500 znaków').optional(),
+
+  // Media attachments
+  mediaIds: mediaIdsSchema,
 });
 
 export const updatePersonalRecordSchema = createPersonalRecordSchema.partial();
