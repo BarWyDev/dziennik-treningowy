@@ -9,6 +9,7 @@ import {
   handleValidationError,
   createNotFoundError,
 } from '@/lib/error-handler';
+import { cache, cacheKeys } from '@/lib/cache';
 
 export const PUT: APIRoute = async ({ request, params }) => {
   try {
@@ -59,6 +60,9 @@ export const PUT: APIRoute = async ({ request, params }) => {
       .where(eq(trainingTypes.id, id))
       .returning();
 
+    // Invalidate cache dla tego użytkownika (wszystkie strony)
+    cache.deleteByPattern(cacheKeys.trainingTypesPrefix(authResult.user.id));
+
     return new Response(JSON.stringify(updated), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -105,6 +109,9 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     }
 
     await db.delete(trainingTypes).where(eq(trainingTypes.id, id));
+
+    // Invalidate cache dla tego użytkownika (wszystkie strony)
+    cache.deleteByPattern(cacheKeys.trainingTypesPrefix(authResult.user.id));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

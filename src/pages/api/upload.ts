@@ -3,13 +3,6 @@ import { db } from '@/lib/db';
 import { mediaAttachments } from '@/lib/db/schema';
 import { storage } from '@/lib/storage';
 import {
-  ALLOWED_IMAGE_TYPES,
-  ALLOWED_VIDEO_TYPES,
-  MAX_FILE_SIZE,
-  validateFileType as getFileType,
-  validateFileSize,
-} from '@/lib/validations/media';
-import {
   checkRateLimit,
   getRateLimitIdentifier,
   RateLimitPresets,
@@ -19,8 +12,13 @@ import {
   handleDatabaseError,
   createErrorResponse,
   ErrorCode,
-  createUnauthorizedError,
 } from '@/lib/error-handler';
+import {
+  validateUploadFile,
+  validateEntityType,
+  verifyEntityOwnership,
+} from '@/lib/upload-helpers';
+import { validateFileType as getFileType } from '@/lib/validations/media';
 
 /**
  * POST /api/upload
@@ -57,79 +55,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const entityType = formData.get('entityType') as 'training' | 'personal-record';
     const entityId = formData.get('entityId') as string | null;
 
-    // Walidacja podstawowa
-    if (!file) {
-      return new Response(JSON.stringify({ error: 'Brak pliku' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Walidacja pliku
+    const fileValidationError = await validateUploadFile(file);
+    if (fileValidationError) {
+      return fileValidationError;
     }
 
-    if (!entityType || !['training', 'personal-record'].includes(entityType)) {
-      return new Response(JSON.stringify({ error: 'Nieprawidłowy typ encji' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Walidacja typu pliku
-    const fileType = getFileType(file);
-    if (!fileType) {
-      return new Response(
-        JSON.stringify({
-          error: 'Nieprawidłowy typ pliku. Dozwolone: JPG, PNG, WebP, HEIC, MP4, MOV, WebM',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Walidacja rozmiaru
-    if (!validateFileSize(file)) {
-      return new Response(JSON.stringify({ error: 'Plik przekracza limit 50MB' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Walidacja typu encji
+    const entityTypeValidationError = validateEntityType(entityType);
+    if (entityTypeValidationError) {
+      return entityTypeValidationError;
     }
 
     // Jeśli entityId podane, sprawdź czy istnieje i należy do użytkownika
     if (entityId) {
-      if (entityType === 'training') {
-        const { trainings } = await import('@/lib/db/schema');
-        const { eq, and } = await import('drizzle-orm');
-
-        const [training] = await db
-          .select()
-          .from(trainings)
-          .where(and(eq(trainings.id, entityId), eq(trainings.userId, user.id)))
-          .limit(1);
-
-        if (!training) {
-          return new Response(JSON.stringify({ error: 'Trening nie znaleziony' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-      } else {
-        const { personalRecords } = await import('@/lib/db/schema');
-        const { eq, and } = await import('drizzle-orm');
-
-        const [record] = await db
-          .select()
-          .from(personalRecords)
-          .where(and(eq(personalRecords.id, entityId), eq(personalRecords.userId, user.id)))
-          .limit(1);
-
-        if (!record) {
-          return new Response(JSON.stringify({ error: 'Rekord nie znaleziony' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+      const ownershipError = await verifyEntityOwnership(entityType, entityId, user.id);
+      if (ownershipError) {
+        return ownershipError;
       }
     }
+
+    // Pobierz typ pliku (już zwalidowany w validateUploadFile)
+    const fileType = getFileType(file!);
 
     // Generuj ścieżkę do pliku
     // Użyj tymczasowego ID jeśli entityId nie podane (dla nowych encji)

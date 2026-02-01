@@ -4,6 +4,20 @@ import { db } from './db';
 import * as schema from './db/schema';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email';
 
+// Stałe czasu dla sesji (w sekundach)
+const SESSION_EXPIRY_DAYS = 7;
+const SESSION_UPDATE_AGE_DAYS = 1;
+const COOKIE_CACHE_MINUTES = 5;
+
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
+// Konwersja do sekund
+const SESSION_EXPIRY_SECONDS = SESSION_EXPIRY_DAYS * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
+const SESSION_UPDATE_AGE_SECONDS = SESSION_UPDATE_AGE_DAYS * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
+const COOKIE_CACHE_SECONDS = COOKIE_CACHE_MINUTES * SECONDS_PER_MINUTE;
+
 // Przygotuj trusted origins - dodaj wszystkie możliwe warianty URL
 const getTrustedOrigins = (): string[] => {
   const baseUrl = import.meta.env.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL || 'http://localhost:4321';
@@ -46,11 +60,11 @@ export const auth = betterAuth({
     sendOnSignUp: true,
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    expiresIn: SESSION_EXPIRY_SECONDS,
+    updateAge: SESSION_UPDATE_AGE_SECONDS,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5, // 5 minutes
+      maxAge: COOKIE_CACHE_SECONDS,
     },
   },
   trustedOrigins: getTrustedOrigins(),

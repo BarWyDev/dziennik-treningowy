@@ -8,6 +8,7 @@ import {
   MAX_FILE_SIZE,
   MAX_IMAGES_PER_ENTITY,
   MAX_VIDEOS_PER_ENTITY,
+  MAX_FILES_PER_UPLOAD,
   type UploadedFile,
 } from '@/lib/validations/media';
 import { formatFileSize } from '@/lib/utils/file';
@@ -100,6 +101,12 @@ export function MediaUpload({
       setError(null);
 
       const filesArray = Array.from(files);
+
+      // Sprawdź limit liczby plików jednocześnie
+      if (filesArray.length > MAX_FILES_PER_UPLOAD) {
+        setError(`Możesz przesłać maksymalnie ${MAX_FILES_PER_UPLOAD} plików jednocześnie`);
+        return;
+      }
 
       // Walidacja wszystkich plików PRZED rozpoczęciem uploadu
       const validationErrors: string[] = [];

@@ -127,41 +127,46 @@ export const POST: APIRoute = async ({ request }) => {
       mediaIds,
     } = validation.data;
 
-    const [newTraining] = await db
-      .insert(trainings)
-      .values({
-        userId: authResult.user.id,
-        trainingTypeId,
-        date,
-        time,
-        durationMinutes,
-        ratingOverall,
-        ratingPhysical,
-        ratingEnergy,
-        ratingMotivation,
-        ratingDifficulty,
-        trainingGoal,
-        mostSatisfiedWith,
-        improveNextTime,
-        howToImprove,
-        notes,
-        caloriesBurned,
-      })
-      .returning();
-
-    // Powiąż media z treningiem
-    if (mediaIds && mediaIds.length > 0) {
-      await db
-        .update(mediaAttachments)
-        .set({ trainingId: newTraining.id })
-        .where(
-          and(
-            inArray(mediaAttachments.id, mediaIds),
-            eq(mediaAttachments.userId, authResult.user.id)
-          )
-        )
+    // Użyj transakcji aby zapewnić atomiczność operacji
+    const newTraining = await db.transaction(async (tx) => {
+      const [training] = await tx
+        .insert(trainings)
+        .values({
+          userId: authResult.user.id,
+          trainingTypeId,
+          date,
+          time,
+          durationMinutes,
+          ratingOverall,
+          ratingPhysical,
+          ratingEnergy,
+          ratingMotivation,
+          ratingDifficulty,
+          trainingGoal,
+          mostSatisfiedWith,
+          improveNextTime,
+          howToImprove,
+          notes,
+          caloriesBurned,
+        })
         .returning();
-    }
+
+      // Powiąż media z treningiem w tej samej transakcji
+      if (mediaIds && mediaIds.length > 0) {
+        await tx
+          .update(mediaAttachments)
+          .set({ trainingId: training.id })
+          .where(
+            and(
+              inArray(mediaAttachments.id, mediaIds),
+              eq(mediaAttachments.userId, authResult.user.id)
+            )
+          )
+          .returning();
+      }
+
+      return training;
+    });
 
     return new Response(JSON.stringify(newTraining), {
       status: 201,

@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select } from '@/components/ui/Select';
 import { Alert } from '@/components/ui/Alert';
-import { RatingInput } from './RatingInput';
 import { DurationPicker } from './DurationPicker';
+import { RatingsSection } from './RatingsSection';
+import { ReflectionFields } from './ReflectionFields';
+import { useTrainingTypes } from './useTrainingTypes';
 import { MediaUpload } from '@/components/features/media/MediaUpload';
 import type { UploadedFile } from '@/lib/validations/media';
 
@@ -55,9 +57,8 @@ interface TrainingFormProps {
 export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([]);
-  const [isLoadingTypes, setIsLoadingTypes] = useState(true);
   const [uploadedMedia, setUploadedMedia] = useState<UploadedFile[]>([]);
+  const { trainingTypes, isLoading: isLoadingTypes } = useTrainingTypes();
 
   const isEditing = !!training;
 
@@ -89,22 +90,6 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   });
 
   useEffect(() => {
-    const fetchTrainingTypes = async () => {
-      try {
-        const response = await fetch('/api/training-types');
-        if (response.ok) {
-          const data = await response.json();
-          setTrainingTypes(data);
-        }
-      } catch {
-        console.error('Error fetching training types');
-      } finally {
-        setIsLoadingTypes(false);
-      }
-    };
-
-    fetchTrainingTypes();
-
     // Załaduj istniejące media podczas edycji
     if (training?.media) {
       setUploadedMedia(training.media);
@@ -244,131 +229,10 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       </div>
 
       {/* Multi-category Ratings */}
-      <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-        <h3 className="font-medium text-base lg:text-lg text-gray-900 dark:text-gray-100">Oceny (skala 1-5)</h3>
-
-        <div>
-          <Label required>Ogólne zadowolenie</Label>
-          <Controller
-            name="ratingOverall"
-            control={control}
-            render={({ field }) => (
-              <RatingInput
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.ratingOverall?.message}
-              />
-            )}
-          />
-        </div>
-
-        <div>
-          <Label>Samopoczucie fizyczne (opcjonalnie)</Label>
-          <Controller
-            name="ratingPhysical"
-            control={control}
-            render={({ field }) => (
-              <RatingInput
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.ratingPhysical?.message}
-              />
-            )}
-          />
-        </div>
-
-        <div>
-          <Label>Poziom energii (opcjonalnie)</Label>
-          <Controller
-            name="ratingEnergy"
-            control={control}
-            render={({ field }) => (
-              <RatingInput
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.ratingEnergy?.message}
-              />
-            )}
-          />
-        </div>
-
-        <div>
-          <Label>Motywacja (opcjonalnie)</Label>
-          <Controller
-            name="ratingMotivation"
-            control={control}
-            render={({ field }) => (
-              <RatingInput
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.ratingMotivation?.message}
-              />
-            )}
-          />
-        </div>
-
-        <div>
-          <Label>Trudność treningu (opcjonalnie)</Label>
-          <Controller
-            name="ratingDifficulty"
-            control={control}
-            render={({ field }) => (
-              <RatingInput
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.ratingDifficulty?.message}
-              />
-            )}
-          />
-        </div>
-      </div>
+      <RatingsSection control={control} errors={errors} />
 
       {/* Reflection Fields */}
-      <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-        <h3 className="font-medium text-base lg:text-lg text-gray-900 dark:text-gray-100">Refleksja po treningu</h3>
-
-        <div>
-          <Label htmlFor="mostSatisfiedWith">Z czego jestem najbardziej zadowolony?</Label>
-          <textarea
-            id="mostSatisfiedWith"
-            rows={2}
-            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            placeholder="Co poszło najlepiej?"
-            {...register('mostSatisfiedWith')}
-          />
-          {errors.mostSatisfiedWith && (
-            <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.mostSatisfiedWith.message}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="improveNextTime">Co następnym razem chcę zrobić lepiej?</Label>
-          <textarea
-            id="improveNextTime"
-            rows={2}
-            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            placeholder="Nad czym chcesz popracować?"
-            {...register('improveNextTime')}
-          />
-          {errors.improveNextTime && (
-            <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.improveNextTime.message}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="howToImprove">Jak mogę to zrobić?</Label>
-          <textarea
-            id="howToImprove"
-            rows={2}
-            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            placeholder="Konkretne kroki do poprawy..."
-            {...register('howToImprove')}
-          />
-          {errors.howToImprove && (
-            <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.howToImprove.message}</p>
-          )}
-        </div>
-      </div>
+      <ReflectionFields register={register} errors={errors} />
 
       {/* Other Fields */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">

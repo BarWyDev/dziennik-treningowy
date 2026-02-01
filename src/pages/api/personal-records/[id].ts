@@ -95,30 +95,35 @@ export const PUT: APIRoute = async ({ request, params }) => {
 
     const { mediaIds, ...recordData } = validation.data;
 
-    const [updated] = await db
-      .update(personalRecords)
-      .set({
-        ...recordData,
-        updatedAt: new Date(),
-      })
-      .where(eq(personalRecords.id, id))
-      .returning();
+    // Użyj transakcji aby zapewnić atomiczność operacji
+    const updated = await db.transaction(async (tx) => {
+      const [record] = await tx
+        .update(personalRecords)
+        .set({
+          ...recordData,
+          updatedAt: new Date(),
+        })
+        .where(eq(personalRecords.id, id))
+        .returning();
 
-    // Aktualizuj powiązania z media
-    if (mediaIds !== undefined) {
-      if (mediaIds && mediaIds.length > 0) {
-        // Powiąż nowe media
-        await db
-          .update(mediaAttachments)
-          .set({ personalRecordId: id })
-          .where(
-            and(
-              inArray(mediaAttachments.id, mediaIds),
-              eq(mediaAttachments.userId, authResult.user.id)
-            )
-          );
+      // Aktualizuj powiązania z media w tej samej transakcji
+      if (mediaIds !== undefined) {
+        if (mediaIds && mediaIds.length > 0) {
+          // Powiąż nowe media
+          await tx
+            .update(mediaAttachments)
+            .set({ personalRecordId: id })
+            .where(
+              and(
+                inArray(mediaAttachments.id, mediaIds),
+                eq(mediaAttachments.userId, authResult.user.id)
+              )
+            );
+        }
       }
-    }
+
+      return record;
+    });
 
     return new Response(JSON.stringify(updated), {
       status: 200,
@@ -164,18 +169,23 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       .from(mediaAttachments)
       .where(eq(mediaAttachments.personalRecordId, id));
 
-    // Usuń fizyczne pliki
+    // Usuń rekord w transakcji (ON DELETE CASCADE usunie wpisy z media_attachments)
+    // Transakcja zapewnia atomiczność operacji na bazie danych
+    await db.transaction(async (tx) => {
+      await tx.delete(personalRecords).where(eq(personalRecords.id, id));
+    });
+
+    // Usuń fizyczne pliki po pomyślnym usunięciu z bazy
+    // Jeśli usunięcie plików się nie powiedzie, logujemy błąd ale nie rollbackujemy transakcji
+    // (pliki można wyczyścić później przez maintenance script)
     for (const m of media) {
       try {
         await storage.deleteFile(m.fileUrl);
       } catch (error) {
         console.error(`Error deleting file ${m.fileUrl}:`, error);
-        // Kontynuuj mimo błędu
+        // Kontynuuj mimo błędu - baza danych jest już spójna
       }
     }
-
-    // Usuń rekord (ON DELETE CASCADE usunie wpisy z media_attachments)
-    await db.delete(personalRecords).where(eq(personalRecords.id, id));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

@@ -33,12 +33,17 @@ test.describe('Treningi - Flow', () => {
 });
 
 // Testy wymagające zalogowanego użytkownika
-// Odkomentuej po skonfigurowaniu fixture autoryzacji
+// Odkomentuj po skonfigurowaniu fixture autoryzacji
+// Aby zaimplementować autoryzację w testach:
+// 1. Utwórz helper function do logowania (np. w tests/helpers/auth.ts)
+// 2. Dodaj fixture w playwright.config.ts
+// 3. Użyj fixture w beforeEach: await loginAsTestUser(page)
 
 /*
 test.describe('Treningi - Zalogowany użytkownik', () => {
   test.beforeEach(async ({ page }) => {
-    // TODO: Zaloguj testowego użytkownika
+    // Zaloguj testowego użytkownika przed każdym testem
+    // await loginAsTestUser(page);
   });
 
   test.describe('Lista treningów', () => {

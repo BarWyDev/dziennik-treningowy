@@ -15,6 +15,7 @@ export const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'
 export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB w bajtach
 export const MAX_IMAGES_PER_ENTITY = 5;
 export const MAX_VIDEOS_PER_ENTITY = 1;
+export const MAX_FILES_PER_UPLOAD = 10; // Maksymalna liczba plików jednocześnie
 
 // Walidacja pojedynczego pliku na poziomie serwera
 export const fileUploadSchema = z.object({

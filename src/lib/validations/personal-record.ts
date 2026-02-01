@@ -39,12 +39,26 @@ export const personalRecordsQuerySchema = z.object({
       errorMap: () => ({ message: 'sortOrder musi być: asc lub desc' }),
     })
     .default('desc'),
+  page: z
+    .string()
+    .regex(/^\d+$/, 'Strona musi być liczbą')
+    .optional()
+    .transform((val) => parseInt(val || '1', 10))
+    .pipe(z.number().min(1, 'Strona musi być większa od 0')),
+  limit: z
+    .string()
+    .regex(/^\d+$/, 'Limit musi być liczbą')
+    .optional()
+    .transform((val) => parseInt(val || '20', 10))
+    .pipe(z.number().min(1, 'Limit musi być większy od 0').max(100, 'Limit nie może przekraczać 100')),
 });
 
 // Schemat dla przetworzonych danych
 export const personalRecordsFiltersSchema = z.object({
   sortBy: z.enum(['date', 'activityName', 'result', 'createdAt']).default('date'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(20),
 });
 
 export type CreatePersonalRecordInput = z.infer<typeof createPersonalRecordSchema>;

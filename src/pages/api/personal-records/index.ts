@@ -8,7 +8,7 @@ import {
   handleDatabaseError,
   handleValidationError,
 } from '@/lib/error-handler';
-import { parseQueryParams } from '@/lib/validations/query-params';
+import { parseQueryParamsWithDefaults } from '@/lib/validations/query-params';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
@@ -19,12 +19,13 @@ export const GET: APIRoute = async ({ request, url }) => {
     }
 
     // Walidacja query params
-    const queryValidation = parseQueryParams(url.searchParams, personalRecordsQuerySchema);
+    const queryValidation = parseQueryParamsWithDefaults(url.searchParams, personalRecordsQuerySchema);
     if (!queryValidation.success) {
       return queryValidation.response;
     }
 
-    const { sortBy, sortOrder } = queryValidation.data;
+    const { sortBy, sortOrder, page, limit } = queryValidation.data;
+    const offset = (page - 1) * limit;
 
     // Build order by clause
     let orderByClause;
@@ -47,7 +48,9 @@ export const GET: APIRoute = async ({ request, url }) => {
       .select()
       .from(personalRecords)
       .where(eq(personalRecords.userId, authResult.user.id))
-      .orderBy(orderByClause);
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(offset);
 
     // Pobierz media dla wszystkich rekordów jednym zapytaniem
     const recordIds = records.map((r) => r.id);
@@ -75,7 +78,7 @@ export const GET: APIRoute = async ({ request, url }) => {
       media: mediaByRecord[record.id] || [],
     }));
 
-    return new Response(JSON.stringify(recordsWithMedia), {
+    return new Response(JSON.stringify({ data: recordsWithMedia, page, limit }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -104,30 +107,35 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { activityName, result, unit, date, notes, mediaIds } = validation.data;
 
-    const [newRecord] = await db
-      .insert(personalRecords)
-      .values({
-        userId: authResult.user.id,
-        activityName,
-        result,
-        unit,
-        date,
-        notes: notes || null,
-      })
-      .returning();
+    // Użyj transakcji aby zapewnić atomiczność operacji
+    const newRecord = await db.transaction(async (tx) => {
+      const [record] = await tx
+        .insert(personalRecords)
+        .values({
+          userId: authResult.user.id,
+          activityName,
+          result,
+          unit,
+          date,
+          notes: notes || null,
+        })
+        .returning();
 
-    // Powiąż media z rekordem
-    if (mediaIds && mediaIds.length > 0) {
-      await db
-        .update(mediaAttachments)
-        .set({ personalRecordId: newRecord.id })
-        .where(
-          and(
-            inArray(mediaAttachments.id, mediaIds),
-            eq(mediaAttachments.userId, authResult.user.id)
-          )
-        );
-    }
+      // Powiąż media z rekordem w tej samej transakcji
+      if (mediaIds && mediaIds.length > 0) {
+        await tx
+          .update(mediaAttachments)
+          .set({ personalRecordId: record.id })
+          .where(
+            and(
+              inArray(mediaAttachments.id, mediaIds),
+              eq(mediaAttachments.userId, authResult.user.id)
+            )
+          );
+      }
+
+      return record;
+    });
 
     return new Response(JSON.stringify(newRecord), {
       status: 201,
