@@ -1,38 +1,44 @@
 import type { APIRoute } from 'astro';
-import { db, trainings, trainingTypes, mediaAttachments } from '@/lib/db';
-import { createTrainingSchema } from '@/lib/validations/training';
-import { auth } from '@/lib/auth';
+import { db, trainings, trainingTypes, mediaAttachments, type MediaAttachment } from '@/lib/db';
+import { createTrainingSchema, trainingFiltersQuerySchema } from '@/lib/validations/training';
 import { eq, and, gte, lte, desc, inArray } from 'drizzle-orm';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import {
+  handleUnexpectedError,
+  handleDatabaseError,
+  handleValidationError,
+} from '@/lib/error-handler';
+import { parseQueryParamsWithDefaults } from '@/lib/validations/query-params';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting
+    const authResult = await requireAuthWithRateLimit(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
-    const startDate = url.searchParams.get('startDate');
-    const endDate = url.searchParams.get('endDate');
-    const trainingTypeId = url.searchParams.get('trainingTypeId');
-    const page = parseInt(url.searchParams.get('page') || '1', 10);
-    const limit = parseInt(url.searchParams.get('limit') || '20', 10);
+    // Walidacja query params
+    const queryValidation = parseQueryParamsWithDefaults(url.searchParams, trainingFiltersQuerySchema);
+    if (!queryValidation.success) {
+      return queryValidation.response;
+    }
+
+    const { startDate, endDate, trainingTypeId, page, limit } = queryValidation.data;
     const offset = (page - 1) * limit;
 
-    const conditions = [eq(trainings.userId, session.user.id)];
+    const conditions = [eq(trainings.userId, authResult.user.id)];
 
-    if (startDate) {
+    // Filtruj puste stringi (mogą pochodzić z query params)
+    if (startDate && startDate !== '') {
       conditions.push(gte(trainings.date, startDate));
     }
 
-    if (endDate) {
+    if (endDate && endDate !== '') {
       conditions.push(lte(trainings.date, endDate));
     }
 
-    if (trainingTypeId) {
+    if (trainingTypeId && trainingTypeId !== '') {
       conditions.push(eq(trainings.trainingTypeId, trainingTypeId));
     }
 
@@ -50,7 +56,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 
     // Pobierz media dla wszystkich treningów jednym zapytaniem
     const trainingIds = results.map((r) => r.training.id);
-    let allMedia: any[] = [];
+    let allMedia: MediaAttachment[] = [];
 
     if (trainingIds.length > 0) {
       allMedia = await db
@@ -80,36 +86,26 @@ export const GET: APIRoute = async ({ request, url }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching trainings:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'fetching trainings');
+    }
+    return handleUnexpectedError(error, 'trainings GET');
   }
 };
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const body = await request.json();
     const validation = createTrainingSchema.safeParse(body);
 
     if (!validation.success) {
-      return new Response(
-        JSON.stringify({ error: 'Validation error', details: validation.error.flatten() }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return handleValidationError(validation);
     }
 
     const {
@@ -134,7 +130,7 @@ export const POST: APIRoute = async ({ request }) => {
     const [newTraining] = await db
       .insert(trainings)
       .values({
-        userId: session.user.id,
+        userId: authResult.user.id,
         trainingTypeId,
         date,
         time,
@@ -155,24 +151,16 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Powiąż media z treningiem
     if (mediaIds && mediaIds.length > 0) {
-      console.log('Przypisywanie mediów do treningu:', {
-        trainingId: newTraining.id,
-        mediaIds,
-        userId: session.user.id,
-      });
-
-      const updated = await db
+      await db
         .update(mediaAttachments)
         .set({ trainingId: newTraining.id })
         .where(
           and(
             inArray(mediaAttachments.id, mediaIds),
-            eq(mediaAttachments.userId, session.user.id)
+            eq(mediaAttachments.userId, authResult.user.id)
           )
         )
         .returning();
-
-      console.log('Zaktualizowane media:', updated);
     }
 
     return new Response(JSON.stringify(newTraining), {
@@ -180,10 +168,9 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error creating training:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query') || error.message.includes('constraint'))) {
+      return handleDatabaseError(error, 'creating training');
+    }
+    return handleUnexpectedError(error, 'trainings POST');
   }
 };

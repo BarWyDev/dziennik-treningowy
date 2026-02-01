@@ -27,5 +27,26 @@ export const createPersonalRecordSchema = z.object({
 
 export const updatePersonalRecordSchema = createPersonalRecordSchema.partial();
 
+// Schemat dla query params (przychodzą jako stringi z URL)
+export const personalRecordsQuerySchema = z.object({
+  sortBy: z
+    .enum(['date', 'activityName', 'result', 'createdAt'], {
+      errorMap: () => ({ message: 'sortBy musi być jednym z: date, activityName, result, createdAt' }),
+    })
+    .default('date'),
+  sortOrder: z
+    .enum(['asc', 'desc'], {
+      errorMap: () => ({ message: 'sortOrder musi być: asc lub desc' }),
+    })
+    .default('desc'),
+});
+
+// Schemat dla przetworzonych danych
+export const personalRecordsFiltersSchema = z.object({
+  sortBy: z.enum(['date', 'activityName', 'result', 'createdAt']).default('date'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
 export type CreatePersonalRecordInput = z.infer<typeof createPersonalRecordSchema>;
 export type UpdatePersonalRecordInput = z.infer<typeof updatePersonalRecordSchema>;
+export type PersonalRecordsFilters = z.infer<typeof personalRecordsFiltersSchema>;

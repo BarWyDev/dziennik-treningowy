@@ -1,17 +1,19 @@
 import type { APIRoute } from 'astro';
 import { db, goals } from '@/lib/db';
-import { auth } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
+import { requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import {
+  handleUnexpectedError,
+  handleDatabaseError,
+  createNotFoundError,
+} from '@/lib/error-handler';
 
 export const PATCH: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -26,13 +28,10 @@ export const PATCH: APIRoute = async ({ request, params }) => {
     const [existing] = await db
       .select()
       .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, session.user.id)));
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
 
     if (!existing) {
-      return new Response(JSON.stringify({ error: 'Goal not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('goal', id);
     }
 
     const [updated] = await db
@@ -50,10 +49,9 @@ export const PATCH: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error marking goal as achieved:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query') || error.message.includes('constraint'))) {
+      return handleDatabaseError(error, 'marking goal as achieved');
+    }
+    return handleUnexpectedError(error, 'goals/[id]/achieve PATCH');
   }
 };

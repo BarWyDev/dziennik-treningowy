@@ -81,7 +81,7 @@ export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyRe
     margin: { left: 14, right: 14 },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
 
   // Trainings table
   if (trainings.length > 0) {

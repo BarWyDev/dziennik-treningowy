@@ -72,7 +72,7 @@ export function generateTrainingPDF(training: Training): void {
     margin: { left: 14 },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
 
   // Training Goal
   if (training.trainingGoal) {
@@ -137,7 +137,7 @@ export function generateTrainingPDF(training: Training): void {
     margin: { left: 14 },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
 
   // Reflection Section
   if (training.mostSatisfiedWith || training.improveNextTime || training.howToImprove) {

@@ -98,24 +98,33 @@ export function MediaUpload({
       if (!files || files.length === 0) return;
 
       setError(null);
-      setUploading(true);
-      setProgress(0);
 
       const filesArray = Array.from(files);
+
+      // Walidacja wszystkich plików PRZED rozpoczęciem uploadu
+      const validationErrors: string[] = [];
+      for (const file of filesArray) {
+        const validationError = validateFile(file);
+        if (validationError) {
+          validationErrors.push(validationError);
+        }
+      }
+
+      // Jeśli są błędy walidacji, pokaż je i przerwij przed uploadem
+      if (validationErrors.length > 0) {
+        setError(validationErrors.join('; '));
+        return;
+      }
+
+      setUploading(true);
+      setProgress(0);
       const results: UploadedFile[] = [];
 
       try {
         for (let i = 0; i < filesArray.length; i++) {
           const file = filesArray[i];
 
-          // Walidacja
-          const validationError = validateFile(file);
-          if (validationError) {
-            setError(validationError);
-            continue;
-          }
-
-          // Upload
+          // Upload (walidacja już wykonana wyżej)
           try {
             const uploaded = await uploadFile(file);
             if (uploaded) {

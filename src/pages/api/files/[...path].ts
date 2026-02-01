@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-helpers';
+import { handleUnexpectedError } from '@/lib/error-handler';
 
 /**
  * Custom file server dla uploadowanych plików
@@ -10,10 +11,10 @@ import { auth } from '@/lib/auth';
  */
 export const GET: APIRoute = async ({ params, request }) => {
   try {
-    // Sprawdź autentykację
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session) {
-      return new Response('Unauthorized', { status: 401 });
+    // Sprawdź autentykację (bez rate limiting dla serwowania plików)
+    const authResult = await requireAuth(request);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const filePath = params.path;
@@ -68,7 +69,6 @@ export const GET: APIRoute = async ({ params, request }) => {
       },
     });
   } catch (error) {
-    console.error('Error serving file:', error);
-    return new Response('Internal server error', { status: 500 });
+    return handleUnexpectedError(error, 'files/[...path] GET');
   }
 };

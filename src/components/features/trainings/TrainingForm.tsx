@@ -125,12 +125,6 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         mediaIds: uploadedMedia.map((m) => m.id),
       };
 
-      console.log('Wysyłanie treningu z mediami:', {
-        uploadedMedia,
-        mediaIds: payload.mediaIds,
-        payload,
-      });
-
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },

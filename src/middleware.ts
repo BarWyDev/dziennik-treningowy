@@ -1,5 +1,10 @@
 import { defineMiddleware } from 'astro:middleware';
 import { auth } from '@/lib/auth';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  RateLimitPresets,
+} from '@/lib/rate-limit';
 
 const publicPaths = [
   '/',
@@ -14,8 +19,16 @@ const publicPaths = [
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
-  // Allow API auth routes
+  // Rate limiting dla auth endpoints (brute force protection)
   if (pathname.startsWith('/api/auth')) {
+    // Sprawdź rate limit przed przekazaniem do Better Auth
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(context.request),
+      RateLimitPresets.AUTH
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
     return next();
   }
 

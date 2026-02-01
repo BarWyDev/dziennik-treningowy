@@ -1,18 +1,21 @@
 import type { APIRoute } from 'astro';
 import { db, goals } from '@/lib/db';
 import { updateGoalSchema } from '@/lib/validations/goal';
-import { auth } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import {
+  handleUnexpectedError,
+  handleDatabaseError,
+  handleValidationError,
+  createNotFoundError,
+} from '@/lib/error-handler';
 
 export const GET: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting
+    const authResult = await requireAuthWithRateLimit(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -27,13 +30,10 @@ export const GET: APIRoute = async ({ request, params }) => {
     const [goal] = await db
       .select()
       .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, session.user.id)));
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
 
     if (!goal) {
-      return new Response(JSON.stringify({ error: 'Goal not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('goal', id);
     }
 
     return new Response(JSON.stringify(goal), {
@@ -41,23 +41,19 @@ export const GET: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching goal:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'fetching goal');
+    }
+    return handleUnexpectedError(error, 'goals/[id] GET');
   }
 };
 
 export const PUT: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -73,25 +69,16 @@ export const PUT: APIRoute = async ({ request, params }) => {
     const validation = updateGoalSchema.safeParse(body);
 
     if (!validation.success) {
-      return new Response(
-        JSON.stringify({ error: 'Validation error', details: validation.error.flatten() }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return handleValidationError(validation);
     }
 
     const [existing] = await db
       .select()
       .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, session.user.id)));
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
 
     if (!existing) {
-      return new Response(JSON.stringify({ error: 'Goal not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('goal', id);
     }
 
     const [updated] = await db
@@ -108,23 +95,19 @@ export const PUT: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error updating goal:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query') || error.message.includes('constraint'))) {
+      return handleDatabaseError(error, 'updating goal');
+    }
+    return handleUnexpectedError(error, 'goals/[id] PUT');
   }
 };
 
 export const DELETE: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -139,13 +122,10 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     const [existing] = await db
       .select()
       .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, session.user.id)));
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
 
     if (!existing) {
-      return new Response(JSON.stringify({ error: 'Goal not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('goal', id);
     }
 
     await db.delete(goals).where(eq(goals.id, id));
@@ -155,10 +135,9 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error deleting goal:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'deleting goal');
+    }
+    return handleUnexpectedError(error, 'goals/[id] DELETE');
   }
 };

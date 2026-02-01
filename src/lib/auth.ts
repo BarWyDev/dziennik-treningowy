@@ -4,6 +4,24 @@ import { db } from './db';
 import * as schema from './db/schema';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email';
 
+// Przygotuj trusted origins - dodaj wszystkie możliwe warianty URL
+const getTrustedOrigins = (): string[] => {
+  const baseUrl = import.meta.env.BETTER_AUTH_URL || process.env.BETTER_AUTH_URL || 'http://localhost:4321';
+  const origins = [baseUrl];
+  
+  // Dodaj warianty z/bez trailing slash i http/https
+  if (baseUrl.startsWith('http://')) {
+    origins.push(baseUrl.replace('http://', 'https://'));
+  }
+  if (baseUrl.endsWith('/')) {
+    origins.push(baseUrl.slice(0, -1));
+  } else {
+    origins.push(baseUrl + '/');
+  }
+  
+  return [...new Set(origins)]; // Usuń duplikaty
+};
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -35,7 +53,20 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
-  trustedOrigins: [process.env.BETTER_AUTH_URL || 'http://localhost:4321'],
+  trustedOrigins: getTrustedOrigins(),
+  // CSRF Protection: Better Auth automatycznie używa SameSite=Lax cookies
+  // i weryfikuje Origin header przeciwko trustedOrigins
+  advanced: {
+    cookies: {
+      session_token: {
+        attributes: {
+          // SameSite=Lax jest domyślne - chroni przed większością ataków CSRF
+          // Secure cookies będą automatycznie używane w produkcji (HTTPS)
+          sameSite: 'lax',
+        },
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;

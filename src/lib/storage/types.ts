@@ -24,6 +24,28 @@ export interface StorageService {
    * @returns Publiczny URL
    */
   getFileUrl(path: string): string;
+
+  /**
+   * Generuje bezpieczną i unikalną nazwę pliku
+   * @param originalName - Oryginalna nazwa pliku
+   * @returns Wygenerowana nazwa pliku
+   */
+  generateFileName(originalName: string): string;
+
+  /**
+   * Generuje ścieżkę do pliku
+   * @param userId - ID użytkownika
+   * @param entityType - Typ encji ('training' | 'personal-record')
+   * @param entityId - ID encji
+   * @param fileName - Nazwa pliku
+   * @returns Ścieżka do pliku
+   */
+  generateFilePath(
+    userId: string,
+    entityType: 'training' | 'personal-record',
+    entityId: string,
+    fileName: string
+  ): string;
 }
 
 export interface UploadedFile {

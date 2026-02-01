@@ -7,6 +7,7 @@ import {
   date,
   uuid,
   primaryKey,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -24,36 +25,49 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const sessions = pgTable('sessions', {
-  id: text('id').primaryKey(),
-  expiresAt: timestamp('expires_at').notNull(),
-  token: text('token').notNull().unique(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  ipAddress: text('ip_address'),
-  userAgent: text('user_agent'),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-});
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    expiresAt: timestamp('expires_at').notNull(),
+    token: text('token').notNull().unique(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (table) => ({
+    userIdIdx: index('idx_sessions_user_id').on(table.userId),
+    expiresAtIdx: index('idx_sessions_expires_at').on(table.expiresAt),
+  })
+);
 
-export const accounts = pgTable('accounts', {
-  id: text('id').primaryKey(),
-  accountId: text('account_id').notNull(),
-  providerId: text('provider_id').notNull(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  accessToken: text('access_token'),
-  refreshToken: text('refresh_token'),
-  idToken: text('id_token'),
-  accessTokenExpiresAt: timestamp('access_token_expires_at'),
-  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
-  scope: text('scope'),
-  password: text('password'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+export const accounts = pgTable(
+  'accounts',
+  {
+    id: text('id').primaryKey(),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at'),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_accounts_user_id').on(table.userId),
+  })
+);
 
 export const verifications = pgTable('verifications', {
   id: text('id').primaryKey(),
@@ -68,103 +82,148 @@ export const verifications = pgTable('verifications', {
 // Application Tables
 // ============================================
 
-export const trainingTypes = pgTable('training_types', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
-  description: text('description'),
-  icon: text('icon'),
-  isDefault: boolean('is_default').notNull().default(false),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+export const trainingTypes = pgTable(
+  'training_types',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    description: text('description'),
+    icon: text('icon'),
+    isDefault: boolean('is_default').notNull().default(false),
+    userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_training_types_user_id').on(table.userId),
+    isDefaultIdx: index('idx_training_types_is_default').on(table.isDefault),
+  })
+);
 
-export const trainings = pgTable('trainings', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  trainingTypeId: uuid('training_type_id')
-    .notNull()
-    .references(() => trainingTypes.id),
-  date: date('date').notNull(),
-  time: text('time'), // HH:MM format
-  durationMinutes: integer('duration_minutes').notNull(),
+export const trainings = pgTable(
+  'trainings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    trainingTypeId: uuid('training_type_id')
+      .notNull()
+      .references(() => trainingTypes.id),
+    date: date('date').notNull(),
+    time: text('time'), // HH:MM format
+    durationMinutes: integer('duration_minutes').notNull(),
 
-  // Multi-category ratings (1-5 scale)
-  ratingOverall: integer('rating_overall').notNull(), // Required
-  ratingPhysical: integer('rating_physical'), // Optional
-  ratingEnergy: integer('rating_energy'), // Optional
-  ratingMotivation: integer('rating_motivation'), // Optional
-  ratingDifficulty: integer('rating_difficulty'), // Optional
+    // Multi-category ratings (1-5 scale)
+    ratingOverall: integer('rating_overall').notNull(), // Required
+    ratingPhysical: integer('rating_physical'), // Optional
+    ratingEnergy: integer('rating_energy'), // Optional
+    ratingMotivation: integer('rating_motivation'), // Optional
+    ratingDifficulty: integer('rating_difficulty'), // Optional
 
-  // Reflection/Coaching fields
-  trainingGoal: text('training_goal'), // Mój cel na trening
-  mostSatisfiedWith: text('most_satisfied_with'), // Z czego jestem najbardziej zadowolony
-  improveNextTime: text('improve_next_time'), // Co następnym razem chcę zrobić lepiej
-  howToImprove: text('how_to_improve'), // Jak mogę to zrobić
+    // Reflection/Coaching fields
+    trainingGoal: text('training_goal'), // Mój cel na trening
+    mostSatisfiedWith: text('most_satisfied_with'), // Z czego jestem najbardziej zadowolony
+    improveNextTime: text('improve_next_time'), // Co następnym razem chcę zrobić lepiej
+    howToImprove: text('how_to_improve'), // Jak mogę to zrobić
 
-  // Other fields
-  notes: text('notes'),
-  caloriesBurned: integer('calories_burned'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+    // Other fields
+    notes: text('notes'),
+    caloriesBurned: integer('calories_burned'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_trainings_user_id').on(table.userId),
+    dateIdx: index('idx_trainings_date').on(table.date),
+    userDateIdx: index('idx_trainings_user_date').on(table.userId, table.date),
+  })
+);
 
-export const goals = pgTable('goals', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  title: text('title').notNull(),
-  description: text('description'),
-  targetValue: integer('target_value'),
-  currentValue: integer('current_value').default(0),
-  unit: text('unit'),
-  deadline: date('deadline'),
-  status: text('status').notNull().default('active'),
-  isArchived: boolean('is_archived').notNull().default(false),
-  achievedAt: timestamp('achieved_at'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+export const goals = pgTable(
+  'goals',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description'),
+    targetValue: integer('target_value'),
+    currentValue: integer('current_value').default(0),
+    unit: text('unit'),
+    deadline: date('deadline'),
+    status: text('status').notNull().default('active'),
+    isArchived: boolean('is_archived').notNull().default(false),
+    achievedAt: timestamp('achieved_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_goals_user_id').on(table.userId),
+    statusIdx: index('idx_goals_status').on(table.status),
+    userStatusArchivedIdx: index('idx_goals_user_status_archived').on(
+      table.userId,
+      table.status,
+      table.isArchived
+    ),
+  })
+);
 
-export const personalRecords = pgTable('personal_records', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  activityName: text('activity_name').notNull(),
-  result: text('result').notNull(), // Store as text to support decimals and flexible formatting
-  unit: text('unit').notNull(),
-  date: date('date').notNull(),
-  notes: text('notes'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+export const personalRecords = pgTable(
+  'personal_records',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    activityName: text('activity_name').notNull(),
+    result: text('result').notNull(), // Store as text to support decimals and flexible formatting
+    unit: text('unit').notNull(),
+    date: date('date').notNull(),
+    notes: text('notes'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_personal_records_user_id').on(table.userId),
+    dateIdx: index('idx_personal_records_date').on(table.date),
+    userDateIdx: index('idx_personal_records_user_date').on(table.userId, table.date),
+  })
+);
 
-export const mediaAttachments = pgTable('media_attachments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+export const mediaAttachments = pgTable(
+  'media_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
 
-  // Polimorficzne relacje - attachment należy do jednego rodzica
-  trainingId: uuid('training_id').references(() => trainings.id, { onDelete: 'cascade' }),
-  personalRecordId: uuid('personal_record_id').references(() => personalRecords.id, {
-    onDelete: 'cascade',
-  }),
+    // Polimorficzne relacje - attachment należy do jednego rodzica
+    trainingId: uuid('training_id').references(() => trainings.id, { onDelete: 'cascade' }),
+    personalRecordId: uuid('personal_record_id').references(() => personalRecords.id, {
+      onDelete: 'cascade',
+    }),
 
-  // Metadane pliku
-  fileName: text('file_name').notNull(),
-  fileUrl: text('file_url').notNull(),
-  fileType: text('file_type').notNull(), // 'image' | 'video'
-  mimeType: text('mime_type').notNull(),
-  fileSize: integer('file_size').notNull(), // rozmiar w bajtach
+    // Metadane pliku
+    fileName: text('file_name').notNull(),
+    fileUrl: text('file_url').notNull(),
+    fileType: text('file_type').notNull(), // 'image' | 'video'
+    mimeType: text('mime_type').notNull(),
+    fileSize: integer('file_size').notNull(), // rozmiar w bajtach
 
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_media_attachments_user_id').on(table.userId),
+    trainingIdIdx: index('idx_media_attachments_training_id').on(table.trainingId),
+    personalRecordIdIdx: index('idx_media_attachments_personal_record_id').on(
+      table.personalRecordId
+    ),
+  })
+);
 
 // ============================================
 // Relations

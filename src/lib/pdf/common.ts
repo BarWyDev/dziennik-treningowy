@@ -1,12 +1,49 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Type definitions for jspdf-autotable
+interface AutoTableOptions {
+  startY?: number;
+  head?: (string | number)[][];
+  body?: (string | number)[][];
+  foot?: (string | number)[][];
+  theme?: 'striped' | 'grid' | 'plain';
+  margin?: {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+  };
+  styles?: {
+    fontSize?: number;
+    cellPadding?: number;
+    fontStyle?: 'normal' | 'bold' | 'italic' | 'bolditalic';
+    textColor?: number | [number, number, number];
+    fillColor?: number | [number, number, number];
+  };
+  headStyles?: {
+    fillColor?: number | [number, number, number];
+    textColor?: number | [number, number, number];
+    fontStyle?: 'normal' | 'bold' | 'italic' | 'bolditalic';
+    fontSize?: number;
+  };
+  columnStyles?: Record<number, {
+    cellWidth?: number | 'auto' | 'wrap';
+    fontStyle?: 'normal' | 'bold' | 'italic' | 'bolditalic';
+    textColor?: number | [number, number, number];
+    fontSize?: number;
+    halign?: 'left' | 'center' | 'right';
+  }>;
+}
+
+interface AutoTableResult {
+  finalY: number;
+}
+
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable?: {
-      finalY: number;
-    };
+    autoTable: (options: AutoTableOptions) => jsPDF;
+    lastAutoTable?: AutoTableResult;
   }
 }
 

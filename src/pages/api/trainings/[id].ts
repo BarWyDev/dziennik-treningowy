@@ -1,19 +1,22 @@
 import type { APIRoute } from 'astro';
 import { db, trainings, trainingTypes, mediaAttachments } from '@/lib/db';
 import { updateTrainingSchema } from '@/lib/validations/training';
-import { auth } from '@/lib/auth';
 import { eq, and, inArray } from 'drizzle-orm';
 import { storage } from '@/lib/storage';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import {
+  handleUnexpectedError,
+  handleDatabaseError,
+  handleValidationError,
+  createNotFoundError,
+} from '@/lib/error-handler';
 
 export const GET: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting
+    const authResult = await requireAuthWithRateLimit(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -32,13 +35,10 @@ export const GET: APIRoute = async ({ request, params }) => {
       })
       .from(trainings)
       .leftJoin(trainingTypes, eq(trainings.trainingTypeId, trainingTypes.id))
-      .where(and(eq(trainings.id, id), eq(trainings.userId, session.user.id)));
+      .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)));
 
     if (!result) {
-      return new Response(JSON.stringify({ error: 'Training not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('training', id);
     }
 
     // Pobierz media załączniki
@@ -58,23 +58,19 @@ export const GET: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching training:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'fetching training');
+    }
+    return handleUnexpectedError(error, 'trainings/[id] GET');
   }
 };
 
 export const PUT: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -90,25 +86,16 @@ export const PUT: APIRoute = async ({ request, params }) => {
     const validation = updateTrainingSchema.safeParse(body);
 
     if (!validation.success) {
-      return new Response(
-        JSON.stringify({ error: 'Validation error', details: validation.error.flatten() }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return handleValidationError(validation);
     }
 
     const [existing] = await db
       .select()
       .from(trainings)
-      .where(and(eq(trainings.id, id), eq(trainings.userId, session.user.id)));
+      .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)));
 
     if (!existing) {
-      return new Response(JSON.stringify({ error: 'Training not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('training', id);
     }
 
     const { mediaIds, ...trainingData } = validation.data;
@@ -132,7 +119,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
           .where(
             and(
               inArray(mediaAttachments.id, mediaIds),
-              eq(mediaAttachments.userId, session.user.id)
+              eq(mediaAttachments.userId, authResult.user.id)
             )
           );
       }
@@ -143,23 +130,19 @@ export const PUT: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error updating training:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query') || error.message.includes('constraint'))) {
+      return handleDatabaseError(error, 'updating training');
+    }
+    return handleUnexpectedError(error, 'trainings/[id] PUT');
   }
 };
 
 export const DELETE: APIRoute = async ({ request, params }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = params;
@@ -174,13 +157,10 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     const [existing] = await db
       .select()
       .from(trainings)
-      .where(and(eq(trainings.id, id), eq(trainings.userId, session.user.id)));
+      .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)));
 
     if (!existing) {
-      return new Response(JSON.stringify({ error: 'Training not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('training', id);
     }
 
     // Pobierz wszystkie media załączniki przed usunięciem
@@ -207,10 +187,9 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error deleting training:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'deleting training');
+    }
+    return handleUnexpectedError(error, 'trainings/[id] DELETE');
   }
 };

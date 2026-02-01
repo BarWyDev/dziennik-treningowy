@@ -73,9 +73,37 @@ export const createTrainingSchema = z.object({
 
 export const updateTrainingSchema = createTrainingSchema.partial();
 
+// Schemat dla query params (przychodzą jako stringi z URL)
+export const trainingFiltersQuerySchema = z.object({
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty (YYYY-MM-DD)')
+    .optional()
+    .or(z.literal('')),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty (YYYY-MM-DD)')
+    .optional()
+    .or(z.literal('')),
+  trainingTypeId: z.string().uuid('Nieprawidłowy format UUID').optional().or(z.literal('')),
+  page: z
+    .string()
+    .regex(/^\d+$/, 'Strona musi być liczbą')
+    .optional()
+    .transform((val) => parseInt(val || '1', 10))
+    .pipe(z.number().min(1, 'Strona musi być większa od 0')),
+  limit: z
+    .string()
+    .regex(/^\d+$/, 'Limit musi być liczbą')
+    .optional()
+    .transform((val) => parseInt(val || '20', 10))
+    .pipe(z.number().min(1, 'Limit musi być większy od 0').max(100, 'Limit nie może przekraczać 100')),
+});
+
+// Schemat dla przetworzonych danych (po konwersji)
 export const trainingFiltersSchema = z.object({
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   trainingTypeId: z.string().uuid().optional(),
   page: z.number().min(1).default(1),
   limit: z.number().min(1).max(100).default(20),

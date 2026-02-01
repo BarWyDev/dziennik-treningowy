@@ -1,18 +1,16 @@
 import type { APIRoute } from 'astro';
 import { db, trainingTypes } from '@/lib/db';
 import { createTrainingTypeSchema } from '@/lib/validations/training-type';
-import { auth } from '@/lib/auth';
 import { eq, or, isNull } from 'drizzle-orm';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import { handleUnexpectedError, handleDatabaseError, handleValidationError } from '@/lib/error-handler';
 
 export const GET: APIRoute = async ({ request }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting
+    const authResult = await requireAuthWithRateLimit(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     // Get default types (isDefault = true) and user's custom types
@@ -22,7 +20,7 @@ export const GET: APIRoute = async ({ request }) => {
       .where(
         or(
           eq(trainingTypes.isDefault, true),
-          eq(trainingTypes.userId, session.user.id)
+          eq(trainingTypes.userId, authResult.user.id)
         )
       )
       .orderBy(trainingTypes.name);
@@ -32,36 +30,26 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching training types:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'fetching training types');
+    }
+    return handleUnexpectedError(error, 'training-types GET');
   }
 };
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const body = await request.json();
     const validation = createTrainingTypeSchema.safeParse(body);
 
     if (!validation.success) {
-      return new Response(
-        JSON.stringify({ error: 'Validation error', details: validation.error.flatten() }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return handleValidationError(validation);
     }
 
     const { name, description, icon } = validation.data;
@@ -73,7 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
         description,
         icon,
         isDefault: false,
-        userId: session.user.id,
+        userId: authResult.user.id,
       })
       .returning();
 
@@ -82,10 +70,9 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error creating training type:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query') || error.message.includes('constraint'))) {
+      return handleDatabaseError(error, 'creating training type');
+    }
+    return handleUnexpectedError(error, 'training-types POST');
   }
 };

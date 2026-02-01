@@ -1,20 +1,18 @@
 import type { APIRoute } from 'astro';
 import { db, trainings, trainingTypes, goals, mediaAttachments } from '@/lib/db';
-import { auth } from '@/lib/auth';
 import { eq, and, gte, lte, desc, sql, count, inArray } from 'drizzle-orm';
+import { requireAuthWithRateLimit, RateLimitPresets } from '@/lib/api-helpers';
+import { handleUnexpectedError, handleDatabaseError } from '@/lib/error-handler';
 
 export const GET: APIRoute = async ({ request }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting
+    const authResult = await requireAuthWithRateLimit(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
-    const userId = session.user.id;
+    const userId = authResult.user.id;
 
     // Get current week dates
     const now = new Date();
@@ -117,10 +115,10 @@ export const GET: APIRoute = async ({ request }) => {
       }
     );
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Sprawdź czy to błąd bazy danych
+    if (error instanceof Error && error.message.includes('database') || error instanceof Error && error.message.includes('query')) {
+      return handleDatabaseError(error, 'fetching dashboard data');
+    }
+    return handleUnexpectedError(error, 'dashboard GET');
   }
 };

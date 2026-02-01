@@ -9,6 +9,18 @@ import {
   validateFileType as getFileType,
   validateFileSize,
 } from '@/lib/validations/media';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  RateLimitPresets,
+} from '@/lib/rate-limit';
+import {
+  handleUnexpectedError,
+  handleDatabaseError,
+  createErrorResponse,
+  ErrorCode,
+  createUnauthorizedError,
+} from '@/lib/error-handler';
 
 /**
  * POST /api/upload
@@ -28,6 +40,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
         status: 401,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // Rate limiting - 10 uploadów na minutę na użytkownika
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(request, user.id),
+      RateLimitPresets.UPLOAD
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     // Parsuj multipart/form-data
@@ -113,8 +134,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Generuj ścieżkę do pliku
     // Użyj tymczasowego ID jeśli entityId nie podane (dla nowych encji)
     const targetEntityId = entityId || 'temp-' + crypto.randomUUID();
-    const fileName = (storage as any).generateFileName(file.name);
-    const filePath = (storage as any).generateFilePath(user.id, entityType, targetEntityId, fileName);
+    const fileName = storage.generateFileName(file.name);
+    const filePath = storage.generateFilePath(user.id, entityType, targetEntityId, fileName);
 
     // Upload pliku
     const fileUrl = await storage.uploadFile(file, filePath);
@@ -149,10 +170,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     );
   } catch (error) {
-    console.error('Upload error:', error);
-    return new Response(JSON.stringify({ error: 'Błąd podczas uploadu pliku' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Sprawdź typ błędu
+    if (error instanceof Error) {
+      if (error.message.includes('database') || error.message.includes('query')) {
+        return handleDatabaseError(error, 'uploading file');
+      }
+      if (error.message.includes('storage') || error.message.includes('upload')) {
+        return createErrorResponse(
+          ErrorCode.UPLOAD_FAILED,
+          'Błąd podczas uploadu pliku',
+          import.meta.env.PROD ? undefined : { error: error.message }
+        );
+      }
+    }
+    return handleUnexpectedError(error, 'upload POST');
   }
 };

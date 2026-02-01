@@ -95,7 +95,7 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
     margin: { left: 14, right: 14 },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
 
   // Training types breakdown
   if (Object.keys(typeBreakdown).length > 0) {
@@ -126,7 +126,7 @@ export function generateMonthlyReport({ trainings, year, month }: MonthlyReportD
       margin: { left: 14, right: 14 },
     });
 
-    yPos = (doc as any).lastAutoTable.finalY + 15;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
   }
 
   // Trainings table

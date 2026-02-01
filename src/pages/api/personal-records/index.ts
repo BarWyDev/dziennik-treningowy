@@ -1,22 +1,30 @@
 import type { APIRoute } from 'astro';
-import { db, personalRecords, mediaAttachments } from '@/lib/db';
-import { createPersonalRecordSchema } from '@/lib/validations/personal-record';
-import { auth } from '@/lib/auth';
+import { db, personalRecords, mediaAttachments, type MediaAttachment } from '@/lib/db';
+import { createPersonalRecordSchema, personalRecordsQuerySchema } from '@/lib/validations/personal-record';
 import { eq, desc, and, inArray } from 'drizzle-orm';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import {
+  handleUnexpectedError,
+  handleDatabaseError,
+  handleValidationError,
+} from '@/lib/error-handler';
+import { parseQueryParams } from '@/lib/validations/query-params';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting
+    const authResult = await requireAuthWithRateLimit(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
-    const sortBy = url.searchParams.get('sortBy') || 'date';
-    const sortOrder = url.searchParams.get('sortOrder') || 'desc';
+    // Walidacja query params
+    const queryValidation = parseQueryParams(url.searchParams, personalRecordsQuerySchema);
+    if (!queryValidation.success) {
+      return queryValidation.response;
+    }
+
+    const { sortBy, sortOrder } = queryValidation.data;
 
     // Build order by clause
     let orderByClause;
@@ -38,12 +46,12 @@ export const GET: APIRoute = async ({ request, url }) => {
     const records = await db
       .select()
       .from(personalRecords)
-      .where(eq(personalRecords.userId, session.user.id))
+      .where(eq(personalRecords.userId, authResult.user.id))
       .orderBy(orderByClause);
 
     // Pobierz media dla wszystkich rekordów jednym zapytaniem
     const recordIds = records.map((r) => r.id);
-    let allMedia: any[] = [];
+    let allMedia: MediaAttachment[] = [];
 
     if (recordIds.length > 0) {
       allMedia = await db
@@ -72,36 +80,26 @@ export const GET: APIRoute = async ({ request, url }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching personal records:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
+      return handleDatabaseError(error, 'fetching personal records');
+    }
+    return handleUnexpectedError(error, 'personal-records GET');
   }
 };
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Autentykacja + rate limiting + CSRF protection
+    const authResult = await requireAuthWithCSRF(request, RateLimitPresets.API);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const body = await request.json();
     const validation = createPersonalRecordSchema.safeParse(body);
 
     if (!validation.success) {
-      return new Response(
-        JSON.stringify({ error: 'Validation error', details: validation.error.flatten() }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return handleValidationError(validation);
     }
 
     const { activityName, result, unit, date, notes, mediaIds } = validation.data;
@@ -109,7 +107,7 @@ export const POST: APIRoute = async ({ request }) => {
     const [newRecord] = await db
       .insert(personalRecords)
       .values({
-        userId: session.user.id,
+        userId: authResult.user.id,
         activityName,
         result,
         unit,
@@ -126,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
         .where(
           and(
             inArray(mediaAttachments.id, mediaIds),
-            eq(mediaAttachments.userId, session.user.id)
+            eq(mediaAttachments.userId, authResult.user.id)
           )
         );
     }
@@ -136,10 +134,9 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error creating personal record:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error && (error.message.includes('database') || error.message.includes('query') || error.message.includes('constraint'))) {
+      return handleDatabaseError(error, 'creating personal record');
+    }
+    return handleUnexpectedError(error, 'personal-records POST');
   }
 };
