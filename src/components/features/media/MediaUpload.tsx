@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { FileInput } from '@/components/ui/FileInput';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { MediaPreview } from './MediaPreview';
@@ -37,6 +37,11 @@ export function MediaUpload({
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(existingMedia);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Synchronizuj uploadedFiles z existingMedia
+  useEffect(() => {
+    setUploadedFiles(existingMedia);
+  }, [existingMedia]);
 
   const imageCount = uploadedFiles.filter((f) => f.fileType === 'image').length;
   const videoCount = uploadedFiles.filter((f) => f.fileType === 'video').length;

@@ -90,6 +90,7 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
 
       if (!isEditing) {
         reset();
+        setUploadedMedia([]); // Wyczyść uploadowane media po dodaniu rekordu
       }
 
       if (onSuccess) {

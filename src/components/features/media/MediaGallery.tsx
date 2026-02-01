@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { MediaAttachment } from '@/lib/db/schema';
 import { normalizeMediaUrl } from '@/lib/utils/media';
+import { DeleteConfirmDialog } from '@/components/features/trainings/DeleteConfirmDialog';
 
 interface MediaGalleryProps {
   media: MediaAttachment[];
@@ -16,6 +17,8 @@ export function MediaGallery({ media, onDelete, canDelete = false }: MediaGaller
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [mediaToDelete, setMediaToDelete] = useState<{ id: string; type: string } | null>(null);
 
   const images = media.filter((m) => m.fileType === 'image');
   const videos = media.filter((m) => m.fileType === 'video');
@@ -37,12 +40,19 @@ export function MediaGallery({ media, onDelete, canDelete = false }: MediaGaller
     setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const handleDelete = async (mediaId: string) => {
-    if (!onDelete || !confirm('Czy na pewno chcesz usunąć ten plik?')) return;
+  const handleDeleteClick = (mediaId: string, fileType: string) => {
+    setMediaToDelete({ id: mediaId, type: fileType });
+    setDeleteDialogOpen(true);
+  };
 
-    setDeleting(mediaId);
+  const confirmDelete = async () => {
+    if (!mediaToDelete || !onDelete) return;
+
+    setDeleting(mediaToDelete.id);
     try {
-      await onDelete(mediaId);
+      await onDelete(mediaToDelete.id);
+      setDeleteDialogOpen(false);
+      setMediaToDelete(null);
     } finally {
       setDeleting(null);
     }
@@ -77,7 +87,7 @@ export function MediaGallery({ media, onDelete, canDelete = false }: MediaGaller
                 {canDelete && onDelete && (
                   <button
                     type="button"
-                    onClick={() => handleDelete(image.id)}
+                    onClick={() => handleDeleteClick(image.id, 'image')}
                     disabled={deleting === image.id}
                     className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:opacity-50"
                     title="Usuń zdjęcie"
@@ -117,18 +127,54 @@ export function MediaGallery({ media, onDelete, canDelete = false }: MediaGaller
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {videos.map((video) => (
               <div key={video.id} className="relative group">
-                <video
-                  src={normalizeMediaUrl(video.fileUrl)}
-                  controls
-                  className="w-full rounded-lg bg-gray-100 dark:bg-gray-800"
-                  preload="metadata"
-                />
+                <div className="relative rounded-lg overflow-hidden bg-gray-900">
+                  {/* Overlay z ikoną play */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 bg-black/30">
+                    <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center shadow-xl">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-gray-900 ml-1"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <video
+                    src={normalizeMediaUrl(video.fileUrl)}
+                    controls
+                    className="w-full rounded-lg"
+                    preload="metadata"
+                    onPlay={(e) => {
+                      // Ukryj overlay po rozpoczęciu odtwarzania
+                      const overlay = e.currentTarget.previousElementSibling;
+                      if (overlay) {
+                        (overlay as HTMLElement).style.display = 'none';
+                      }
+                    }}
+                    onPause={(e) => {
+                      // Pokaż overlay po zatrzymaniu
+                      const overlay = e.currentTarget.previousElementSibling;
+                      if (overlay && e.currentTarget.currentTime === 0) {
+                        (overlay as HTMLElement).style.display = 'flex';
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Nazwa pliku */}
+                <p className="mt-2 text-xs text-gray-600 dark:text-gray-400 truncate" title={video.fileName}>
+                  {video.fileName}
+                </p>
+
                 {canDelete && onDelete && (
                   <button
                     type="button"
-                    onClick={() => handleDelete(video.id)}
+                    onClick={() => handleDeleteClick(video.id, 'video')}
                     disabled={deleting === video.id}
-                    className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:opacity-50"
+                    className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:opacity-50 z-20"
                     title="Usuń film"
                   >
                     {deleting === video.id ? (
@@ -245,6 +291,18 @@ export function MediaGallery({ media, onDelete, canDelete = false }: MediaGaller
           </div>
         </div>
       )}
+
+      {/* Dialog potwierdzenia usunięcia */}
+      <DeleteConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setMediaToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title={`Usuń ${mediaToDelete?.type === 'image' ? 'zdjęcie' : 'film'}`}
+        message={`Czy na pewno chcesz usunąć ${mediaToDelete?.type === 'image' ? 'to zdjęcie' : 'ten film'}? Tej operacji nie można cofnąć.`}
+      />
     </div>
   );
 }

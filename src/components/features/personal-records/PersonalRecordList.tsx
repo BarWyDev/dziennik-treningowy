@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PersonalRecordCard } from './PersonalRecordCard';
 import { PersonalRecordForm } from './PersonalRecordForm';
+import { PersonalRecordDetails } from './PersonalRecordDetails';
 import { Select } from '@/components/ui/Select';
 import { Label } from '@/components/ui/Label';
 import { Dialog } from '@/components/ui/Dialog';
@@ -30,6 +31,8 @@ export function PersonalRecordList() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [editingRecord, setEditingRecord] = useState<PersonalRecord | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [viewingRecord, setViewingRecord] = useState<PersonalRecord | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   const fetchRecords = async () => {
     setIsLoading(true);
@@ -73,6 +76,11 @@ export function PersonalRecordList() {
     setIsEditDialogOpen(false);
     setEditingRecord(null);
     fetchRecords();
+  };
+
+  const handleView = (record: PersonalRecord) => {
+    setViewingRecord(record);
+    setIsViewDialogOpen(true);
   };
 
   if (isLoading) {
@@ -131,11 +139,23 @@ export function PersonalRecordList() {
           <PersonalRecordCard
             key={record.id}
             record={record}
+            onView={handleView}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
         ))}
       </div>
+
+      <Dialog
+        isOpen={isViewDialogOpen}
+        onClose={() => {
+          setIsViewDialogOpen(false);
+          setViewingRecord(null);
+        }}
+        title="Szczegóły rekordu"
+      >
+        {viewingRecord && <PersonalRecordDetails record={viewingRecord} />}
+      </Dialog>
 
       <Dialog
         isOpen={isEditDialogOpen}
