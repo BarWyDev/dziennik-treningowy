@@ -34,7 +34,7 @@ export function TrainingFilters({ filters, onFiltersChange }: TrainingFiltersPro
           setTrainingTypes(Array.isArray(types) ? types : []);
         }
       } catch {
-        console.error('Error fetching training types');
+        // Error fetching training types - silent fail
       }
     };
 

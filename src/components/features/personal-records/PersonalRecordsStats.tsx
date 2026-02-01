@@ -26,8 +26,8 @@ export function PersonalRecordsStats() {
           const data = await response.json();
           setStats(data);
         }
-      } catch (error) {
-        console.error('Error fetching stats:', error);
+      } catch {
+        // Error fetching stats - silent fail
       } finally {
         setIsLoading(false);
       }

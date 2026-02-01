@@ -8,21 +8,6 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Alert } from '@/components/ui/Alert';
 
-// Helper do logowania błędów w komponentach
-function logError(context: string, error: unknown) {
-  const timestamp = new Date().toISOString();
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorStack = error instanceof Error ? error.stack : undefined;
-  
-  if (import.meta.env.PROD) {
-    // W produkcji loguj tylko do konsoli (można zastąpić loggerem)
-    console.error(`[${timestamp}] [ERROR] ${context}: ${errorMessage}`);
-  } else {
-    // W development loguj ze szczegółami
-    console.error(`[${timestamp}] [ERROR] ${context}:`, errorMessage, errorStack || '');
-  }
-}
-
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,8 +36,8 @@ export function LoginForm() {
       }
 
       window.location.href = '/dashboard';
-    } catch (error) {
-      logError('LoginForm onSubmit', error);
+    } catch {
+      // Error during login - silent fail
       setError('Wystąpił błąd podczas logowania. Spróbuj ponownie.');
     } finally {
       setIsLoading(false);

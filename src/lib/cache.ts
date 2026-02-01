@@ -12,7 +12,7 @@ interface CacheEntry<T> {
 
 class MemoryCache {
   private store = new Map<string, CacheEntry<unknown>>();
-  private cleanupInterval: NodeJS.Timeout;
+  private cleanupInterval?: NodeJS.Timeout;
 
   constructor() {
     // Cleanup wygasłych wpisów co 5 minut
@@ -108,10 +108,32 @@ class MemoryCache {
   size(): number {
     return this.store.size;
   }
+
+  /**
+   * Zatrzymuje cleanup interval i czyści cache (użyteczne przy shutdown)
+   */
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
+    this.store.clear();
+  }
 }
 
 // Singleton instance
 export const cache = new MemoryCache();
+
+// Cleanup on server shutdown to prevent memory leaks
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', () => {
+    cache.destroy();
+  });
+
+  process.on('SIGINT', () => {
+    cache.destroy();
+  });
+}
 
 /**
  * Helper do tworzenia kluczy cache

@@ -21,7 +21,7 @@ export function useTrainingTypes() {
           setTrainingTypes(Array.isArray(types) ? types : []);
         }
       } catch {
-        console.error('Error fetching training types');
+        // Error fetching training types - silent fail
       } finally {
         setIsLoading(false);
       }

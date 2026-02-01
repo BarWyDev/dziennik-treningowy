@@ -36,7 +36,7 @@ export function GoalList() {
         setGoals(data);
       }
     } catch {
-      console.error('Error fetching goals');
+      // Error fetching goals - silent fail
     } finally {
       setIsLoading(false);
     }

@@ -146,8 +146,8 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
     try {
       await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
       setUploadedMedia((prev) => prev.filter((f) => f.id !== fileId));
-    } catch (error) {
-      console.error('Error removing media:', error);
+    } catch {
+      // Error removing media - silent fail
     }
   };
 

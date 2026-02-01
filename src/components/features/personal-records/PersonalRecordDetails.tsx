@@ -27,8 +27,8 @@ export function PersonalRecordDetails({ record }: PersonalRecordDetailsProps) {
         throw new Error('Nie udało się usunąć pliku');
       }
       setMedia((prev) => prev.filter((m) => m.id !== mediaId));
-    } catch (error) {
-      console.error('Error deleting media:', error);
+    } catch {
+      // Error deleting media - silent fail
     }
   };
 

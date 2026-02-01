@@ -111,8 +111,8 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
     try {
       await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
       setUploadedMedia((prev) => prev.filter((f) => f.id !== fileId));
-    } catch (error) {
-      console.error('Error removing media:', error);
+    } catch {
+      // Error removing media - silent fail
     }
   };
 

@@ -62,7 +62,7 @@ export function TrainingList() {
         setHasMore(data.data.length === 20);
       }
     } catch {
-      console.error('Error fetching trainings');
+      // Error fetching trainings - silent fail
     } finally {
       setIsLoading(false);
     }

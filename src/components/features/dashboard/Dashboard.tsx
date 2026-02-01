@@ -66,7 +66,7 @@ export function Dashboard({ userName }: DashboardProps) {
           setData(dashboardData);
         }
       } catch {
-        console.error('Error fetching dashboard data');
+        // Error fetching dashboard data - silent fail
       } finally {
         setIsLoading(false);
       }

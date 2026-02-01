@@ -26,7 +26,7 @@ interface RateLimitEntry {
 
 class RateLimiter {
   private store = new Map<string, RateLimitEntry>();
-  private cleanupInterval: NodeJS.Timeout;
+  private cleanupInterval?: NodeJS.Timeout;
 
   constructor() {
     // Cleanup starych wpisów co 5 minut
@@ -111,6 +111,7 @@ class RateLimiter {
   destroy(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
     }
     this.store.clear();
   }
@@ -118,6 +119,17 @@ class RateLimiter {
 
 // Singleton instance
 const rateLimiter = new RateLimiter();
+
+// Cleanup on server shutdown to prevent memory leaks
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', () => {
+    rateLimiter.destroy();
+  });
+
+  process.on('SIGINT', () => {
+    rateLimiter.destroy();
+  });
+}
 
 /**
  * Rate limit presets dla różnych typów endpointów

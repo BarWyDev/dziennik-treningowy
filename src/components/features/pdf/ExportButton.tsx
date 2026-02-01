@@ -35,8 +35,8 @@ export function ExportButton({ training }: ExportButtonProps) {
     setIsExporting(true);
     try {
       generateTrainingPDF(training);
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
+    } catch {
+      // Error exporting PDF - silent fail
     } finally {
       setIsExporting(false);
     }

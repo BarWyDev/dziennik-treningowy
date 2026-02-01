@@ -89,8 +89,8 @@ export function PeriodExportDialog() {
       }
 
       setIsOpen(false);
-    } catch (error) {
-      console.error('Error exporting report:', error);
+    } catch {
+      // Error exporting report - silent fail
     } finally {
       setIsExporting(false);
     }

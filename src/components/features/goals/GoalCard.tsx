@@ -85,7 +85,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
         onUpdate();
       }
     } catch {
-      console.error('Error achieving goal');
+      // Error achieving goal - silent fail
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +101,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
         onUpdate();
       }
     } catch {
-      console.error('Error archiving goal');
+      // Error archiving goal - silent fail
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +117,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
         onUpdate();
       }
     } catch {
-      console.error('Error deleting goal');
+      // Error deleting goal - silent fail
     } finally {
       setIsLoading(false);
       setIsDeleteDialogOpen(false);

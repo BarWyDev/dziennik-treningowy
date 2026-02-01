@@ -39,11 +39,11 @@ export function PersonalRecordList() {
     try {
       const response = await fetch(`/api/personal-records?sortBy=${sortBy}&sortOrder=${sortOrder}`);
       if (response.ok) {
-        const data = await response.json();
-        setRecords(data);
+        const result = await response.json();
+        setRecords(result.data || []);
       }
-    } catch (error) {
-      console.error('Error fetching records:', error);
+    } catch {
+      // Error fetching records - silent fail
     } finally {
       setIsLoading(false);
     }
@@ -62,8 +62,8 @@ export function PersonalRecordList() {
       if (response.ok) {
         setRecords(records.filter((r) => r.id !== id));
       }
-    } catch (error) {
-      console.error('Error deleting record:', error);
+    } catch {
+      // Error deleting record - silent fail
     }
   };
 
