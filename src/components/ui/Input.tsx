@@ -5,8 +5,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', error, ...props }, ref) => {
-    const baseStyles = 'block w-full rounded-lg border px-3 py-2 text-sm lg:text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed';
+  ({ className = '', error, type, ...props }, ref) => {
+    // Większy border-radius dla date/time pickerów
+    const isDateOrTime = type === 'date' || type === 'time' || type === 'datetime-local';
+    const borderRadiusClass = isDateOrTime ? 'rounded-xl' : 'rounded-lg';
+    
+    const baseStyles = `block w-full ${borderRadiusClass} border px-3 py-2 text-sm lg:text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed`;
 
     const stateStyles = error
       ? 'border-error-500 dark:border-error-600 focus:border-error-500 focus:ring-error-500'
@@ -16,6 +20,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="w-full">
         <input
           ref={ref}
+          type={type}
           className={`${baseStyles} ${stateStyles} ${className}`}
           {...props}
         />
