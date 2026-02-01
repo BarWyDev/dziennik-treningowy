@@ -23,12 +23,19 @@ export function PersonalRecordDetails({ record }: PersonalRecordDetailsProps) {
   const handleMediaDelete = async (mediaId: string) => {
     try {
       const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' });
+
       if (!response.ok) {
-        throw new Error('Nie udało się usunąć pliku');
+        const errorData = await response.json().catch(() => ({
+          error: { message: 'Nie udało się usunąć pliku' }
+        }));
+        throw new Error(errorData.error?.message || 'Nie udało się usunąć pliku');
       }
+
+      // Tylko jeśli sukces - usuń ze stanu
       setMedia((prev) => prev.filter((m) => m.id !== mediaId));
-    } catch {
-      // Error deleting media - silent fail
+    } catch (err) {
+      // Show error to user
+      alert(err instanceof Error ? err.message : 'Nie udało się usunąć pliku');
     }
   };
 

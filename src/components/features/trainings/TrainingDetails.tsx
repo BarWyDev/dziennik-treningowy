@@ -85,9 +85,15 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
   const handleMediaDelete = async (mediaId: string) => {
     try {
       const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' });
+
       if (!response.ok) {
-        throw new Error('Nie udało się usunąć pliku');
+        const errorData = await response.json().catch(() => ({
+          error: { message: 'Nie udało się usunąć pliku' }
+        }));
+        throw new Error(errorData.error?.message || 'Nie udało się usunąć pliku');
       }
+
+      // Tylko jeśli sukces - usuń ze stanu
       setMedia((prev) => prev.filter((m) => m.id !== mediaId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wystąpił błąd');

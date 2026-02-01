@@ -144,10 +144,19 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
 
   const handleMediaRemove = async (fileId: string) => {
     try {
-      await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          error: { message: 'Nie udało się usunąć pliku' }
+        }));
+        throw new Error(errorData.error?.message || 'Nie udało się usunąć pliku');
+      }
+
+      // Tylko jeśli sukces - usuń ze stanu
       setUploadedMedia((prev) => prev.filter((f) => f.id !== fileId));
-    } catch {
-      // Error removing media - silent fail
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się usunąć pliku');
     }
   };
 
