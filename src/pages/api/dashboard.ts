@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { db, trainings, trainingTypes, goals, mediaAttachments } from '@/lib/db';
 import { auth } from '@/lib/auth';
-import { eq, and, gte, lte, desc, sql, count } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, sql, count, inArray } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ request }) => {
   try {
@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ request }) => {
     const startOfWeekStr = startOfWeek.toISOString().split('T')[0];
     const endOfWeekStr = endOfWeek.toISOString().split('T')[0];
 
-    // Recent trainings (last 5)
+    // Recent trainings (last 5) - Zapytanie 1
     const recentTrainingsData = await db
       .select({
         training: trainings,
@@ -41,21 +41,21 @@ export const GET: APIRoute = async ({ request }) => {
       .orderBy(desc(trainings.date), desc(trainings.createdAt))
       .limit(5);
 
-    // Fetch media for each recent training
-    const recentTrainings = await Promise.all(
-      recentTrainingsData.map(async (r) => {
-        const media = await db
+    // Pobierz wszystkie media dla treningów naraz - Zapytanie 2 (zamiast N+1)
+    const trainingIds = recentTrainingsData.map((r) => r.training.id);
+    const allMedia = trainingIds.length > 0
+      ? await db
           .select()
           .from(mediaAttachments)
-          .where(eq(mediaAttachments.trainingId, r.training.id));
+          .where(inArray(mediaAttachments.trainingId, trainingIds))
+      : [];
 
-        return {
-          ...r.training,
-          trainingType: r.trainingType,
-          media,
-        };
-      })
-    );
+    // Połącz dane w pamięci (szybkie, bez zapytań do bazy)
+    const recentTrainings = recentTrainingsData.map((r) => ({
+      ...r.training,
+      trainingType: r.trainingType,
+      media: allMedia.filter((m) => m.trainingId === r.training.id),
+    }));
 
     // Week summary
     const weekTrainings = await db

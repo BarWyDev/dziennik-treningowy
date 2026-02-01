@@ -18,6 +18,15 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",
+    "test:security": "vitest run tests/unit/security",
+    "test:business": "vitest run tests/unit/business-rules",
+    "test:validations": "vitest run tests/unit/validations",
+    "test:api": "vitest run tests/unit/api",
+    "test:components": "vitest run tests/unit/components",
+    "test:utils": "vitest run tests/unit/utils",
+    "test:unit": "vitest run tests/unit",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
     "test:e2e": "playwright test"
   },
   "dependencies": {
