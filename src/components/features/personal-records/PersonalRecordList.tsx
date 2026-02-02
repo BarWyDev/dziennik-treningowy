@@ -94,7 +94,7 @@ export function PersonalRecordList() {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 dark:text-gray-400 text-lg lg:text-xl">Nie masz jeszcze żadnych rekordów osobistych.</p>
-        <p className="text-gray-400 dark:text-gray-500 mt-2 text-base lg:text-lg">Dodaj swój pierwszy rekord używając formularza powyżej!</p>
+        <p className="text-gray-400 dark:text-gray-500 mt-2 text-base lg:text-lg">Kliknij przycisk "Dodaj rekord" aby dodać swój pierwszy rekord!</p>
       </div>
     );
   }
@@ -167,11 +167,16 @@ export function PersonalRecordList() {
           setEditingRecord(null);
         }}
         title="Edytuj rekord"
+        size="lg"
       >
         {editingRecord && (
           <PersonalRecordForm
             record={editingRecord}
             onSuccess={handleEditSuccess}
+            onCancel={() => {
+              setIsEditDialogOpen(false);
+              setEditingRecord(null);
+            }}
           />
         )}
       </Dialog>

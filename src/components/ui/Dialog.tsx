@@ -5,9 +5,10 @@ interface DialogProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
+export function Dialog({ isOpen, onClose, title, children, size = 'md' }: DialogProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -28,6 +29,12 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
 
   if (!isOpen) return null;
 
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-2xl',
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
@@ -35,7 +42,7 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
           className="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity"
           onClick={onClose}
         />
-        <div className="relative bg-white dark:bg-[#161b22] rounded-xl shadow-xl max-w-md w-full p-6 transform transition-all border border-gray-200 dark:border-gray-800">
+        <div className={`relative bg-white dark:bg-[#161b22] rounded-xl shadow-xl ${sizeClasses[size]} w-full p-6 transform transition-all border border-gray-200 dark:border-gray-800`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
             <button

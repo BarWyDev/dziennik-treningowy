@@ -32,9 +32,10 @@ interface PersonalRecord {
 interface PersonalRecordFormProps {
   record?: PersonalRecord;
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProps) {
+export function PersonalRecordForm({ record, onSuccess, onCancel }: PersonalRecordFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedMedia, setUploadedMedia] = useState<UploadedFile[]>([]);
@@ -210,11 +211,11 @@ export function PersonalRecordForm({ record, onSuccess }: PersonalRecordFormProp
       </div>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="flex-1">
           {isLoading ? 'Zapisywanie...' : isEditing ? 'Zapisz zmiany' : 'Dodaj rekord'}
         </Button>
-        {isEditing && onSuccess && (
-          <Button type="button" variant="secondary" onClick={onSuccess}>
+        {onCancel && (
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Anuluj
           </Button>
         )}
