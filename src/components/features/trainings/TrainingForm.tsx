@@ -13,6 +13,7 @@ import { ReflectionFields } from './ReflectionFields';
 import { useTrainingTypes } from './useTrainingTypes';
 import { MediaUpload } from '@/components/features/media/MediaUpload';
 import type { UploadedFile } from '@/lib/validations/media';
+import { parseErrorResponse } from '@/lib/client-helpers';
 
 interface TrainingType {
   id: string;
@@ -117,8 +118,8 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Wystąpił błąd');
+        const errorMessage = await parseErrorResponse(response);
+        throw new Error(errorMessage);
       }
 
       if (onSuccess) {
@@ -147,10 +148,8 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       const response = await fetch(`/api/media/${fileId}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          error: { message: 'Nie udało się usunąć pliku' }
-        }));
-        throw new Error(errorData.error?.message || 'Nie udało się usunąć pliku');
+        const errorMessage = await parseErrorResponse(response);
+        throw new Error(errorMessage);
       }
 
       // Tylko jeśli sukces - usuń ze stanu

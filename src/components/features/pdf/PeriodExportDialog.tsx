@@ -3,6 +3,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { generateWeeklyReport } from '@/lib/pdf/weekly-report';
 import { generateMonthlyReport } from '@/lib/pdf/monthly-report';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface Training {
   id: string;
@@ -68,7 +69,10 @@ export function PeriodExportDialog() {
         throw new Error('Failed to fetch trainings');
       }
 
-      const data = await response.json();
+      const data = await safeJsonParse<{ data: Training[] }>(response);
+      if (!data) {
+        throw new Error('Invalid response from server');
+      }
       const trainings: Training[] = data.data;
 
       if (reportType === 'weekly') {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface PersonalRecord {
   id: string;
@@ -23,8 +24,10 @@ export function PersonalRecordsStats() {
       try {
         const response = await fetch('/api/personal-records/stats');
         if (response.ok) {
-          const data = await response.json();
-          setStats(data);
+          const data = await safeJsonParse(response);
+          if (data) {
+            setStats(data);
+          }
         }
       } catch {
         // Error fetching stats - silent fail

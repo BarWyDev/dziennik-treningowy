@@ -12,6 +12,7 @@ import {
   type UploadedFile,
 } from '@/lib/validations/media';
 import { formatFileSize } from '@/lib/utils/file';
+import { parseErrorResponse, safeJsonParse } from '@/lib/client-helpers';
 
 interface MediaUploadProps {
   entityType: 'training' | 'personal-record';
@@ -87,11 +88,15 @@ export function MediaUpload({
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Błąd podczas uploadu');
+      const errorMessage = await parseErrorResponse(response);
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    const data = await safeJsonParse<UploadedFile>(response);
+    if (!data) {
+      throw new Error('Invalid response from server');
+    }
+    return data;
   };
 
   const handleFiles = useCallback(

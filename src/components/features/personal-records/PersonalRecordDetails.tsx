@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MediaGallery } from '@/components/features/media/MediaGallery';
 import type { MediaAttachment } from '@/lib/db/schema';
+import { parseErrorResponse } from '@/lib/client-helpers';
 
 interface PersonalRecord {
   id: string;
@@ -25,10 +26,8 @@ export function PersonalRecordDetails({ record }: PersonalRecordDetailsProps) {
       const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          error: { message: 'Nie udało się usunąć pliku' }
-        }));
-        throw new Error(errorData.error?.message || 'Nie udało się usunąć pliku');
+        const errorMessage = await parseErrorResponse(response);
+        throw new Error(errorMessage);
       }
 
       // Tylko jeśli sukces - usuń ze stanu

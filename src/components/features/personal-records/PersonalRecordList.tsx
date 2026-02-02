@@ -5,6 +5,7 @@ import { PersonalRecordDetails } from './PersonalRecordDetails';
 import { Select } from '@/components/ui/Select';
 import { Label } from '@/components/ui/Label';
 import { Dialog } from '@/components/ui/Dialog';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface MediaAttachment {
   id: string;
@@ -39,8 +40,10 @@ export function PersonalRecordList() {
     try {
       const response = await fetch(`/api/personal-records?sortBy=${sortBy}&sortOrder=${sortOrder}`);
       if (response.ok) {
-        const result = await response.json();
-        setRecords(result.data || []);
+        const result = await safeJsonParse(response);
+        if (result) {
+          setRecords(result.data || []);
+        }
       }
     } catch {
       // Error fetching records - silent fail

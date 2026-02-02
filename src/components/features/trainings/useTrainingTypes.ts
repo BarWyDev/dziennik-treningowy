@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface TrainingType {
   id: string;
@@ -15,10 +16,12 @@ export function useTrainingTypes() {
       try {
         const response = await fetch('/api/training-types');
         if (response.ok) {
-          const result = await response.json();
-          // Endpoint zwraca { data, page, limit } po dodaniu paginacji
-          const types = result.data || result;
-          setTrainingTypes(Array.isArray(types) ? types : []);
+          const result = await safeJsonParse(response);
+          if (result) {
+            // Endpoint zwraca { data, page, limit } po dodaniu paginacji
+            const types = result.data || result;
+            setTrainingTypes(Array.isArray(types) ? types : []);
+          }
         }
       } catch {
         // Error fetching training types - silent fail

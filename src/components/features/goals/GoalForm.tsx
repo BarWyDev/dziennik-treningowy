@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Alert } from '@/components/ui/Alert';
+import { parseErrorResponse } from '@/lib/client-helpers';
 
 interface Goal {
   id: string;
@@ -63,8 +64,8 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Wystąpił błąd');
+        const errorMessage = await parseErrorResponse(response);
+        throw new Error(errorMessage);
       }
 
       onSuccess();

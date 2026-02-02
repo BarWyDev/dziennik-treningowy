@@ -4,6 +4,7 @@ import { GoalForm } from './GoalForm';
 import { GoalLimitInfo } from './GoalLimitInfo';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface Goal {
   id: string;
@@ -32,8 +33,10 @@ export function GoalList() {
     try {
       const response = await fetch('/api/goals');
       if (response.ok) {
-        const data = await response.json();
-        setGoals(data);
+        const data = await safeJsonParse(response);
+        if (data) {
+          setGoals(data);
+        }
       }
     } catch {
       // Error fetching goals - silent fail

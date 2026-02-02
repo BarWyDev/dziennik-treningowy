@@ -3,6 +3,7 @@ import { TrainingCard } from './TrainingCard';
 import { TrainingFilters } from './TrainingFilters';
 import { EmptyState } from './EmptyState';
 import { Button } from '@/components/ui/Button';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface TrainingType {
   id: string;
@@ -57,9 +58,11 @@ export function TrainingList() {
       const response = await fetch(`/api/trainings?${params}`);
 
       if (response.ok) {
-        const data = await response.json();
-        setTrainings(append ? [...trainings, ...data.data] : data.data);
-        setHasMore(data.data.length === 20);
+        const data = await safeJsonParse(response);
+        if (data) {
+          setTrainings(append ? [...trainings, ...data.data] : data.data);
+          setHasMore(data.data.length === 20);
+        }
       }
     } catch {
       // Error fetching trainings - silent fail

@@ -4,6 +4,7 @@ import { WeekSummary } from './WeekSummary';
 import { RecentTrainings } from './RecentTrainings';
 import { ActiveGoals } from './ActiveGoals';
 import { QuickAddButton } from './QuickAddButton';
+import { safeJsonParse } from '@/lib/client-helpers';
 
 interface TrainingType {
   id: string;
@@ -62,8 +63,10 @@ export function Dashboard({ userName }: DashboardProps) {
       try {
         const response = await fetch('/api/dashboard');
         if (response.ok) {
-          const dashboardData = await response.json();
-          setData(dashboardData);
+          const dashboardData = await safeJsonParse(response);
+          if (dashboardData) {
+            setData(dashboardData);
+          }
         }
       } catch {
         // Error fetching dashboard data - silent fail
