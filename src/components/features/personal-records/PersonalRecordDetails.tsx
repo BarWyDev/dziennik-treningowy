@@ -66,7 +66,7 @@ export function PersonalRecordDetails({ record }: PersonalRecordDetailsProps) {
       {record.notes && (
         <div>
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notatki</h4>
-          <p className="text-base text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+          <p className="text-base text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg break-words whitespace-pre-wrap">
             {record.notes}
           </p>
         </div>

@@ -206,7 +206,7 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
               <p className="text-sm lg:text-base font-medium text-blue-900 dark:text-blue-300 mb-2">
                 🎯 Cel treningu (mentalny i fizyczny)
               </p>
-              <p className="text-sm lg:text-base text-blue-800 dark:text-blue-200 whitespace-pre-wrap">{training.trainingGoal}</p>
+              <p className="text-sm lg:text-base text-blue-800 dark:text-blue-200 whitespace-pre-wrap break-words">{training.trainingGoal}</p>
             </div>
           )}
 
@@ -259,7 +259,7 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
                     <p className="text-sm lg:text-base font-medium text-green-900 dark:text-green-300 mb-2">
                       😊 Z czego jestem najbardziej zadowolony?
                     </p>
-                    <p className="text-sm lg:text-base text-green-800 dark:text-green-200 whitespace-pre-wrap">
+                    <p className="text-sm lg:text-base text-green-800 dark:text-green-200 whitespace-pre-wrap break-words">
                       {training.mostSatisfiedWith}
                     </p>
                   </div>
@@ -270,7 +270,7 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
                     <p className="text-sm lg:text-base font-medium text-amber-900 dark:text-amber-300 mb-2">
                       📈 Co następnym razem chcę zrobić lepiej?
                     </p>
-                    <p className="text-sm lg:text-base text-amber-800 dark:text-amber-200 whitespace-pre-wrap">
+                    <p className="text-sm lg:text-base text-amber-800 dark:text-amber-200 whitespace-pre-wrap break-words">
                       {training.improveNextTime}
                     </p>
                   </div>
@@ -281,7 +281,7 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
                     <p className="text-sm lg:text-base font-medium text-purple-900 dark:text-purple-300 mb-2">
                       💡 Jak mogę to zrobić?
                     </p>
-                    <p className="text-sm lg:text-base text-purple-800 dark:text-purple-200 whitespace-pre-wrap">
+                    <p className="text-sm lg:text-base text-purple-800 dark:text-purple-200 whitespace-pre-wrap break-words">
                       {training.howToImprove}
                     </p>
                   </div>
@@ -310,7 +310,7 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
               <p className="text-sm lg:text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
                 Dodatkowe uwagi i komentarze
               </p>
-              <p className="text-sm lg:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{training.notes}</p>
+              <p className="text-sm lg:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">{training.notes}</p>
             </div>
           )}
         </div>

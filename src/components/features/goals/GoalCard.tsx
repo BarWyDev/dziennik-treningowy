@@ -148,7 +148,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
           </div>
 
           {goal.description && (
-            <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400 mt-1">{goal.description}</p>
+            <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400 mt-1 break-words whitespace-pre-wrap">{goal.description}</p>
           )}
 
           {hasTarget && (

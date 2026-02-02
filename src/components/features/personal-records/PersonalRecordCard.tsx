@@ -62,7 +62,7 @@ export function PersonalRecordCard({ record, onEdit, onDelete, onView }: Persona
 
       {record.notes && (
         <div className="mb-4">
-          <p className="text-sm lg:text-base text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded-md line-clamp-2">{record.notes}</p>
+          <p className="text-sm lg:text-base text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded-md line-clamp-2 break-words">{record.notes}</p>
         </div>
       )}
 
