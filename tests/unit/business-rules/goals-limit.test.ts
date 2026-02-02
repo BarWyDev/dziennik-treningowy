@@ -55,7 +55,7 @@ describe('Goals Business Rules - Active Goals Limit', () => {
 
       expect(response.status).toBe(400);
       const data = await response.json();
-      expect(data.error).toBe(`Możesz mieć maksymalnie ${MAX_ACTIVE_GOALS} aktywnych celów`);
+      expect(data.error.code).toBe('GOAL_LIMIT_EXCEEDED');
     });
 
     it('powinien pozwolić na tworzenie celu gdy użytkownik ma mniej niż 5 aktywnych', async () => {
@@ -279,7 +279,7 @@ describe('Goals Business Rules - Active Goals Limit', () => {
       const response = await POST({ request } as any);
 
       expect(response.status).toBe(400);
-      expect((await response.json()).error).toContain('maksymalnie 5');
+      expect((await response.json()).error.code).toBe('GOAL_LIMIT_EXCEEDED');
     });
 
     it('powinien pozwolić przy dokładnie 4 aktywnych celach', async () => {

@@ -3,6 +3,13 @@ import { db } from '@/lib/db';
 import { mediaAttachments } from '@/lib/db/schema';
 import { storage } from '@/lib/storage';
 import { eq, and } from 'drizzle-orm';
+import {
+  createUnauthorizedError,
+  createErrorResponse,
+  handleDatabaseError,
+  handleUnexpectedError,
+  ErrorCode,
+} from '@/lib/error-handler';
 
 /**
  * DELETE /api/media/[id]
@@ -16,18 +23,15 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     // Sprawdź autentykację
     const user = locals.user;
     if (!user?.id) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createUnauthorizedError();
     }
 
     const { id } = params;
     if (!id) {
-      return new Response(JSON.stringify({ error: 'Brak ID załącznika' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Brak ID załącznika'
+      );
     }
 
     // Pobierz załącznik (sprawdź ownership)
@@ -38,10 +42,10 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       .limit(1);
 
     if (!media) {
-      return new Response(JSON.stringify({ error: 'Załącznik nie znaleziony' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createErrorResponse(
+        ErrorCode.MEDIA_NOT_FOUND,
+        'Załącznik nie znaleziony'
+      );
     }
 
     // Usuń plik fizyczny
@@ -60,10 +64,11 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Delete media error:', error);
-    return new Response(JSON.stringify({ error: 'Błąd podczas usuwania załącznika' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Error) {
+      if (error.message.includes('database') || error.message.includes('query')) {
+        return handleDatabaseError(error, 'deleting media');
+      }
+    }
+    return handleUnexpectedError(error, 'media/[id] DELETE');
   }
 };

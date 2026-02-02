@@ -11,6 +11,7 @@ import {
   handleUnexpectedError,
   handleDatabaseError,
   createErrorResponse,
+  createUnauthorizedError,
   ErrorCode,
 } from '@/lib/error-handler';
 import {
@@ -34,10 +35,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Sprawdź autentykację
     const user = locals.user;
     if (!user?.id) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createUnauthorizedError();
     }
 
     // Rate limiting - 10 uploadów na minutę na użytkownika

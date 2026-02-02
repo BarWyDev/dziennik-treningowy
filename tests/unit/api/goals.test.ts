@@ -106,7 +106,7 @@ describe('API: /api/goals', () => {
       
       expect(response.status).toBe(400);
       const data = await parseJsonResponse(response);
-      expect(data.error).toContain('maksymalnie 5');
+      expect(data.error.code).toBe('GOAL_LIMIT_EXCEEDED');
     });
 
     it('zwraca 400 dla nieprawidłowych danych', async () => {
@@ -133,7 +133,7 @@ describe('API: /api/goals', () => {
       
       expect(response.status).toBe(400);
       const data = await parseJsonResponse(response);
-      expect(data).toHaveProperty('error', 'Validation error');
+      expect(data.error.code).toBe('VALIDATION_ERROR');
     });
 
     it('tworzy cel z poprawnymi danymi', async () => {

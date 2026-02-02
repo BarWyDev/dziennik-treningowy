@@ -109,7 +109,7 @@ describe('API: /api/training-types', () => {
       
       expect(response.status).toBe(400);
       const data = await parseJsonResponse(response);
-      expect(data).toHaveProperty('error', 'Validation error');
+      expect(data.error.code).toBe('VALIDATION_ERROR');
     });
 
     it('tworzy własny typ treningu', async () => {
@@ -237,7 +237,7 @@ describe('API: /api/training-types/[id]', () => {
       
       expect(response.status).toBe(404);
       const data = await parseJsonResponse(response);
-      expect(data.error).toContain('not found or cannot be modified');
+      expect(data.error.code).toBe('TRAINING_TYPE_NOT_FOUND');
     });
 
     it('nie pozwala na edycję typu domyślnego', async () => {
@@ -374,7 +374,7 @@ describe('API: /api/training-types/[id]', () => {
       
       expect(response.status).toBe(404);
       const data = await parseJsonResponse(response);
-      expect(data.error).toContain('not found or cannot be deleted');
+      expect(data.error.code).toBe('TRAINING_TYPE_NOT_FOUND');
     });
 
     it('usuwa własny typ treningu', async () => {

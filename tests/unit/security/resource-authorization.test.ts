@@ -59,7 +59,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Training not found');
+        expect(data.error.code).toBe('TRAINING_NOT_FOUND');
       });
 
       it('powinien zwrócić 200 dla własnego treningu', async () => {
@@ -125,7 +125,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Training not found');
+        expect(data.error.code).toBe('TRAINING_NOT_FOUND');
       });
     });
 
@@ -153,7 +153,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Training not found');
+        expect(data.error.code).toBe('TRAINING_NOT_FOUND');
       });
     });
   });
@@ -183,7 +183,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Goal not found');
+        expect(data.error.code).toBe('GOAL_NOT_FOUND');
       });
     });
 
@@ -213,7 +213,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Goal not found');
+        expect(data.error.code).toBe('GOAL_NOT_FOUND');
       });
     });
 
@@ -241,7 +241,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Goal not found');
+        expect(data.error.code).toBe('GOAL_NOT_FOUND');
       });
     });
 
@@ -269,7 +269,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Goal not found');
+        expect(data.error.code).toBe('GOAL_NOT_FOUND');
       });
     });
 
@@ -297,7 +297,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Goal not found');
+        expect(data.error.code).toBe('GOAL_NOT_FOUND');
       });
     });
   });
@@ -327,7 +327,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Record not found');
+        expect(data.error.code).toBe('PERSONAL_RECORD_NOT_FOUND');
       });
     });
 
@@ -357,7 +357,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Record not found');
+        expect(data.error.code).toBe('PERSONAL_RECORD_NOT_FOUND');
       });
     });
 
@@ -385,7 +385,7 @@ describe('Resource Authorization - User Isolation', () => {
 
         expect(response.status).toBe(404);
         const data = await response.json();
-        expect(data.error).toBe('Record not found');
+        expect(data.error.code).toBe('PERSONAL_RECORD_NOT_FOUND');
       });
     });
   });
@@ -422,7 +422,7 @@ describe('Resource Authorization - User Isolation', () => {
         expect(response.status).toBe(404);
         const data = await response.json();
         // Komunikat zawiera również info o ochronie domyślnych typów
-        expect(data.error).toBe('Training type not found or cannot be modified');
+        expect(data.error.code).toBe('TRAINING_TYPE_NOT_FOUND');
       });
     });
 
@@ -451,7 +451,7 @@ describe('Resource Authorization - User Isolation', () => {
         expect(response.status).toBe(404);
         const data = await response.json();
         // Komunikat zawiera również info o ochronie domyślnych typów
-        expect(data.error).toBe('Training type not found or cannot be deleted');
+        expect(data.error.code).toBe('TRAINING_TYPE_NOT_FOUND');
       });
     });
   });
@@ -487,7 +487,7 @@ describe('Resource Authorization - User Isolation', () => {
         expect(response.status).toBe(404);
         const data = await response.json();
         // Komunikat po polsku zgodnie z kodem
-        expect(data.error).toBe('Załącznik nie znaleziony');
+        expect(data.error.code).toBe('MEDIA_NOT_FOUND');
       });
     });
   });

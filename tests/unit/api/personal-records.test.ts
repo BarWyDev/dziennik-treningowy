@@ -42,12 +42,16 @@ describe('API: /api/personal-records', () => {
 
     it('zwraca listę rekordów użytkownika', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
       vi.mocked(db.select).mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([mockPersonalRecord]),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue([mockPersonalRecord]),
+              }),
+            }),
           }),
         }),
       } as any).mockReturnValueOnce({
@@ -60,9 +64,9 @@ describe('API: /api/personal-records', () => {
       const ctx = createMockAPIContext({
         url: 'http://localhost:4321/api/personal-records',
       });
-      
+
       const response = await GET(ctx as any);
-      
+
       expect(response.status).toBe(200);
     });
 
@@ -73,7 +77,11 @@ describe('API: /api/personal-records', () => {
       vi.mocked(db.select).mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([mockPersonalRecord]),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue([mockPersonalRecord]),
+              }),
+            }),
           }),
         }),
       } as any).mockReturnValueOnce({
@@ -103,7 +111,11 @@ describe('API: /api/personal-records', () => {
       vi.mocked(db.select).mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([mockPersonalRecord]),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue([mockPersonalRecord]),
+              }),
+            }),
           }),
         }),
       } as any).mockReturnValueOnce({
@@ -133,7 +145,11 @@ describe('API: /api/personal-records', () => {
       vi.mocked(db.select).mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([mockPersonalRecord]),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue([mockPersonalRecord]),
+              }),
+            }),
           }),
         }),
       } as any).mockReturnValueOnce({
@@ -190,7 +206,7 @@ describe('API: /api/personal-records', () => {
       
       expect(response.status).toBe(400);
       const data = await parseJsonResponse(response);
-      expect(data).toHaveProperty('error', 'Validation error');
+      expect(data.error.code).toBe('VALIDATION_ERROR');
     });
 
     it('tworzy rekord osobisty z poprawnymi danymi', async () => {

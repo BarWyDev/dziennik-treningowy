@@ -58,7 +58,7 @@ describe('API: /api/trainings', () => {
       
       expect(response.status).toBe(401);
       const data = await parseJsonResponse(response);
-      expect(data).toHaveProperty('error', 'Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     // Testy wymagające złożonych mocków Drizzle są pominięte
@@ -99,8 +99,8 @@ describe('API: /api/trainings', () => {
       
       expect(response.status).toBe(400);
       const data = await parseJsonResponse(response);
-      expect(data).toHaveProperty('error', 'Validation error');
-      expect(data).toHaveProperty('details');
+      expect(data.error.code).toBe('VALIDATION_ERROR');
+      expect(data.error.details).toBeDefined();
     });
 
     // Test tworzenia treningu wymaga UUID dla trainingTypeId

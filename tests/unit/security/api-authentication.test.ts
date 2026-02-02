@@ -38,7 +38,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('POST /api/trainings powinien zwrócić 401 bez sesji', async () => {
@@ -60,7 +60,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -78,7 +78,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('PUT /api/trainings/:id powinien zwrócić 401 bez sesji', async () => {
@@ -99,7 +99,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('DELETE /api/trainings/:id powinien zwrócić 401 bez sesji', async () => {
@@ -118,7 +118,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -136,7 +136,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('POST /api/goals powinien zwrócić 401 bez sesji', async () => {
@@ -158,7 +158,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -176,7 +176,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('PUT /api/goals/:id powinien zwrócić 401 bez sesji', async () => {
@@ -197,7 +197,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('DELETE /api/goals/:id powinien zwrócić 401 bez sesji', async () => {
@@ -216,7 +216,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -237,7 +237,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -258,7 +258,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -277,7 +277,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('POST /api/personal-records powinien zwrócić 401 bez sesji', async () => {
@@ -299,7 +299,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -317,7 +317,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('PUT /api/personal-records/:id powinien zwrócić 401 bez sesji', async () => {
@@ -338,7 +338,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('DELETE /api/personal-records/:id powinien zwrócić 401 bez sesji', async () => {
@@ -357,7 +357,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -372,7 +372,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -390,7 +390,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('POST /api/training-types powinien zwrócić 401 bez sesji', async () => {
@@ -408,7 +408,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -431,7 +431,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('DELETE /api/training-types/:id powinien zwrócić 401 bez sesji', async () => {
@@ -450,7 +450,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -468,7 +468,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -493,7 +493,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -537,7 +537,7 @@ describe('API Authentication - 401 Unauthorized for unauthenticated requests', (
       
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
   });
 });

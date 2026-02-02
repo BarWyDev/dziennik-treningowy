@@ -51,7 +51,7 @@ describe('Training Types Business Rules - Default Types Protection', () => {
 
       expect(response.status).toBe(404);
       const data = await response.json();
-      expect(data.error).toBe('Training type not found or cannot be deleted');
+      expect(data.error.code).toBe('TRAINING_TYPE_NOT_FOUND');
     });
 
     it('powinien pozwolić na usunięcie custom typu użytkownika', async () => {
@@ -118,7 +118,7 @@ describe('Training Types Business Rules - Default Types Protection', () => {
 
       expect(response.status).toBe(404);
       const data = await response.json();
-      expect(data.error).toBe('Training type not found or cannot be modified');
+      expect(data.error.code).toBe('TRAINING_TYPE_NOT_FOUND');
     });
 
     it('powinien pozwolić na edycję custom typu użytkownika', async () => {

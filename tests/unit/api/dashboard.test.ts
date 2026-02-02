@@ -52,7 +52,7 @@ describe('API: /api/dashboard', () => {
       
       expect(response.status).toBe(401);
       const data = await parseJsonResponse(response);
-      expect(data).toHaveProperty('error', 'Unauthorized');
+      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('zwraca dane dashboardu dla zalogowanego użytkownika', async () => {
