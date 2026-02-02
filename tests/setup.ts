@@ -38,9 +38,11 @@ vi.mock('@/lib/db', () => ({
       })),
     })),
     insert: vi.fn(() => ({
-      values: vi.fn(() => ({
-        returning: vi.fn(() => Promise.resolve([])),
-      })),
+      values: vi.fn(function() {
+        return {
+          returning: vi.fn(async () => Promise.resolve([{ id: 'test-id' }])),
+        };
+      }),
     })),
     update: vi.fn(() => ({
       set: vi.fn(() => ({
@@ -52,6 +54,27 @@ vi.mock('@/lib/db', () => ({
     delete: vi.fn(() => ({
       where: vi.fn(() => Promise.resolve()),
     })),
+    transaction: vi.fn(async (fn) => {
+      await fn({
+        insert: vi.fn(() => ({
+          values: vi.fn(function() {
+            return {
+              returning: vi.fn(async () => Promise.resolve([{ id: 'test-id' }])),
+            };
+          }),
+        })),
+        update: vi.fn(() => ({
+          set: vi.fn(() => ({
+            where: vi.fn(() => ({
+              returning: vi.fn(async () => Promise.resolve([{ id: 'test-id' }])),
+            })),
+          })),
+        })),
+        delete: vi.fn(() => ({
+          where: vi.fn(async () => Promise.resolve()),
+        })),
+      } as any);
+    }),
   },
   trainings: {},
   trainingTypes: {},

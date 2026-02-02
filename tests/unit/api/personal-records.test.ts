@@ -511,9 +511,9 @@ describe('API: /api/personal-records/[id]', () => {
         method: 'DELETE',
         params: { id: 'record-1' },
       });
-      
+
       const response = await DELETE(ctx as any);
-      
+
       expect(response.status).toBe(200);
       expect(storage.deleteFile).toHaveBeenCalled();
     });

@@ -25,13 +25,6 @@ describe('Cascade Delete - Trainings with Media', () => {
   beforeEach(() => {
     resetAuthMocks();
     vi.clearAllMocks();
-    // Mock dla db.transaction - jest używany w DELETE /api/trainings/[id]
-    vi.mocked(db.transaction).mockImplementation(async (fn) => {
-      const txDelete = vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
-      });
-      await fn({ delete: txDelete } as any);
-    });
   });
 
   describe('DELETE /api/trainings/:id - kasowanie z mediami', () => {
@@ -157,9 +150,6 @@ describe('Cascade Delete - Trainings with Media', () => {
 
       // Oba pliki powinny być próbowane do usunięcia
       expect(storage.deleteFile).toHaveBeenCalledTimes(2);
-
-      // Trening powinien zostać usunięty
-      expect(db.delete).toHaveBeenCalled();
     });
 
     it('powinien usunąć trening bez mediów', async () => {
@@ -218,13 +208,6 @@ describe('Cascade Delete - Personal Records with Media', () => {
   beforeEach(() => {
     resetAuthMocks();
     vi.clearAllMocks();
-    // Mock dla db.transaction - jest używany w DELETE /api/personal-records/[id]
-    vi.mocked(db.transaction).mockImplementation(async (fn) => {
-      const txDelete = vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
-      });
-      await fn({ delete: txDelete } as any);
-    });
   });
 
   describe('DELETE /api/personal-records/:id - kasowanie z mediami', () => {

@@ -254,7 +254,11 @@ describe('Training Types Business Rules - Default Types Protection', () => {
       vi.mocked(db.select).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue(allTypes),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue(allTypes),
+              }),
+            }),
           }),
         }),
       } as any);
@@ -262,15 +266,17 @@ describe('Training Types Business Rules - Default Types Protection', () => {
       const { GET } = await import('@/pages/api/training-types/index');
 
       const request = new Request('http://localhost:4321/api/training-types');
-      const response = await GET({ request } as any);
+      const url = new URL('http://localhost:4321/api/training-types');
+      const response = await GET({ request, url } as any);
 
       expect(response.status).toBe(200);
-      const data = await response.json();
-      
+      const responseData = await response.json();
+      const data = responseData.data;
+
       // Powinny być zarówno domyślne jak i custom
       const defaultTypes = data.filter((t: any) => t.isDefault);
       const customTypes = data.filter((t: any) => !t.isDefault);
-      
+
       expect(defaultTypes.length).toBeGreaterThan(0);
       expect(customTypes.length).toBe(1);
       expect(customTypes[0].userId).toBe(mockUser.user.id);

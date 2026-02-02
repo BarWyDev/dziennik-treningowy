@@ -52,15 +52,19 @@ describe('API: /api/training-types', () => {
 
     it('zwraca typy domyślne i własne użytkownika', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
       vi.mocked(db.select).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([
-              mockDefaultTrainingType,
-              mockCustomTrainingType,
-            ]),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue([
+                  mockDefaultTrainingType,
+                  mockCustomTrainingType,
+                ]),
+              }),
+            }),
           }),
         }),
       } as any);
@@ -69,9 +73,9 @@ describe('API: /api/training-types', () => {
       const ctx = createMockAPIContext({
         url: 'http://localhost:4321/api/training-types',
       });
-      
+
       const response = await GET(ctx as any);
-      
+
       expect(response.status).toBe(200);
     });
   });
