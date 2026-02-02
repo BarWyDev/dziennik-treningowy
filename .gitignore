@@ -32,3 +32,6 @@ github-actions-mikrus.pub
 # User uploads (keep .gitkeep for directory structure)
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Test coverage
+coverage/
