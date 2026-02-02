@@ -3,7 +3,8 @@ import { TrainingCard } from './TrainingCard';
 import { TrainingFilters } from './TrainingFilters';
 import { EmptyState } from './EmptyState';
 import { Button } from '@/components/ui/Button';
-import { safeJsonParse } from '@/lib/client-helpers';
+import { Alert } from '@/components/ui/Alert';
+import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface TrainingType {
   id: string;
@@ -38,12 +39,16 @@ interface Filters {
 export function TrainingList() {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({});
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
   const fetchTrainings = async (currentPage: number, currentFilters: Filters, append = false) => {
     setIsLoading(true);
+    if (!append) {
+      setError(null);
+    }
 
     try {
       const params = new URLSearchParams({
@@ -60,12 +65,16 @@ export function TrainingList() {
       if (response.ok) {
         const data = await safeJsonParse(response);
         if (data) {
-          setTrainings(append ? [...trainings, ...data.data] : data.data);
+          // Użyj functional update aby uniknąć stale closure
+          setTrainings((prev) => (append ? [...prev, ...data.data] : data.data));
           setHasMore(data.data.length === 20);
         }
+      } else {
+        const errorMessage = await parseErrorResponse(response);
+        setError(errorMessage);
       }
-    } catch {
-      // Error fetching trainings - silent fail
+    } catch (err) {
+      setError('Nie udało się pobrać treningów. Sprawdź połączenie z internetem.');
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +115,18 @@ export function TrainingList() {
     <div className="space-y-4">
       <TrainingFilters filters={filters} onFiltersChange={handleFiltersChange} />
 
-      {trainings.length === 0 ? (
+      {error && (
+        <Alert variant="error">
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button size="sm" variant="secondary" onClick={() => fetchTrainings(page, filters)}>
+              Spróbuj ponownie
+            </Button>
+          </div>
+        </Alert>
+      )}
+
+      {trainings.length === 0 && !error ? (
         <EmptyState />
       ) : (
         <>

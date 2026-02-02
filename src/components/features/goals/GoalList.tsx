@@ -4,7 +4,8 @@ import { GoalForm } from './GoalForm';
 import { GoalLimitInfo } from './GoalLimitInfo';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
-import { safeJsonParse } from '@/lib/client-helpers';
+import { Alert } from '@/components/ui/Alert';
+import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface Goal {
   id: string;
@@ -24,12 +25,14 @@ const MAX_ACTIVE_GOALS = 5;
 export function GoalList() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
   const fetchGoals = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch('/api/goals');
       if (response.ok) {
@@ -37,9 +40,12 @@ export function GoalList() {
         if (data) {
           setGoals(data);
         }
+      } else {
+        const errorMessage = await parseErrorResponse(response);
+        setError(errorMessage);
       }
-    } catch {
-      // Error fetching goals - silent fail
+    } catch (err) {
+      setError('Nie udało się pobrać celów. Sprawdź połączenie z internetem.');
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +89,17 @@ export function GoalList() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="error">
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button size="sm" variant="secondary" onClick={fetchGoals}>
+              Spróbuj ponownie
+            </Button>
+          </div>
+        </Alert>
+      )}
+
       <GoalLimitInfo activeCount={activeGoals.length} maxGoals={MAX_ACTIVE_GOALS} />
 
       {/* Active Goals */}
