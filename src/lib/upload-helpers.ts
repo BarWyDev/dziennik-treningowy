@@ -1,4 +1,3 @@
-import type { APIRoute } from 'astro';
 import { db } from '@/lib/db';
 import { eq, and } from 'drizzle-orm';
 import {
@@ -6,6 +5,11 @@ import {
   validateFileSize,
 } from '@/lib/validations/media';
 import { validateFileSignature } from '@/lib/utils/file-signatures';
+import {
+  createErrorResponse,
+  createNotFoundError,
+  ErrorCode,
+} from '@/lib/error-handler';
 
 /**
  * Waliduje plik przed uploadem
@@ -13,46 +17,40 @@ import { validateFileSignature } from '@/lib/utils/file-signatures';
  */
 export async function validateUploadFile(file: File | null): Promise<Response | null> {
   if (!file) {
-    return new Response(JSON.stringify({ error: 'File is required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return createErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Plik jest wymagany',
+      { field: 'file' }
+    );
   }
 
   // Walidacja typu pliku (MIME type)
   const fileType = getFileType(file);
   if (!fileType) {
-    return new Response(
-      JSON.stringify({
-        error: 'Invalid file type. Allowed: JPG, PNG, WebP, HEIC, MP4, MOV, WebM',
-      }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }
+    return createErrorResponse(
+      ErrorCode.INVALID_FILE_TYPE,
+      'Nieprawidłowy typ pliku. Dozwolone: JPG, PNG, WebP, HEIC, MP4, MOV, WebM',
+      { allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'video/mp4', 'video/quicktime', 'video/webm'] }
     );
   }
 
   // Walidacja magic bytes (ochrona przed MIME type spoofing)
   const signatureValid = await validateFileSignature(file);
   if (!signatureValid) {
-    return new Response(
-      JSON.stringify({
-        error: 'File signature does not match declared MIME type. File may be corrupted or malicious.',
-      }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }
+    return createErrorResponse(
+      ErrorCode.INVALID_FILE_TYPE,
+      'Sygnatura pliku nie zgadza się z deklarowanym typem MIME. Plik może być uszkodzony lub złośliwy.',
+      { reason: 'signature_mismatch' }
     );
   }
 
   // Walidacja rozmiaru
   if (!validateFileSize(file)) {
-    return new Response(JSON.stringify({ error: 'File exceeds 50MB limit' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return createErrorResponse(
+      ErrorCode.FILE_TOO_LARGE,
+      'Plik przekracza limit 50MB',
+      { maxSize: 50 * 1024 * 1024, actualSize: file.size }
+    );
   }
 
   return null;
@@ -66,10 +64,11 @@ export function validateEntityType(
   entityType: string | null
 ): Response | null {
   if (!entityType || !['training', 'personal-record'].includes(entityType)) {
-    return new Response(JSON.stringify({ error: 'Invalid entity type' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return createErrorResponse(
+      ErrorCode.INVALID_INPUT,
+      'Nieprawidłowy typ encji. Dozwolone: training, personal-record',
+      { field: 'entityType', allowedValues: ['training', 'personal-record'] }
+    );
   }
 
   return null;
@@ -93,10 +92,7 @@ export async function verifyEntityOwnership(
       .limit(1);
 
     if (!training) {
-      return new Response(JSON.stringify({ error: 'Training not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('training', entityId);
     }
   } else {
     const { personalRecords } = await import('@/lib/db/schema');
@@ -108,10 +104,7 @@ export async function verifyEntityOwnership(
       .limit(1);
 
     if (!record) {
-      return new Response(JSON.stringify({ error: 'Personal record not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createNotFoundError('personal-record', entityId);
     }
   }
 
