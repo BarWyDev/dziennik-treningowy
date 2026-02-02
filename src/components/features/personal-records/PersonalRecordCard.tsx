@@ -47,7 +47,7 @@ export function PersonalRecordCard({ record, onEdit, onDelete, onView }: Persona
   });
 
   return (
-    <div className="bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow">
+    <div className="flex flex-col h-full bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">{record.activityName}</h3>
@@ -88,7 +88,7 @@ export function PersonalRecordCard({ record, onEdit, onDelete, onView }: Persona
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
         <Button
           variant="primary"
           size="sm"
