@@ -53,6 +53,7 @@ pnpm test:e2e                   # Run Playwright E2E tests
 - **Forms:** React Hook Form + Zod validation
 - **Email:** Resend for transactional emails
 - **PDF Export:** jsPDF + jsPDF-AutoTable
+- **Media Storage:** Local file storage with upload API
 
 ### Project Structure
 
@@ -65,7 +66,10 @@ src/
 │   │   ├── trainings/         # Training CRUD + filters
 │   │   ├── training-types/    # Training type management
 │   │   ├── goals/             # Goal CRUD + achieve/archive
-│   │   └── personal-records/  # Personal records CRUD + stats
+│   │   ├── personal-records/  # Personal records CRUD + stats
+│   │   ├── upload.ts          # Media file upload endpoint
+│   │   ├── media/[id].ts      # Media deletion endpoint
+│   │   └── files/[...path].ts # Serve uploaded files
 │   ├── auth/                  # Auth pages (login, register, reset, verify)
 │   ├── trainings/             # Training pages (list, new, view, edit)
 │   ├── goals/                 # Goals management page
@@ -78,18 +82,22 @@ src/
 │   │   ├── goals/            # 4 goal-related components
 │   │   ├── dashboard/        # 5 dashboard components
 │   │   ├── personal-records/ # 4 personal records components
+│   │   ├── media/            # MediaUpload, MediaGallery, MediaPreview
 │   │   └── pdf/              # Export functionality
 │   ├── layout/               # Navbar, MobileMenu, UserMenu
 │   └── ui/                   # Reusable primitives (Button, Input, Dialog, etc.)
 ├── layouts/                   # Astro layouts (MainLayout, AppLayout)
 ├── lib/
 │   ├── db/
-│   │   ├── schema.ts         # Drizzle schema (users, trainings, goals, training_types)
+│   │   ├── schema.ts         # Drizzle schema (users, trainings, goals, training_types, media_attachments)
 │   │   └── index.ts          # Database client
+│   ├── storage/              # File storage service (local implementation)
 │   ├── validations/          # Zod schemas for forms and API
+│   ├── utils/                # Utility functions (file, media, file-signatures)
 │   ├── pdf/                  # PDF generation utilities (weekly/monthly reports)
 │   ├── auth.ts               # Better Auth server config
 │   ├── auth-client.ts        # Better Auth client exports
+│   ├── upload-helpers.ts     # Upload validation and ownership checks
 │   └── email.ts              # Email service with Resend
 └── middleware.ts             # Auth protection (redirects to /auth/login if not authenticated)
 ```
@@ -110,6 +118,7 @@ src/
   - Reflection: trainingGoal, mostSatisfiedWith, improveNextTime, howToImprove, notes
 - `goals` - Fitness goals (userId, title, description, targetValue, unit, deadline, status, isArchived, achievedAt)
 - `personal_records` - Personal best achievements (userId, activityName, result, unit, date, notes)
+- `media_attachments` - Media files for trainings and personal records (userId, trainingId/personalRecordId, fileName, fileUrl, fileType, mimeType, fileSize)
 
 **Key Constraints**:
 - Goals: Max 5 active goals per user (enforced in API, not DB)
@@ -157,6 +166,8 @@ All API routes in `src/pages/api/` follow this pattern:
 - `GET /api/personal-records/stats` - Get records statistics (total count, last record)
 - `PUT /api/personal-records/[id]` - Update personal record (ownership check)
 - `DELETE /api/personal-records/[id]` - Delete personal record (ownership check)
+- `POST /api/upload` - Upload media file (multipart/form-data)
+- `DELETE /api/media/[id]` - Delete media attachment (ownership check)
 
 ### Component Patterns
 
@@ -185,6 +196,39 @@ All API routes in `src/pages/api/` follow this pattern:
 5. **Password Reset**: Tokens expire after 1 hour
 6. **Training Ratings**: ratingOverall is required (1-5), all other ratings are optional
 7. **Reflection Fields**: All reflection fields (trainingGoal, mostSatisfiedWith, improveNextTime, howToImprove) are optional with 500 char limit each
+8. **Media Attachments**: Max 5 images + 1 video per training/personal record, max 50MB per file
+
+### Media Upload System
+
+**Supported Formats**:
+- Images: JPEG, PNG, WebP, HEIC
+- Videos: MP4, MOV, WebM
+
+**Limits**:
+- Max file size: 50MB
+- Max images per entity: 5
+- Max videos per entity: 1
+- Rate limit: 10 uploads per minute
+
+**Storage**: Local file system at `public/uploads/{userId}/{entityType}/{entityId}/{fileName}`
+
+**API Endpoints**:
+- `POST /api/upload` - Upload file (multipart/form-data with file, entityType, entityId)
+- `DELETE /api/media/[id]` - Delete media attachment
+- `GET /api/files/{path}` - Serve uploaded files
+
+**Security**:
+- Magic bytes verification (file signature check)
+- MIME type whitelist validation
+- Ownership verification before delete
+- Rate limiting per user
+
+**Components**:
+- `MediaUpload` - Drag & drop upload with progress
+- `MediaGallery` - Display with lightbox and video player
+- `MediaPreview` - Single file preview
+
+**Integration**: Media IDs are passed in `mediaIds` array when creating/updating trainings or personal records. Files are linked to entities in atomic transactions.
 
 ### Environment Variables
 
