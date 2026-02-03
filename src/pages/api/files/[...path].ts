@@ -3,6 +3,11 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { requireAuth } from '@/lib/api-helpers';
 import { handleUnexpectedError } from '@/lib/error-handler';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  RateLimitPresets,
+} from '@/lib/rate-limit';
 
 /**
  * Custom file server dla uploadowanych plików
@@ -11,10 +16,19 @@ import { handleUnexpectedError } from '@/lib/error-handler';
  */
 export const GET: APIRoute = async ({ params, request }) => {
   try {
-    // Sprawdź autentykację (bez rate limiting dla serwowania plików)
+    // Sprawdź autentykację
     const authResult = await requireAuth(request);
     if (!authResult.success) {
       return authResult.response;
+    }
+
+    // Rate limiting dla pobierania plików (DoS protection)
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(request, authResult.userId),
+      RateLimitPresets.FILE_DOWNLOAD
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     const filePath = params.path;
@@ -22,13 +36,17 @@ export const GET: APIRoute = async ({ params, request }) => {
       return new Response('File path required', { status: 400 });
     }
 
-    // Zabezpieczenie przed path traversal
-    if (filePath.includes('..') || filePath.includes('~')) {
+    // Zabezpieczenie przed path traversal - użyj path.resolve() dla pełnej walidacji
+    const uploadsDir = path.resolve(process.cwd(), 'public', 'uploads');
+    const requestedPath = path.resolve(uploadsDir, filePath);
+
+    // Sprawdź czy resolved path jest WEWNĄTRZ uploads directory
+    // Chroni przed: '..', '%2e%2e', symlinks, etc.
+    if (!requestedPath.startsWith(uploadsDir + path.sep)) {
       return new Response('Invalid file path', { status: 400 });
     }
 
-    // Pełna ścieżka do pliku
-    const fullPath = path.join(process.cwd(), 'public', 'uploads', filePath);
+    const fullPath = requestedPath;
 
     // Sprawdź czy plik istnieje
     if (!fs.existsSync(fullPath)) {

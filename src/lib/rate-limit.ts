@@ -29,6 +29,14 @@ class RateLimiter {
   private cleanupInterval?: NodeJS.Timeout;
 
   constructor() {
+    // Ostrzeżenie o ograniczeniach in-memory storage w produkcji
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+      console.warn(
+        '[SECURITY WARNING] Rate limiting uses in-memory storage. ' +
+        'For multi-instance deployments, implement Redis-based rate limiting.'
+      );
+    }
+
     // Cleanup starych wpisów co 5 minut
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
@@ -161,6 +169,13 @@ export const RateLimitPresets = {
     maxRequests: 3,
     windowMs: 60 * 60 * 1000, // 1 godzina
     errorMessage: 'Zbyt wiele prób resetowania hasła. Spróbuj ponownie za godzinę.',
+  },
+
+  /** File download - 100 pobrań na minutę (DoS protection) */
+  FILE_DOWNLOAD: {
+    maxRequests: 100,
+    windowMs: 60 * 1000, // 1 minuta
+    errorMessage: 'Zbyt wiele pobrań plików. Spróbuj ponownie za chwilę.',
   },
 } as const;
 

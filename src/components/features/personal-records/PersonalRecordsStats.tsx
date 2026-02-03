@@ -15,12 +15,17 @@ interface Stats {
   lastRecord: PersonalRecord | null;
 }
 
-export function PersonalRecordsStats() {
+interface PersonalRecordsStatsProps {
+  refreshTrigger?: number;
+}
+
+export function PersonalRecordsStats({ refreshTrigger }: PersonalRecordsStatsProps) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch('/api/personal-records/stats');
         if (response.ok) {
@@ -37,7 +42,7 @@ export function PersonalRecordsStats() {
     };
 
     fetchStats();
-  }, []);
+  }, [refreshTrigger]);
 
   if (isLoading) {
     return <div className="text-center py-4 text-gray-600 dark:text-gray-400 text-base lg:text-lg">Ładowanie statystyk...</div>;

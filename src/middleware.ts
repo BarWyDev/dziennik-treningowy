@@ -54,5 +54,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.user = session.user;
   context.locals.session = session.session;
 
-  return next();
+  // Pobierz response i dodaj security headers
+  const response = await next();
+
+  // Clone response aby móc modyfikować headers
+  const newResponse = new Response(response.body, response);
+
+  // Security headers - ochrona przed typowymi atakami
+  newResponse.headers.set('X-Content-Type-Options', 'nosniff');
+  newResponse.headers.set('X-Frame-Options', 'DENY');
+  newResponse.headers.set('X-XSS-Protection', '1; mode=block');
+  newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // HSTS tylko w produkcji (wymaga HTTPS)
+  if (import.meta.env.PROD) {
+    newResponse.headers.set(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains'
+    );
+  }
+
+  return newResponse;
 });

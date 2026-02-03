@@ -1,5 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR } from './common';
-import autoTable from 'jspdf-autotable';
+import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries } from './common';
 
 interface TrainingType {
   name: string;
@@ -24,8 +23,9 @@ interface MonthlyReportData {
   month: number;
 }
 
-export function generateMonthlyReport({ trainings, year, month }: MonthlyReportData): void {
-  const doc = createPDF();
+export async function generateMonthlyReport({ trainings, year, month }: MonthlyReportData): Promise<void> {
+  const { autoTable } = await loadPDFLibraries();
+  const doc = await createPDF();
 
   const monthName = new Date(year, month - 1, 1).toLocaleDateString('pl-PL', {
     month: 'long',

@@ -42,11 +42,11 @@ export function PersonalRecordsManager() {
         </Button>
       </div>
 
-      <PersonalRecordsStats key={`stats-${refreshTrigger}`} />
+      <PersonalRecordsStats refreshTrigger={refreshTrigger} />
 
       <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md border border-gray-200 dark:border-gray-800 p-6">
         <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Wszystkie rekordy</h2>
-        <PersonalRecordList key={`list-${refreshTrigger}`} />
+        <PersonalRecordList refreshTrigger={refreshTrigger} />
       </div>
 
       {/* Add Record Dialog */}

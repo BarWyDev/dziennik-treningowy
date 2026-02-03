@@ -1,5 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR } from './common';
-import autoTable from 'jspdf-autotable';
+import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries } from './common';
 
 interface TrainingType {
   name: string;
@@ -23,8 +22,9 @@ interface Training {
   trainingType?: TrainingType | null;
 }
 
-export function generateTrainingPDF(training: Training): void {
-  const doc = createPDF();
+export async function generateTrainingPDF(training: Training): Promise<void> {
+  const { autoTable } = await loadPDFLibraries();
+  const doc = await createPDF();
 
   let dateStr = new Date(training.date).toLocaleDateString('pl-PL', {
     weekday: 'long',
