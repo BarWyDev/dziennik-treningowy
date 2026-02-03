@@ -4,7 +4,9 @@ import { WeekSummary } from './WeekSummary';
 import { RecentTrainings } from './RecentTrainings';
 import { ActiveGoals } from './ActiveGoals';
 import { QuickAddButton } from './QuickAddButton';
-import { safeJsonParse } from '@/lib/client-helpers';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface TrainingType {
   id: string;
@@ -57,24 +59,31 @@ interface DashboardProps {
 export function Dashboard({ userName }: DashboardProps) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/dashboard');
+      if (response.ok) {
+        const dashboardData = await safeJsonParse(response);
+        if (dashboardData) {
+          setData(dashboardData);
+        }
+      } else {
+        const errorMessage = await parseErrorResponse(response);
+        setError(errorMessage);
+      }
+    } catch (err) {
+      setError('Nie udało się pobrać danych. Sprawdź połączenie z internetem.');
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/dashboard');
-        if (response.ok) {
-          const dashboardData = await safeJsonParse(response);
-          if (dashboardData) {
-            setData(dashboardData);
-          }
-        }
-      } catch {
-        // Error fetching dashboard data - silent fail
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -90,6 +99,22 @@ export function Dashboard({ userName }: DashboardProps) {
           <div className="h-56 xl:h-64 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
           <div className="h-56 xl:h-64 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4 xl:space-y-5">
+        <WelcomeMessage userName={userName} />
+        <Alert variant="error">
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button size="sm" variant="secondary" onClick={fetchData}>
+              Spróbuj ponownie
+            </Button>
+          </div>
+        </Alert>
       </div>
     );
   }

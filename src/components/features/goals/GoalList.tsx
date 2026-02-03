@@ -38,7 +38,8 @@ export function GoalList() {
       if (response.ok) {
         const data = await safeJsonParse(response);
         if (data) {
-          setGoals(data);
+          // Handle both old format (array) and new format (object with goals)
+          setGoals(Array.isArray(data) ? data : data.goals || []);
         }
       } else {
         const errorMessage = await parseErrorResponse(response);

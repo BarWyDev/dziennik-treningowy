@@ -75,26 +75,24 @@ export const GET: APIRoute = async ({ request }) => {
       media: allMedia.filter((m) => m.trainingId === r.training.id),
     }));
 
-    // Week summary
-    const weekTrainings = await db
+    // Combined week + total stats query (optimized from 2 queries to 1)
+    const [statsResult] = await db
       .select({
-        count: count(),
+        // Week stats
+        weekCount: sql<number>`COUNT(*) FILTER (WHERE ${trainings.date} >= ${startOfWeekStr} AND ${trainings.date} <= ${endOfWeekStr})`,
+        weekDuration: sql<number>`COALESCE(SUM(${trainings.durationMinutes}) FILTER (WHERE ${trainings.date} >= ${startOfWeekStr} AND ${trainings.date} <= ${endOfWeekStr}), 0)`,
+        weekCalories: sql<number>`COALESCE(SUM(${trainings.caloriesBurned}) FILTER (WHERE ${trainings.date} >= ${startOfWeekStr} AND ${trainings.date} <= ${endOfWeekStr}), 0)`,
+        // Total stats
+        totalCount: count(),
         totalDuration: sql<number>`COALESCE(SUM(${trainings.durationMinutes}), 0)`,
-        totalCalories: sql<number>`COALESCE(SUM(${trainings.caloriesBurned}), 0)`,
       })
       .from(trainings)
-      .where(
-        and(
-          eq(trainings.userId, userId),
-          gte(trainings.date, startOfWeekStr),
-          lte(trainings.date, endOfWeekStr)
-        )
-      );
+      .where(eq(trainings.userId, userId));
 
     const weekSummary = {
-      trainingsCount: weekTrainings[0]?.count || 0,
-      totalDuration: weekTrainings[0]?.totalDuration || 0,
-      totalCalories: weekTrainings[0]?.totalCalories || 0,
+      trainingsCount: Number(statsResult?.weekCount) || 0,
+      totalDuration: Number(statsResult?.weekDuration) || 0,
+      totalCalories: Number(statsResult?.weekCalories) || 0,
     };
 
     // Active goals
@@ -110,22 +108,13 @@ export const GET: APIRoute = async ({ request }) => {
       )
       .limit(3);
 
-    // Total stats
-    const totalStats = await db
-      .select({
-        count: count(),
-        totalDuration: sql<number>`COALESCE(SUM(${trainings.durationMinutes}), 0)`,
-      })
-      .from(trainings)
-      .where(eq(trainings.userId, userId));
-
     const response = {
       recentTrainings,
       weekSummary,
       activeGoals,
       totalStats: {
-        trainingsCount: totalStats[0]?.count || 0,
-        totalDuration: totalStats[0]?.totalDuration || 0,
+        trainingsCount: Number(statsResult?.totalCount) || 0,
+        totalDuration: Number(statsResult?.totalDuration) || 0,
       },
     };
 

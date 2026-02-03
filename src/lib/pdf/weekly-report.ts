@@ -1,5 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDateRange, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR } from './common';
-import autoTable from 'jspdf-autotable';
+import { createPDF, addHeader, addFooter, formatDateRange, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries } from './common';
 
 interface TrainingType {
   name: string;
@@ -24,8 +23,9 @@ interface WeeklyReportData {
   endDate: Date;
 }
 
-export function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyReportData): void {
-  const doc = createPDF();
+export async function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyReportData): Promise<void> {
+  const { autoTable } = await loadPDFLibraries();
+  const doc = await createPDF();
 
   const dateRange = formatDateRange(startDate, endDate);
   let yPos = addHeader(doc, 'Raport tygodniowy', dateRange);

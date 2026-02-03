@@ -1,6 +1,4 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
+// Dynamic imports for jsPDF - only loaded when needed (~200KB savings on initial load)
 // Type definitions for jspdf-autotable
 interface AutoTableOptions {
   startY?: number;
@@ -40,11 +38,23 @@ interface AutoTableResult {
   finalY: number;
 }
 
+// Type for jsPDF - will be imported dynamically
+type jsPDF = import('jspdf').jsPDF;
+
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: AutoTableOptions) => jsPDF;
     lastAutoTable?: AutoTableResult;
   }
+}
+
+// Lazy load jsPDF and autoTable plugin
+export async function loadPDFLibraries() {
+  const [{ jsPDF }, autoTable] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+  return { jsPDF, autoTable: autoTable.default };
 }
 
 // Convert Polish characters to ASCII equivalents for PDF compatibility
@@ -57,7 +67,9 @@ export function sanitizePolishText(text: string): string {
   return text.split('').map(char => charMap[char] || char).join('');
 }
 
-export function createPDF(): jsPDF {
+export async function createPDF(): Promise<jsPDF> {
+  const { jsPDF } = await loadPDFLibraries();
+
   const doc = new jsPDF({
     putOnlyUsedFonts: true,
     compress: true,

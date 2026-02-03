@@ -21,16 +21,36 @@ export const GET: APIRoute = async ({ request }) => {
       return authResult.response;
     }
 
+    // Pagination parameters
+    const url = new URL(request.url);
+    const limitParam = Number(url.searchParams.get('limit')) || 50;
+    const offset = Number(url.searchParams.get('offset')) || 0;
+
+    // Enforce max limit of 100
+    const limit = Math.min(limitParam, 100);
+
     const userGoals = await db
       .select()
       .from(goals)
       .where(eq(goals.userId, authResult.user.id))
-      .orderBy(goals.createdAt);
+      .orderBy(goals.createdAt)
+      .limit(limit)
+      .offset(offset);
 
-    return new Response(JSON.stringify(userGoals), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        goals: userGoals,
+        pagination: {
+          limit,
+          offset,
+          hasMore: userGoals.length === limit,
+        },
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     if (error instanceof Error && (error.message.includes('database') || error.message.includes('query'))) {
       return handleDatabaseError(error, 'fetching goals');

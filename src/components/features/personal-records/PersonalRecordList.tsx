@@ -5,7 +5,9 @@ import { PersonalRecordDetails } from './PersonalRecordDetails';
 import { Select } from '@/components/ui/Select';
 import { Label } from '@/components/ui/Label';
 import { Dialog } from '@/components/ui/Dialog';
-import { safeJsonParse } from '@/lib/client-helpers';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface MediaAttachment {
   id: string;
@@ -25,9 +27,15 @@ interface PersonalRecord {
   createdAt: Date | string;
 }
 
-export function PersonalRecordList() {
+interface PersonalRecordListProps {
+  refreshTrigger?: number;
+}
+
+export function PersonalRecordList({ refreshTrigger }: PersonalRecordListProps) {
   const [records, setRecords] = useState<PersonalRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
   const [editingRecord, setEditingRecord] = useState<PersonalRecord | null>(null);
@@ -37,6 +45,7 @@ export function PersonalRecordList() {
 
   const fetchRecords = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/personal-records?sortBy=${sortBy}&sortOrder=${sortOrder}`);
       if (response.ok) {
@@ -44,9 +53,13 @@ export function PersonalRecordList() {
         if (result) {
           setRecords(result.data || []);
         }
+      } else {
+        const errorMessage = await parseErrorResponse(response);
+        setError(errorMessage);
       }
-    } catch {
-      // Error fetching records - silent fail
+    } catch (err) {
+      setError('Nie udało się pobrać rekordów. Sprawdź połączenie z internetem.');
+      console.error('Error fetching records:', err);
     } finally {
       setIsLoading(false);
     }
@@ -54,9 +67,10 @@ export function PersonalRecordList() {
 
   useEffect(() => {
     fetchRecords();
-  }, [sortBy, sortOrder]);
+  }, [sortBy, sortOrder, refreshTrigger]);
 
   const handleDelete = async (id: string) => {
+    setDeleteError(null);
     try {
       const response = await fetch(`/api/personal-records/${id}`, {
         method: 'DELETE',
@@ -64,9 +78,13 @@ export function PersonalRecordList() {
 
       if (response.ok) {
         setRecords(records.filter((r) => r.id !== id));
+      } else {
+        const errorMessage = await parseErrorResponse(response);
+        setDeleteError(errorMessage);
       }
-    } catch {
-      // Error deleting record - silent fail
+    } catch (err) {
+      setDeleteError('Nie udało się usunąć rekordu. Spróbuj ponownie.');
+      console.error('Error deleting record:', err);
     }
   };
 
@@ -113,6 +131,28 @@ export function PersonalRecordList() {
 
   return (
     <>
+      {error && (
+        <Alert variant="error" className="mb-6">
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button size="sm" variant="secondary" onClick={fetchRecords}>
+              Spróbuj ponownie
+            </Button>
+          </div>
+        </Alert>
+      )}
+
+      {deleteError && (
+        <Alert variant="error" className="mb-6">
+          <div className="flex items-center justify-between">
+            <span>{deleteError}</span>
+            <Button size="sm" variant="secondary" onClick={() => setDeleteError(null)}>
+              Zamknij
+            </Button>
+          </div>
+        </Alert>
+      )}
+
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
