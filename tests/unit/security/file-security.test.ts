@@ -91,10 +91,10 @@ describe('File Security - Path Traversal Prevention', () => {
       expect(response.status).toBe(400);
     });
 
-    it('powinien zwrócić 404 dla ścieżki z "~" (plik nie istnieje, ale ścieżka jest bezpieczna dzięki path.resolve)', async () => {
+    it('powinien zwrócić 403 dla ścieżki z "~" (plik nie jest przypisany do użytkownika)', async () => {
       // Implementacja używa path.resolve() który zapewnia że ścieżka nie wyjdzie poza uploads directory
       // "~/.ssh/id_rsa" po resolve staje się "uploads/~/.ssh/id_rsa" co jest bezpieczne
-      // Zwraca 404 bo plik nie istnieje (a nie 400 bo to nie jest path traversal)
+      // Zwraca 403 bo ownership check nie znajdzie rekordu w mediaAttachments
       const sessionData = createMockSessionData();
       mockAuthenticatedSession(sessionData);
 
@@ -106,7 +106,7 @@ describe('File Security - Path Traversal Prevention', () => {
         params: { path: '~/.ssh/id_rsa' },
       } as any);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
     });
 
     it('powinien zwrócić 400 dla ścieżki z ukrytym ".." w środku', async () => {

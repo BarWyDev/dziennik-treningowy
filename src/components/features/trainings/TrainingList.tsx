@@ -4,6 +4,7 @@ import { TrainingFilters } from './TrainingFilters';
 import { EmptyState } from './EmptyState';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface TrainingType {
@@ -112,6 +113,7 @@ export function TrainingList() {
   }
 
   return (
+    <ErrorBoundary>
     <div className="space-y-4">
       <TrainingFilters filters={filters} onFiltersChange={handleFiltersChange} />
 
@@ -146,5 +148,6 @@ export function TrainingList() {
         </>
       )}
     </div>
+    </ErrorBoundary>
   );
 }

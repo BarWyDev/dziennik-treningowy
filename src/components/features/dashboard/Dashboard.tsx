@@ -6,6 +6,7 @@ import { ActiveGoals } from './ActiveGoals';
 import { QuickAddButton } from './QuickAddButton';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface TrainingType {
@@ -124,24 +125,26 @@ export function Dashboard({ userName }: DashboardProps) {
   }
 
   return (
-    <div className="space-y-4 xl:space-y-5">
-      <WelcomeMessage userName={userName} />
+    <ErrorBoundary>
+      <div className="space-y-4 xl:space-y-5">
+        <WelcomeMessage userName={userName} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-5">
-        <QuickAddButton />
-        <div className="lg:col-span-2">
-          <WeekSummary
-            trainingsCount={data.weekSummary.trainingsCount}
-            totalDuration={data.weekSummary.totalDuration}
-            totalCalories={data.weekSummary.totalCalories}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-5">
+          <QuickAddButton />
+          <div className="lg:col-span-2">
+            <WeekSummary
+              trainingsCount={data.weekSummary.trainingsCount}
+              totalDuration={data.weekSummary.totalDuration}
+              totalCalories={data.weekSummary.totalCalories}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-5">
+          <RecentTrainings trainings={data.recentTrainings} />
+          <ActiveGoals goals={data.activeGoals} />
         </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-5">
-        <RecentTrainings trainings={data.recentTrainings} />
-        <ActiveGoals goals={data.activeGoals} />
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 }

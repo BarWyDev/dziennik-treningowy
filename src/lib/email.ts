@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 const resendApiKey = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const fromEmail = import.meta.env.EMAIL_FROM || process.env.EMAIL_FROM || 'noreply@example.com';
-const appName = import.meta.env.PUBLIC_APP_NAME || process.env.PUBLIC_APP_NAME || 'Dziennik Treningowy';
+const appName = import.meta.env.PUBLIC_APP_NAME || process.env.PUBLIC_APP_NAME || 'TrainWise';
 
 export async function sendVerificationEmail(email: string, verificationUrl: string) {
   if (!resend) {

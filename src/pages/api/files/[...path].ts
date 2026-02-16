@@ -8,6 +8,9 @@ import {
   getRateLimitIdentifier,
   RateLimitPresets,
 } from '@/lib/rate-limit';
+import { db } from '@/lib/db';
+import { mediaAttachments } from '@/lib/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 /**
  * Custom file server dla uploadowanych plików
@@ -24,7 +27,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     // Rate limiting dla pobierania plików (DoS protection)
     const rateLimitResponse = checkRateLimit(
-      getRateLimitIdentifier(request, authResult.userId),
+      getRateLimitIdentifier(request, authResult.user.id),
       RateLimitPresets.FILE_DOWNLOAD
     );
     if (rateLimitResponse) {
@@ -44,6 +47,23 @@ export const GET: APIRoute = async ({ params, request }) => {
     // Chroni przed: '..', '%2e%2e', symlinks, etc.
     if (!requestedPath.startsWith(uploadsDir + path.sep)) {
       return new Response('Invalid file path', { status: 400 });
+    }
+
+    // Sprawdź ownership - użytkownik może pobierać tylko swoje pliki
+    const expectedFileUrl = `/api/files/${filePath.replace(/\\/g, '/')}`;
+    const [mediaRecord] = await db
+      .select({ id: mediaAttachments.id })
+      .from(mediaAttachments)
+      .where(
+        and(
+          eq(mediaAttachments.userId, authResult.user.id),
+          eq(mediaAttachments.fileUrl, expectedFileUrl)
+        )
+      )
+      .limit(1);
+
+    if (!mediaRecord) {
+      return new Response('Forbidden', { status: 403 });
     }
 
     const fullPath = requestedPath;

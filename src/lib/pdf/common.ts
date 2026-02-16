@@ -144,7 +144,7 @@ export function addFooter(doc: jsPDF): void {
     doc.text(sanitizePolishText(`Wygenerowano: ${date}`), 14, pageHeight - 10);
 
     // App name
-    doc.text('Dziennik Treningowy', pageWidth - 14, pageHeight - 10, {
+    doc.text('TrainWise', pageWidth - 14, pageHeight - 10, {
       align: 'right',
     });
   }

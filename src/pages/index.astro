@@ -7,14 +7,14 @@ import '@/styles/globals.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dziennik Treningowy - Śledź swoje treningi i osiągaj cele</title>
+    <title>TrainWise - Śledź swoje treningi i osiągaj cele</title>
     <meta name="description" content="Darmowa aplikacja do śledzenia treningów. Zapisuj swoje ćwiczenia, wyznaczaj cele i obserwuj postępy." />
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=5" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=5" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=5" />
-    <link rel="shortcut icon" href="/favicon-32x32.png?v=5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=6" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=6" />
+    <link rel="shortcut icon" href="/favicon-32x32.png?v=6" />
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -27,7 +27,7 @@ import '@/styles/globals.css';
     <!-- Apple Mobile Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Dziennik Treningowy" />
+    <meta name="apple-mobile-web-app-title" content="TrainWise" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
     
     <!-- Microsoft Tiles -->
@@ -35,7 +35,7 @@ import '@/styles/globals.css';
     <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
     
     <!-- Mask Icon for Safari -->
-    <link rel="mask-icon" href="/favicon.svg?v=5" color="#2563eb" />
+    <link rel="mask-icon" href="/favicon.svg?v=6" color="#2563eb" />
     
     <script is:inline>
       // Prevent flash of unstyled content (FOUC) for dark mode
@@ -82,8 +82,15 @@ import '@/styles/globals.css';
     <!-- Navigation -->
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 xl:py-4 border-b border-gray-200 dark:border-gray-800">
       <div class="flex justify-between items-center">
-        <div class="text-xl lg:text-2xl xl:text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Dziennik Treningowy
+        <div class="inline-flex items-center gap-2">
+          <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#2563eb"/>
+            <polyline points="8,30 16,22 22,26 32,12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <polyline points="26,12 32,12 32,18" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="text-xl lg:text-2xl xl:text-2xl font-extrabold tracking-tight">
+            <span class="text-gray-900 dark:text-gray-100">Train</span><span class="text-primary-600 dark:text-primary-400">Wise</span>
+          </span>
         </div>
         <div class="flex items-center gap-2 xl:gap-3">
           <button
@@ -232,7 +239,7 @@ import '@/styles/globals.css';
     <!-- Footer -->
     <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 xl:py-6 border-t border-gray-200 dark:border-gray-700">
       <p class="text-center text-gray-500 dark:text-gray-400 text-xs xl:text-sm">
-        &copy; {new Date().getFullYear()} Dziennik Treningowy. Wszystkie prawa zastrzeżone.
+        &copy; {new Date().getFullYear()} TrainWise. Wszystkie prawa zastrzeżone.
       </p>
     </footer>
   </body>

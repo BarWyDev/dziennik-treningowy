@@ -280,6 +280,7 @@
   .dark input[type="time"],
   .dark input[type="datetime-local"] {
     color-scheme: dark;
+    color: rgb(243 244 246) !important; /* gray-100 - widoczny tekst w dark mode */
   }
 
   /* Custom styling for date/time picker indicators - bardziej zaokrąglone */
@@ -353,18 +354,33 @@
   /* Ensure consistent appearance across browsers */
   input[type="date"]::-webkit-datetime-edit,
   input[type="time"]::-webkit-datetime-edit {
-    @apply text-gray-900 dark:text-gray-100;
+    color: rgb(17 24 39) !important; /* gray-900 */
     font-family: var(--font-sans);
+  }
+
+  .dark input[type="date"]::-webkit-datetime-edit,
+  .dark input[type="time"]::-webkit-datetime-edit {
+    color: rgb(243 244 246) !important; /* gray-100 */
   }
 
   input[type="date"]::-webkit-datetime-edit-fields-wrapper,
   input[type="time"]::-webkit-datetime-edit-fields-wrapper {
-    @apply text-gray-900 dark:text-gray-100;
+    color: rgb(17 24 39) !important;
+  }
+
+  .dark input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  .dark input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    color: rgb(243 244 246) !important;
   }
 
   input[type="date"]::-webkit-datetime-edit-text,
   input[type="time"]::-webkit-datetime-edit-text {
-    @apply text-gray-600 dark:text-gray-400;
+    color: rgb(75 85 99) !important; /* gray-600 */
+  }
+
+  .dark input[type="date"]::-webkit-datetime-edit-text,
+  .dark input[type="time"]::-webkit-datetime-edit-text {
+    color: rgb(156 163 175) !important; /* gray-400 */
   }
 
   input[type="date"]::-webkit-datetime-edit-month-field,
@@ -372,7 +388,15 @@
   input[type="date"]::-webkit-datetime-edit-year-field,
   input[type="time"]::-webkit-datetime-edit-hour-field,
   input[type="time"]::-webkit-datetime-edit-minute-field {
-    @apply text-gray-900 dark:text-gray-100;
+    color: rgb(17 24 39) !important;
+  }
+
+  .dark input[type="date"]::-webkit-datetime-edit-month-field,
+  .dark input[type="date"]::-webkit-datetime-edit-day-field,
+  .dark input[type="date"]::-webkit-datetime-edit-year-field,
+  .dark input[type="time"]::-webkit-datetime-edit-hour-field,
+  .dark input[type="time"]::-webkit-datetime-edit-minute-field {
+    color: rgb(243 244 246) !important;
   }
 
   /* Additional styling for better visual consistency */
