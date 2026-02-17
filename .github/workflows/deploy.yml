@@ -8,7 +8,6 @@ on:
     paths-ignore:
       - '**.md'
       - '.ai/**'
-      - 'DEPLOYMENT.md'
 
   # Możliwość manualnego uruchomienia
   workflow_dispatch:
@@ -26,7 +25,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       # 3. Setup Node.js z cache
       - name: Setup Node.js
@@ -72,13 +71,19 @@ jobs:
           # Dodaj host do known_hosts (unikaj prompt)
           ssh-keyscan -p ${SSH_PORT:-22} -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
 
-          echo "📤 Uploading dist/ to Mikrus..."
+          APP_DIR="/var/www/dziennik-treningowy"
+
+          echo "📤 Uploading to Mikrus..."
 
           # Backup starego dist/ na serwerze (safety)
-          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd ~/apps/dziennik-treningowy && [ -d dist ] && cp -r dist dist.backup.$(date +%Y%m%d_%H%M%S) || true"
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd $APP_DIR && [ -d dist ] && cp -r dist dist.backup.\$(date +%Y%m%d_%H%M%S) || true"
 
-          # Upload nowego dist/
-          scp -P ${SSH_PORT:-22} -r dist/ $SSH_USER@$SSH_HOST:~/apps/dziennik-treningowy/
+          # Upload dist/, package.json i lockfile
+          scp -P ${SSH_PORT:-22} -r dist/ $SSH_USER@$SSH_HOST:$APP_DIR/
+          scp -P ${SSH_PORT:-22} package.json pnpm-lock.yaml $SSH_USER@$SSH_HOST:$APP_DIR/
+
+          # Instalacja produkcyjnych dependencies na serwerze
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd $APP_DIR && pnpm install --frozen-lockfile --prod"
 
           echo "✅ Upload complete"
 
@@ -92,7 +97,7 @@ jobs:
         run: |
           echo "🔄 Restarting PM2 application..."
 
-          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd ~/apps/dziennik-treningowy && pm2 restart dziennik-treningowy"
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd /var/www/dziennik-treningowy && pm2 restart dziennik-treningowy"
 
           echo "✅ Application restarted"
 
@@ -104,7 +109,7 @@ jobs:
           echo "🏥 Checking if application is running..."
           sleep 5  # Poczekaj 5 sekund na restart
 
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${APP_URL:-http://trening.byst.re} || echo "000")
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${APP_URL:-https://trainwise.fun} || echo "000")
 
           if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "301" ] || [ "$HTTP_STATUS" = "302" ]; then
             echo "✅ Application is UP (HTTP $HTTP_STATUS)"
