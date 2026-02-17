@@ -43,6 +43,7 @@ jobs:
         run: pnpm build
         env:
           NODE_ENV: production
+          PUBLIC_APP_URL: ${{ secrets.APP_URL }}
 
       # 6. Weryfikacja buildu
       - name: Verify build
