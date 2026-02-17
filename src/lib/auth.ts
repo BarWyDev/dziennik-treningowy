@@ -48,7 +48,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Wyłączona weryfikacja email
+    requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
       await sendPasswordResetEmail(user.email, url);
     },
@@ -57,7 +57,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await sendVerificationEmail(user.email, url);
     },
-    sendOnSignUp: false, // Nie wysyłaj maila przy rejestracji
+    sendOnSignUp: true,
   },
   session: {
     expiresIn: SESSION_EXPIRY_SECONDS,
