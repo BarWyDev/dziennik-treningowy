@@ -9,7 +9,7 @@ test.describe('Nawigacja - Strona główna', () => {
   test('wyświetla stronę główną', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveTitle(/Dziennik Treningowy/i);
+    await expect(page).toHaveTitle(/TrainWise/i);
   });
 
   test('wyświetla przycisk CTA do rejestracji/logowania', async ({ page }) => {
@@ -118,12 +118,11 @@ test.describe('Nawigacja - Historia przeglądarki', () => {
 });
 
 test.describe('Nawigacja - 404', () => {
-  test('wyświetla stronę 404 dla nieistniejącej ścieżki', async ({ page }) => {
-    const response = await page.goto('/nieistniejaca-strona-xyz');
+  test('nieistniejąca chroniona ścieżka przekierowuje na login', async ({ page }) => {
+    await page.goto('/nieistniejaca-strona-xyz');
 
-    // Astro może zwrócić 404 lub przekierować
-    // Sprawdzamy czy strona się załadowała
-    expect(response?.status()).toBe(404);
+    // Middleware przekierowuje niezalogowanych na login
+    await expect(page).toHaveURL(/\/auth\/login/);
   });
 });
 
@@ -132,7 +131,7 @@ test.describe('Nawigacja - Meta tags', () => {
     await page.goto('/');
 
     // Sprawdź title
-    await expect(page).toHaveTitle(/Dziennik Treningowy/);
+    await expect(page).toHaveTitle(/TrainWise/);
 
     // Sprawdź meta description (jeśli jest)
     const metaDescription = page.locator('meta[name="description"]');
@@ -142,7 +141,7 @@ test.describe('Nawigacja - Meta tags', () => {
   test('strona logowania ma poprawny title', async ({ page }) => {
     await page.goto('/auth/login');
 
-    await expect(page).toHaveTitle(/login|logowanie/i);
+    await expect(page).toHaveTitle(/logowanie|TrainWise/i);
   });
 });
 
