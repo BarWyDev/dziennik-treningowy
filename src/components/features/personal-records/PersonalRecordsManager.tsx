@@ -4,6 +4,7 @@ import { PersonalRecordList } from './PersonalRecordList';
 import { PersonalRecordsStats } from './PersonalRecordsStats';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export function PersonalRecordsManager() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -16,6 +17,7 @@ export function PersonalRecordsManager() {
   };
 
   return (
+    <ErrorBoundary>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -62,5 +64,6 @@ export function PersonalRecordsManager() {
         />
       </Dialog>
     </div>
+    </ErrorBoundary>
   );
 }

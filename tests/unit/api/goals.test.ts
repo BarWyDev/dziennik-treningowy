@@ -46,12 +46,16 @@ describe('API: /api/goals', () => {
 
     it('zwraca listę celów użytkownika', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
       vi.mocked(db.select).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([mockGoal]),
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                offset: vi.fn().mockResolvedValue([mockGoal]),
+              }),
+            }),
           }),
         }),
       } as any);
@@ -60,9 +64,9 @@ describe('API: /api/goals', () => {
       const ctx = createMockAPIContext({
         url: 'http://localhost:4321/api/goals',
       });
-      
+
       const response = await GET(ctx as any);
-      
+
       expect(response.status).toBe(200);
     });
   });

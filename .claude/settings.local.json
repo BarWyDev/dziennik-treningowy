@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(pnpm test:*)",
-      "Bash(pnpm test:unit:*)"
+      "Bash(pnpm test:unit:*)",
+      "WebSearch",
+      "WebFetch(domain:wiki.mikr.us)",
+      "WebFetch(domain:mikr.us)"
     ]
   }
 }

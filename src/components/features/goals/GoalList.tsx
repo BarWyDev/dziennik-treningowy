@@ -5,6 +5,7 @@ import { GoalLimitInfo } from './GoalLimitInfo';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { safeJsonParse, parseErrorResponse } from '@/lib/client-helpers';
 
 interface Goal {
@@ -89,6 +90,7 @@ export function GoalList() {
   }
 
   return (
+    <ErrorBoundary>
     <div className="space-y-6">
       {error && (
         <Alert variant="error">
@@ -225,5 +227,6 @@ export function GoalList() {
         />
       </Dialog>
     </div>
+    </ErrorBoundary>
   );
 }

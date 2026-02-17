@@ -49,8 +49,16 @@ export function Navbar({ user }: NavbarProps) {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <a href="/dashboard" className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Dziennik Treningowy
+              <a href="/dashboard" className="inline-flex items-center gap-2">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="40" height="40" rx="10" fill="#2563eb"/>
+                  <polyline points="8,30 16,22 22,26 32,12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  <polyline points="26,12 32,12 32,18" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
+                <span className="text-xl lg:text-2xl font-extrabold tracking-tight">
+                  <span className="text-gray-900 dark:text-gray-100">Train</span>
+                  <span className="text-primary-600 dark:text-primary-400">Wise</span>
+                </span>
               </a>
             </div>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-1">

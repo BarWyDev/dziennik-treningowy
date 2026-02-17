@@ -76,13 +76,27 @@ jobs:
     name: E2E Tests
     needs: lint
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+      BETTER_AUTH_SECRET: test-secret-for-ci-at-least-32-characters-long
       BETTER_AUTH_URL: http://localhost:4321
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      PUBLIC_APP_NAME: Dziennik Treningowy
+      RESEND_API_KEY: re_test_fake_key_for_ci
+      EMAIL_FROM: test@example.com
+      PUBLIC_APP_NAME: TrainWise
     steps:
       - uses: actions/checkout@v4
 
@@ -99,6 +113,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Push database schema
+        run: pnpm db:push
+
+      - name: Seed database
+        run: pnpm db:seed
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium

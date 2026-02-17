@@ -20,6 +20,7 @@ vi.mock('@/lib/db', () => ({
     select: vi.fn(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
+          limit: vi.fn(() => Promise.resolve([])),
           orderBy: vi.fn(() => ({
             limit: vi.fn(() => ({
               offset: vi.fn(() => Promise.resolve([])),

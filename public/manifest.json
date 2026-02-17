@@ -1,6 +1,6 @@
 {
-  "name": "Dziennik Treningowy",
-  "short_name": "Dziennik",
+  "name": "TrainWise",
+  "short_name": "TrainWise",
   "description": "Śledź swoje treningi i osiągaj cele",
   "start_url": "/",
   "display": "standalone",

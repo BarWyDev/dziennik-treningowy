@@ -41,7 +41,7 @@
     "astro": "^5.16.11",
     "better-auth": "^1.4.16",
     "drizzle-orm": "^0.45.1",
-    "jspdf": "^4.0.0",
+    "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
     "postgres": "^3.4.8",
     "react": "^19.2.3",
