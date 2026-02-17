@@ -15,14 +15,14 @@ Projekt jest w pełni gotowy do produkcji (build OK, 999/999 testów, security h
 | **SSH** | `ssh root@felix160.mikrus.xyz -p 10160` |
 | **IPv6** | 2a01:4f9:2a:2855::160 (tylko IPv6!) |
 | **Serwer fizyczny** | srv45 |
-| **Cloudflare** | Aktywny, DNS Setup: Full, proxy ON |
+| **Cloudflare** | Aktywny, DNS Setup: Full (Strict) - DO PRZEŁĄCZENIA, proxy ON |
 | **DNS** | AAAA → 2a01:4f9:2a:2855::160 (Proxied) |
 
 **WAŻNE:** Mikrus ma tylko IPv6 - Cloudflare Proxy (Proxied) jest wymagane, aby użytkownicy IPv4 mogli się połączyć.
 
 ---
 
-## FAZA 1: Zakupy i rejestracje - UKOŃCZONA
+## FAZA 1: Zakupy i rejestracje - UKOŃCZONA ✅
 
 - [x] Mikrus 3.0 kupiony (felix160, srv45)
 - [x] Domena trainwise.fun kupiona (home.pl)
@@ -31,7 +31,7 @@ Projekt jest w pełni gotowy do produkcji (build OK, 999/999 testów, security h
 - [x] Rekord CNAME www dodany w Cloudflare (Proxied)
 - [x] Nameservery zmienione w home.pl na Cloudflare
 - [x] SSH bezhasłowe skonfigurowane (klucz ed25519)
-- [ ] Konto Resend - DO ZAŁOŻENIA JUTRO
+- [x] Konto Resend założone, API key wygenerowany
 
 **Koszt:**
 
@@ -53,7 +53,7 @@ Projekt jest w pełni gotowy do produkcji (build OK, 999/999 testów, security h
 ssh root@felix160.mikrus.xyz -p 10160
 ```
 
-### Krok 2.2 - Instalacja Node.js 22 + pnpm + PM2
+### Krok 2.2 - Instalacja Node.js 22 + pnpm + PM2 - UKOŃCZONE (Node 22.22.0, pnpm 10.29.3, PM2 6.0.14)
 ```bash
 # Node.js 22 LTS
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
@@ -66,7 +66,7 @@ npm install -g pnpm
 npm install -g pm2
 ```
 
-### Krok 2.3 - Instalacja i konfiguracja Nginx
+### Krok 2.3 - Instalacja i konfiguracja Nginx - UKOŃCZONE (Nginx 1.24.0, reverse proxy → 127.0.0.1:4321)
 ```bash
 apt install -y nginx
 ```
@@ -97,11 +97,11 @@ rm /etc/nginx/sites-enabled/default
 nginx -t && systemctl restart nginx
 ```
 
-### Krok 2.4 - SSL/HTTPS via Cloudflare
-- W Cloudflare → **DNS** → dodać rekord `A` wskazujący na IP Mikrusa
-- **SSL/TLS** → ustawić tryb **Full (Strict)**
-- Cloudflare automatycznie zapewni HTTPS (certyfikat na edge)
-- Opcjonalnie: zainstalować Cloudflare Origin Certificate na serwerze dla szyfrowania Cloudflare ↔ Mikrus
+### Krok 2.4 - SSL/HTTPS via Cloudflare - UKOŃCZONE
+- [x] Cloudflare Origin Certificate wygenerowany (ważny do 2041)
+- [x] Certyfikat + klucz zainstalowane na serwerze (`/etc/ssl/cloudflare/trainwise.fun.pem` + `.key`)
+- [x] Nginx skonfigurowany z SSL (TLS 1.2/1.3, HTTP→HTTPS redirect)
+- [ ] **TODO:** Ustawić w Cloudflare SSL/TLS → **Full (Strict)** (zamiast Full)
 
 ### Krok 2.5 - PostgreSQL
 - Mikrus 3.0 ma **współdzielony PostgreSQL w cenie**
