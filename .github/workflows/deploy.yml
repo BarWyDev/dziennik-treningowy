@@ -97,7 +97,7 @@ jobs:
         run: |
           echo "🔄 Restarting PM2 application..."
 
-          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd /var/www/dziennik-treningowy && pm2 restart dziennik-treningowy"
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd /var/www/dziennik-treningowy && pm2 delete dziennik-treningowy 2>/dev/null; pm2 start ecosystem.config.cjs && pm2 save"
 
           echo "✅ Application restarted"
 
