@@ -32,7 +32,11 @@ export function ForgotPasswordForm() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Wystąpił błąd');
+        if (result.error.status === 429) {
+          setError('Zbyt wiele prób. Spróbuj ponownie za kilka minut.');
+        } else {
+          setError(result.error.message || 'Wystąpił błąd');
+        }
         return;
       }
 

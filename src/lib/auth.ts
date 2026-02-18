@@ -67,6 +67,20 @@ export const auth = betterAuth({
       maxAge: COOKIE_CACHE_SECONDS,
     },
   },
+  rateLimit: {
+    window: 60,
+    max: 100,
+    customRules: {
+      '/forget-password': {
+        window: 60,
+        max: 3,
+      },
+      '/reset-password': {
+        window: 60,
+        max: 5,
+      },
+    },
+  },
   trustedOrigins: getTrustedOrigins(),
   // CSRF Protection: Better Auth automatycznie używa SameSite=Lax cookies
   // i weryfikuje Origin header przeciwko trustedOrigins
