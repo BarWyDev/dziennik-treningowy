@@ -193,6 +193,27 @@ export const personalRecords = pgTable(
   })
 );
 
+export const userConsents = pgTable(
+  'user_consents',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    consentType: text('consent_type').notNull(), // 'terms_privacy', 'health_data'
+    version: text('version').notNull(), // '1.0', '1.1' etc.
+    grantedAt: timestamp('granted_at').notNull().defaultNow(),
+    withdrawnAt: timestamp('withdrawn_at'),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('idx_user_consents_user_id').on(table.userId),
+    consentTypeIdx: index('idx_user_consents_type').on(table.userId, table.consentType),
+  })
+);
+
 export const mediaAttachments = pgTable(
   'media_attachments',
   {
@@ -238,6 +259,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   goals: many(goals),
   personalRecords: many(personalRecords),
   mediaAttachments: many(mediaAttachments),
+  consents: many(userConsents),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -289,6 +311,13 @@ export const personalRecordsRelations = relations(personalRecords, ({ one, many 
   mediaAttachments: many(mediaAttachments),
 }));
 
+export const userConsentsRelations = relations(userConsents, ({ one }) => ({
+  user: one(users, {
+    fields: [userConsents.userId],
+    references: [users.id],
+  }),
+}));
+
 export const mediaAttachmentsRelations = relations(mediaAttachments, ({ one }) => ({
   user: one(users, {
     fields: [mediaAttachments.userId],
@@ -331,3 +360,6 @@ export type NewPersonalRecord = typeof personalRecords.$inferInsert;
 
 export type MediaAttachment = typeof mediaAttachments.$inferSelect;
 export type NewMediaAttachment = typeof mediaAttachments.$inferInsert;
+
+export type UserConsent = typeof userConsents.$inferSelect;
+export type NewUserConsent = typeof userConsents.$inferInsert;

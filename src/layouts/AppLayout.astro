@@ -93,5 +93,14 @@ const user = Astro.locals.user;
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 xl:py-6">
       <slot />
     </main>
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-t border-gray-200 dark:border-gray-800">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400 dark:text-gray-500">
+        <p>&copy; {new Date().getFullYear()} TrainWise</p>
+        <span class="hidden sm:inline">&middot;</span>
+        <a href="/polityka-prywatnosci" class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Polityka Prywatności</a>
+        <span class="hidden sm:inline">&middot;</span>
+        <a href="/regulamin" class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Regulamin</a>
+      </div>
+    </footer>
   </body>
 </html>

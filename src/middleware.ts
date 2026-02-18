@@ -14,6 +14,8 @@ const publicPaths = [
   '/auth/reset-password',
   '/auth/verify',
   '/api/auth',
+  '/polityka-prywatnosci',
+  '/regulamin',
 ];
 
 export const onRequest = defineMiddleware(async (context, next) => {

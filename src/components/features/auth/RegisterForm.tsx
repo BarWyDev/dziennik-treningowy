@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Alert } from '@/components/ui/Alert';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +124,41 @@ export function RegisterForm() {
           placeholder="••••••••"
           error={errors.confirmPassword?.message}
           {...register('confirmPassword')}
+        />
+      </div>
+
+      <div className="space-y-4 pt-2">
+        <Checkbox
+          id="acceptTerms"
+          error={errors.acceptTerms?.message}
+          label={
+            <>
+              Akceptuję{' '}
+              <a href="/regulamin" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                Regulamin
+              </a>{' '}
+              serwisu TrainWise i potwierdzam zapoznanie się z{' '}
+              <a href="/polityka-prywatnosci" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                Polityką Prywatności
+              </a>
+              . *
+            </>
+          }
+          {...register('acceptTerms')}
+        />
+
+        <Checkbox
+          id="acceptHealthData"
+          error={errors.acceptHealthData?.message}
+          label={
+            <>
+              Wyrażam wyraźną zgodę na przetwarzanie moich danych dotyczących zdrowia
+              (samopoczucie fizyczne, poziom energii, aktywność fizyczna, spalone kalorie,
+              rekordy osobiste) w celu świadczenia usługi śledzenia treningów.
+              Mogę wycofać tę zgodę w dowolnym momencie w ustawieniach konta. *
+            </>
+          }
+          {...register('acceptHealthData')}
         />
       </div>
 

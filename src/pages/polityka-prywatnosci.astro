@@ -1,0 +1,214 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+---
+
+<MainLayout title="Polityka Prywatności">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Polityka Prywatności</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Ostatnia aktualizacja: 18 lutego 2026 r. | Wersja 1.0</p>
+
+    <div class="prose prose-gray dark:prose-invert max-w-none space-y-8 text-gray-700 dark:text-gray-300">
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">1. Administrator danych osobowych</h2>
+        <p>Administratorem Twoich danych osobowych jest:</p>
+        <p class="pl-4">
+          <strong>Bartosz Wysocki — Barwy Programmer</strong><br />
+          Aleja Rzeczypospolitej 1D/67<br />
+          80-369 Gdańsk<br />
+          Email: <a href="mailto:kontakt@trainwise.fun" class="text-primary-600 dark:text-primary-400 hover:underline">kontakt@trainwise.fun</a>
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">2. Jakie dane zbieramy</h2>
+        <p>W ramach korzystania z serwisu TrainWise przetwarzamy następujące kategorie danych:</p>
+
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mt-4 mb-2">a) Dane konta</h3>
+        <ul class="list-disc pl-6 space-y-1">
+          <li>Imię</li>
+          <li>Adres email</li>
+          <li>Hasło (przechowywane w formie zaszyfrowanej)</li>
+        </ul>
+
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mt-4 mb-2">b) Dane treningowe</h3>
+        <ul class="list-disc pl-6 space-y-1">
+          <li>Typ treningu, data, czas trwania</li>
+          <li>Notatki i refleksje treningowe</li>
+          <li>Cele treningowe</li>
+          <li>Rekordy osobiste</li>
+          <li>Zdjęcia i filmy dodane do treningów</li>
+        </ul>
+
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mt-4 mb-2">c) Dane dotyczące zdrowia (szczególna kategoria danych)</h3>
+        <p>Na podstawie Twojej wyraźnej zgody (Art. 9 ust. 2 lit. a RODO) przetwarzamy:</p>
+        <ul class="list-disc pl-6 space-y-1">
+          <li>Oceny samopoczucia fizycznego</li>
+          <li>Oceny poziomu energii</li>
+          <li>Spalone kalorie</li>
+          <li>Rekordy osobiste (wyniki fizyczne)</li>
+        </ul>
+
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mt-4 mb-2">d) Dane techniczne</h3>
+        <ul class="list-disc pl-6 space-y-1">
+          <li>Adres IP</li>
+          <li>Informacje o przeglądarce (user agent)</li>
+          <li>Dane sesji</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">3. Cele i podstawy prawne przetwarzania</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-gray-800">
+                <th class="px-4 py-2 text-left font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Cel</th>
+                <th class="px-4 py-2 text-left font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Podstawa prawna</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="px-4 py-2">Świadczenie usługi (rejestracja, logowanie, śledzenie treningów)</td>
+                <td class="px-4 py-2">Art. 6 ust. 1 lit. b RODO — wykonanie umowy</td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="px-4 py-2">Przetwarzanie danych dotyczących zdrowia</td>
+                <td class="px-4 py-2">Art. 9 ust. 2 lit. a RODO — wyraźna zgoda</td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="px-4 py-2">Wysyłanie emaili transakcyjnych (weryfikacja konta, reset hasła)</td>
+                <td class="px-4 py-2">Art. 6 ust. 1 lit. b RODO — wykonanie umowy</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-2">Zapewnienie bezpieczeństwa usługi</td>
+                <td class="px-4 py-2">Art. 6 ust. 1 lit. f RODO — prawnie uzasadniony interes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">4. Odbiorcy danych</h2>
+        <p>Twoje dane mogą być przekazywane następującym podmiotom:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Resend Inc.</strong> (USA) — wysyłka emaili transakcyjnych (weryfikacja konta, reset hasła). Dane przekazywane: adres email.</li>
+          <li><strong>Cloudflare Inc.</strong> (USA) — usługi CDN, ochrona DNS i certyfikat SSL. Dane przekazywane: adres IP, dane połączenia.</li>
+          <li><strong>Mikrus (myDevil.net)</strong> (Polska) — hosting serwera aplikacji i bazy danych.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">5. Transfer danych poza EOG</h2>
+        <p>
+          Niektórzy z naszych podwykonawców (Resend, Cloudflare) mają siedziby w Stanach Zjednoczonych.
+          Transfer danych odbywa się na podstawie standardowych klauzul umownych (SCC) przyjętych przez Komisję Europejską
+          oraz dodatkowych zabezpieczeń technicznych (szyfrowanie danych w transmisji i spoczynku).
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">6. Okres przechowywania danych</h2>
+        <ul class="list-disc pl-6 space-y-1">
+          <li><strong>Dane konta i treningowe</strong> — do momentu usunięcia konta przez użytkownika.</li>
+          <li><strong>Kopie zapasowe</strong> — 7 dni od utworzenia (automatycznie usuwane).</li>
+          <li><strong>Dane sesji</strong> — 7 dni od ostatniej aktywności.</li>
+          <li><strong>Zgody</strong> — przechowywane przez cały okres istnienia konta oraz 3 lata po jego usunięciu (dla celów rozliczalności, Art. 5 ust. 2 RODO).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">7. Twoje prawa</h2>
+        <p>Na podstawie RODO przysługują Ci następujące prawa:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Prawo dostępu</strong> (Art. 15) — możesz uzyskać informację, jakie dane przetwarzamy.</li>
+          <li><strong>Prawo do sprostowania</strong> (Art. 16) — możesz poprawić nieprawidłowe dane.</li>
+          <li><strong>Prawo do usunięcia</strong> (Art. 17) — możesz zażądać usunięcia swoich danych („prawo do bycia zapomnianym").</li>
+          <li><strong>Prawo do ograniczenia przetwarzania</strong> (Art. 18) — możesz zażądać ograniczenia przetwarzania w określonych sytuacjach.</li>
+          <li><strong>Prawo do przenoszenia danych</strong> (Art. 20) — możesz pobrać swoje dane w formacie nadającym się do odczytu maszynowego.</li>
+          <li><strong>Prawo do sprzeciwu</strong> (Art. 21) — możesz wnieść sprzeciw wobec przetwarzania opartego na prawnie uzasadnionym interesie.</li>
+          <li><strong>Prawo do wycofania zgody</strong> (Art. 7 ust. 3) — w każdej chwili możesz wycofać zgodę na przetwarzanie danych dotyczących zdrowia. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania dokonanego przed jej wycofaniem.</li>
+        </ul>
+        <p class="mt-4">
+          W celu skorzystania z powyższych praw skontaktuj się z nami pod adresem:
+          <a href="mailto:kontakt@trainwise.fun" class="text-primary-600 dark:text-primary-400 hover:underline">kontakt@trainwise.fun</a>.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">8. Prawo do skargi</h2>
+        <p>
+          Jeśli uważasz, że przetwarzanie Twoich danych osobowych narusza przepisy RODO,
+          masz prawo wniesienia skargi do organu nadzorczego:
+        </p>
+        <p class="pl-4 mt-2">
+          <strong>Prezes Urzędu Ochrony Danych Osobowych (UODO)</strong><br />
+          ul. Stawki 2, 00-193 Warszawa<br />
+          <a href="https://uodo.gov.pl" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">https://uodo.gov.pl</a>
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">9. Pliki cookies</h2>
+        <p>
+          Serwis TrainWise wykorzystuje wyłącznie <strong>pliki cookies niezbędne</strong> do prawidłowego działania aplikacji
+          (cookies sesyjne służące do utrzymania sesji logowania). Nie stosujemy cookies analitycznych,
+          marketingowych ani śledzących.
+        </p>
+        <p class="mt-2">
+          Ze względu na wykorzystanie wyłącznie niezbędnych plików cookies, ich stosowanie nie wymaga
+          odrębnej zgody (Art. 173 ust. 3 Prawa telekomunikacyjnego).
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">10. Dobrowolność podania danych</h2>
+        <p>
+          Podanie danych osobowych (imię, email, hasło) jest dobrowolne, ale niezbędne do utworzenia konta
+          i korzystania z usługi. Brak podania tych danych uniemożliwia rejestrację.
+        </p>
+        <p class="mt-2">
+          Wyrażenie zgody na przetwarzanie danych dotyczących zdrowia jest dobrowolne, ale niezbędne
+          do korzystania z pełnej funkcjonalności serwisu (śledzenie samopoczucia, kalorii, rekordów osobistych).
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">11. Profilowanie</h2>
+        <p>
+          Nie stosujemy zautomatyzowanego podejmowania decyzji ani profilowania w rozumieniu Art. 22 RODO.
+          Statystyki wyświetlane w aplikacji (np. podsumowania treningów) są generowane wyłącznie na potrzeby
+          użytkownika i nie służą do podejmowania decyzji wpływających na jego sytuację prawną.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">12. Zabezpieczenia</h2>
+        <p>Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony Twoich danych, w tym:</p>
+        <ul class="list-disc pl-6 space-y-1">
+          <li>Szyfrowanie połączenia (HTTPS/TLS)</li>
+          <li>Hashowanie haseł</li>
+          <li>Weryfikacja adresu email</li>
+          <li>Automatyczne wygasanie sesji</li>
+          <li>Regularne kopie zapasowe z ograniczoną retencją</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">13. Zmiany w Polityce Prywatności</h2>
+        <p>
+          Zastrzegamy sobie prawo do aktualizacji niniejszej Polityki Prywatności.
+          O istotnych zmianach poinformujemy użytkowników za pośrednictwem emaila lub
+          powiadomienia w serwisie. Aktualna wersja Polityki Prywatności jest zawsze dostępna pod adresem
+          <a href="/polityka-prywatnosci" class="text-primary-600 dark:text-primary-400 hover:underline">trainwise.fun/polityka-prywatnosci</a>.
+        </p>
+      </section>
+
+    </div>
+
+    <div class="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700">
+      <a href="/" class="text-primary-600 dark:text-primary-400 hover:underline text-sm">&larr; Powrót do strony głównej</a>
+    </div>
+  </div>
+</MainLayout>

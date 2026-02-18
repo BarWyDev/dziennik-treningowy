@@ -16,6 +16,12 @@ export const registerSchema = z
       .regex(/[a-z]/, 'Hasło musi zawierać co najmniej jedną małą literę')
       .regex(/[0-9]/, 'Hasło musi zawierać co najmniej jedną cyfrę'),
     confirmPassword: z.string(),
+    acceptTerms: z.literal(true, {
+      errorMap: () => ({ message: 'Musisz zaakceptować Regulamin i Politykę Prywatności' }),
+    }),
+    acceptHealthData: z.literal(true, {
+      errorMap: () => ({ message: 'Zgoda na przetwarzanie danych zdrowotnych jest wymagana' }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Hasła nie są identyczne',
