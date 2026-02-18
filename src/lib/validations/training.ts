@@ -12,6 +12,10 @@ export const createTrainingSchema = z.object({
     .number()
     .min(1, 'Czas trwania musi wynosić co najmniej 1 minutę')
     .max(600, 'Czas trwania nie może przekraczać 10 godzin'),
+  description: z
+    .string()
+    .max(1000, 'Opis treningu może mieć maksymalnie 1000 znaków')
+    .optional(),
 
   // Multi-category ratings (1-5 scale)
   ratingOverall: z

@@ -113,6 +113,7 @@ export const trainings = pgTable(
     date: date('date').notNull(),
     time: text('time'), // HH:MM format
     durationMinutes: integer('duration_minutes').notNull(),
+    description: text('description'),
 
     // Multi-category ratings (1-5 scale)
     ratingOverall: integer('rating_overall').notNull(), // Required

@@ -23,6 +23,7 @@ interface Training {
   ratingEnergy?: number | null;
   ratingMotivation?: number | null;
   ratingDifficulty?: number | null;
+  description?: string | null;
   trainingGoal?: string | null;
   mostSatisfiedWith?: string | null;
   improveNextTime?: string | null;
@@ -199,6 +200,16 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
               </div>
             )}
           </div>
+
+          {/* Description */}
+          {training.description && (
+            <div>
+              <p className="text-sm lg:text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
+                Opis treningu
+              </p>
+              <p className="text-sm lg:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">{training.description}</p>
+            </div>
+          )}
 
           {/* Training Goal */}
           {training.trainingGoal && (

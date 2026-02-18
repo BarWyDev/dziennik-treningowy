@@ -45,6 +45,7 @@ interface Training {
   mostSatisfiedWith?: string | null;
   improveNextTime?: string | null;
   howToImprove?: string | null;
+  description?: string | null;
   notes?: string | null;
   caloriesBurned?: number | null;
   media?: MediaAttachment[];
@@ -76,6 +77,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       date: training?.date || new Date().toISOString().split('T')[0],
       time: training?.time || '',
       durationMinutes: training?.durationMinutes || 30,
+      description: training?.description || '',
       ratingOverall: training?.ratingOverall || 3,
       ratingPhysical: training?.ratingPhysical || undefined,
       ratingEnergy: training?.ratingEnergy || undefined,
@@ -221,12 +223,29 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         />
       </div>
 
+      {/* Description */}
+      <div>
+        <Label htmlFor="description">Opis treningu (opcjonalnie)</Label>
+        <textarea
+          id="description"
+          rows={3}
+          maxLength={1000}
+          className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 break-words resize-y"
+          placeholder="Opisz swój trening — ćwiczenia, serie, powtórzenia, obciążenia..."
+          {...register('description')}
+        />
+        {errors.description && (
+          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.description.message}</p>
+        )}
+      </div>
+
       {/* Training Goal */}
       <div>
         <Label htmlFor="trainingGoal">Mój cel na trening (mentalny i fizyczny)</Label>
         <textarea
           id="trainingGoal"
           rows={2}
+          maxLength={500}
           className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 break-words resize-y"
           placeholder="Co chcesz osiągnąć podczas tego treningu?"
           {...register('trainingGoal')}
@@ -263,6 +282,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         <textarea
           id="notes"
           rows={3}
+          maxLength={1000}
           className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 break-words resize-y"
           placeholder="Inne obserwacje lub notatki..."
           {...register('notes')}
