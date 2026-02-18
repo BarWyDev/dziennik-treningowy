@@ -71,7 +71,7 @@ export const auth = betterAuth({
     window: 60,
     max: 100,
     customRules: {
-      '/forget-password': {
+      '/request-password-reset': {
         window: 60,
         max: 3,
       },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { forgetPassword } from '@/lib/auth-client';
+import { requestPasswordReset } from '@/lib/auth-client';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -26,7 +26,7 @@ export function ForgotPasswordForm() {
     setError(null);
 
     try {
-      const result = await forgetPassword({
+      const result = await requestPasswordReset({
         email: data.email,
         redirectTo: '/auth/reset-password',
       });
