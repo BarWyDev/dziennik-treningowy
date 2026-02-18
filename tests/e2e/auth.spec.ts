@@ -33,7 +33,7 @@ test.describe('Autoryzacja', () => {
       await page.locator('button[type="submit"]').click();
 
       // Oczekuj komunikatów o błędach walidacji
-      await expect(page.getByText(/email/i)).toBeVisible();
+      await expect(page.getByText('Nieprawidłowy adres email')).toBeVisible();
     });
 
     test('waliduje format email', async ({ page }) => {
@@ -54,7 +54,8 @@ test.describe('Autoryzacja', () => {
 
       await expect(page.locator('input[name="name"], input[id="name"]')).toBeVisible();
       await expect(page.locator('input[type="email"]')).toBeVisible();
-      await expect(page.locator('input[type="password"]')).toBeVisible();
+      await expect(page.locator('input#password')).toBeVisible();
+      await expect(page.locator('input#confirmPassword')).toBeVisible();
       await expect(page.locator('button[type="submit"]')).toBeVisible();
     });
 
@@ -69,8 +70,8 @@ test.describe('Autoryzacja', () => {
 
       await page.locator('button[type="submit"]').click();
 
-      // Oczekuj komunikatów o błędach
-      await expect(page.getByText(/wymagane|required/i)).toBeVisible();
+      // Oczekuj komunikatów o błędach walidacji
+      await expect(page.getByText('Imię musi mieć co najmniej 2 znaki')).toBeVisible();
     });
 
     test('waliduje siłę hasła', async ({ page }) => {
@@ -78,11 +79,11 @@ test.describe('Autoryzacja', () => {
 
       await page.locator('input[name="name"], input[id="name"]').fill('Test User');
       await page.locator('input[type="email"]').fill('test@example.com');
-      await page.locator('input[type="password"]').fill('123'); // Za słabe
+      await page.locator('input#password').fill('123'); // Za słabe
       await page.locator('button[type="submit"]').click();
 
       // Oczekuj błędu o sile hasła
-      await expect(page.locator('text=/hasło|password/i')).toBeVisible();
+      await expect(page.getByText(/co najmniej 8 znaków/i)).toBeVisible();
     });
   });
 
