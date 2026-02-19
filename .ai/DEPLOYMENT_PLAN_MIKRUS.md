@@ -101,7 +101,7 @@ nginx -t && systemctl restart nginx
 - [x] Cloudflare Origin Certificate wygenerowany (ważny do 2041)
 - [x] Certyfikat + klucz zainstalowane na serwerze (`/etc/ssl/cloudflare/trainwise.fun.pem` + `.key`)
 - [x] Nginx skonfigurowany z SSL (TLS 1.2/1.3, HTTP→HTTPS redirect)
-- [ ] **TODO:** Ustawić w Cloudflare SSL/TLS → **Full (Strict)** (zamiast Full)
+- [x] Cloudflare SSL/TLS ustawiony na **Full (Strict)**
 
 ### Krok 2.5 - PostgreSQL
 - Mikrus 3.0 ma **współdzielony PostgreSQL w cenie**
@@ -222,53 +222,55 @@ Plik: `src/lib/auth.ts`
 
 ---
 
-## FAZA 5: Monitoring i backupy (~30min)
+## FAZA 5: Monitoring i backupy - UKOŃCZONA ✅
 
-### Krok 5.1 - UptimeRobot (darmowy)
-- Zarejestrować na https://uptimerobot.com
-- Dodać monitor HTTP(S) → `https://twojadomena.pl`
-- Interwał: 5 minut
-- Powiadomienia na email
+### Krok 5.1 - UptimeRobot (darmowy) - UKOŃCZONE
+- [x] Zarejestrowane na https://uptimerobot.com
+- [x] Monitor HTTP(S) → `https://trainwise.fun` (100% uptime)
+- [x] Interwał: 5 minut
+- [x] Powiadomienia na email
 
-### Krok 5.2 - PM2 monitoring
+### Krok 5.2 - PM2 monitoring - UKOŃCZONE
 ```bash
 pm2 monit            # Podgląd na żywo
 pm2 logs             # Logi aplikacji
 pm2 status           # Status procesów
 ```
 
-### Krok 5.3 - Backup bazy (cron)
-```bash
-# Dodać do crontab (crontab -e):
-# Codzienny backup bazy o 3:00
-0 3 * * * pg_dump "CONNECTION_STRING" | gzip > /var/backups/db-$(date +\%Y\%m\%d).sql.gz
-# Usuwanie backupów starszych niż 7 dni
-0 4 * * * find /var/backups -name "db-*.sql.gz" -mtime +7 -delete
-```
-
-### Krok 5.4 - Backup mediów
-```bash
-# Backup uploadów co 6h
-0 */6 * * * tar czf /var/backups/uploads-$(date +\%Y\%m\%d).tar.gz /var/www/dziennik-treningowy/dist/client/uploads/
-```
+### Krok 5.3 - Backup bazy + mediów (cron) - UKOŃCZONE
+- [x] Zainstalowano `postgresql-client-18` (serwer DB to PostgreSQL 18, domyślny pg_dump był w wersji 16)
+- [x] Skrypt backupu: `/var/backups/dziennik/backup.sh`
+- [x] Cron: codziennie o 3:00 (`0 3 * * *`)
+- [x] Katalog backupów: `/var/backups/dziennik/`
+- [x] Retencja: 7 dni (starsze automatycznie usuwane)
+- [x] Log: `/var/backups/dziennik/backup.log`
+- [x] Backup obejmuje: dump bazy (pg_dump + gzip) + tar uploadów
+- [x] Przetestowano ręcznie — backup działa poprawnie
 
 ---
 
-## FAZA 6: Weryfikacja po deployu (~30min)
+## FAZA 6: Weryfikacja po deployu — W TRAKCIE
 
-### Checklist testowy:
-- [ ] Strona otwiera się po HTTPS
-- [ ] Rejestracja nowego konta działa
-- [ ] Email weryfikacyjny dochodzi
-- [ ] Logowanie działa
-- [ ] Tworzenie treningu działa
-- [ ] Upload zdjęcia do treningu działa
-- [ ] Cele - dodawanie/archiwizacja działa
-- [ ] Rekordy osobiste działają
-- [ ] Export PDF działa
-- [ ] Reset hasła wysyła email
-- [ ] Rate limiting blokuje po 5 próbach logowania
-- [ ] GitHub Actions deploy przechodzi (push do main)
+### Testy automatyczne (2026-02-18) ✅
+- [x] Strona otwiera się po HTTPS (HTTP 200, Cloudflare proxy WAW)
+- [x] HTTP → HTTPS redirect działa (301)
+- [x] Strony auth dostępne (`/auth/login`, `/auth/register`, `/auth/reset-password` — HTTP 200)
+- [x] Ochrona stron — `/dashboard` → 302 → `/auth/login` (niezalogowani)
+- [x] Ochrona API — `/api/trainings`, `/api/goals`, `/api/personal-records`, `/api/dashboard` → 302 (niezalogowani)
+- [x] Rate limiting działa — blokuje po 3 próbach logowania (HTTP 429)
+- [x] PM2 online — 15h uptime, 124MB RAM, 0 restartów
+
+### Testy ręczne (do zrobienia)
+1. **Rejestracja** — zarejestruj nowe konto na https://trainwise.fun/auth/register
+2. **Email weryfikacyjny** — sprawdź czy przyszedł mail (+ sprawdź spam)
+3. **Logowanie** — zaloguj się na nowe konto
+4. **Tworzenie treningu** — dodaj trening z wypełnionymi polami (typ, czas, oceny, refleksja)
+5. **Upload zdjęcia** — dodaj zdjęcie do treningu (JPEG/PNG, sprawdź czy się wyświetla)
+6. **Cele** — dodaj cel → oznacz jako osiągnięty → zarchiwizuj
+7. **Rekordy osobiste** — dodaj rekord → edytuj → sprawdź statystyki
+8. **Export PDF** — wyeksportuj raport treningów do PDF
+9. **Reset hasła** — na `/auth/reset-password` wpisz email → sprawdź czy mail dochodzi
+10. **GitHub Actions** — zrób mały push do main → sprawdź czy deploy przeszedł na https://github.com/ → Actions
 
 ---
 
@@ -287,28 +289,21 @@ Pojemność: **~500 aktywnych userów** (Mikrus 3.0 z 2GB RAM i 20GB SSD).
 
 ---
 
-## Zmiany w kodzie potrzebne przed deployem
+## Zmiany w kodzie potrzebne przed deployem - UKOŃCZONE ✅
 
-1. **`src/lib/auth.ts`** - włączyć email verification (`requireEmailVerification: true`, `sendOnSignUp: true`)
-2. **Sprawdzić/dostosować** `.github/workflows/deploy.yml` - ścieżki i nazwy secretów
-3. **Dodać** `ecosystem.config.cjs` do repo (PM2 config)
+1. ~~**`src/lib/auth.ts`** - włączyć email verification~~ → DONE (FAZA 4)
+2. ~~**Sprawdzić/dostosować** `.github/workflows/deploy.yml`~~ → DONE (FAZA 3)
+3. ~~**Dodać** `ecosystem.config.cjs` do repo~~ → DONE (FAZA 2)
 
 ---
 
 ## Kolejność działań (timeline)
 
 ```
-Dzień 1 (zakupy + konfiguracja):
-  ├─ FAZA 1: Zakupy (Mikrus, domena, Cloudflare, Resend)
-  ├─ FAZA 2: Konfiguracja serwera
-  └─ FAZA 4: Konfiguracja emaili (DNS propagation w tle)
-
-Dzień 1-2 (deploy):
-  ├─ FAZA 3: CI/CD + pierwszy deploy
-  └─ FAZA 6: Testy na produkcji
-
-Dzień 2 (monitoring):
-  └─ FAZA 5: UptimeRobot + backupy
+✅ FAZA 1: Zakupy (Mikrus, domena, Cloudflare, Resend)
+✅ FAZA 2: Konfiguracja serwera (Node, pnpm, PM2, Nginx+SSL, PostgreSQL)
+✅ FAZA 3: CI/CD (GitHub Actions auto deploy)
+✅ FAZA 4: Email (Resend + weryfikacja email)
+✅ FAZA 5: Backupy (cron codziennie o 3:00) + UptimeRobot (100% uptime)
+🔄 FAZA 6: Testy na produkcji (auto ✅, ręczne do zrobienia)
 ```
-
-Realistycznie: **1 dzień pracy** (4-6h) jeśli DNS propagacja pójdzie szybko.
