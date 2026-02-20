@@ -11,16 +11,29 @@ import {
 } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createUnauthorizedError, handleUnexpectedError } from '@/lib/error-handler';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  RateLimitPresets,
+} from '@/lib/rate-limit';
 
 /**
  * GET /api/account/export
  * Eksportuje wszystkie dane użytkownika (Art. 20 RODO)
  */
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, request }) => {
   try {
     const user = locals.user;
     if (!user?.id) {
       return createUnauthorizedError();
+    }
+
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(request, user.id),
+      RateLimitPresets.EXPORT
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     const [userInfo, userTrainings, userGoals, userRecords, userMedia, userConsentsList] =

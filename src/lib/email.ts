@@ -7,7 +7,7 @@ const appName = import.meta.env.PUBLIC_APP_NAME || process.env.PUBLIC_APP_NAME |
 
 export async function sendVerificationEmail(email: string, verificationUrl: string) {
   if (!resend) {
-    console.warn('Resend API key not configured. Skipping email sending. Verification URL:', verificationUrl);
+    console.warn('[Email] Resend API key not configured. Email not sent (verification).');
     return;
   }
   
@@ -51,7 +51,7 @@ export async function sendVerificationEmail(email: string, verificationUrl: stri
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   if (!resend) {
-    console.warn('Resend API key not configured. Skipping email sending. Reset URL:', resetUrl);
+    console.warn('[Email] Resend API key not configured. Email not sent (reset password).');
     return;
   }
   

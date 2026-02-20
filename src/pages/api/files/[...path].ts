@@ -105,7 +105,7 @@ export const GET: APIRoute = async ({ params, request }) => {
       headers: {
         'Content-Type': contentType,
         'Content-Length': stats.size.toString(),
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'private, no-store',
       },
     });
   } catch (error) {

@@ -65,8 +65,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Security headers - ochrona przed typowymi atakami
   newResponse.headers.set('X-Content-Type-Options', 'nosniff');
   newResponse.headers.set('X-Frame-Options', 'DENY');
-  newResponse.headers.set('X-XSS-Protection', '1; mode=block');
   newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  newResponse.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+  );
 
   // HSTS tylko w produkcji (wymaga HTTPS)
   if (import.meta.env.PROD) {

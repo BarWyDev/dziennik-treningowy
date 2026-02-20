@@ -11,6 +11,11 @@ import {
   handleUnexpectedError,
   ErrorCode,
 } from '@/lib/error-handler';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  RateLimitPresets,
+} from '@/lib/rate-limit';
 
 const deleteBodySchema = z.object({
   password: z.string().min(1, 'Hasło jest wymagane'),
@@ -25,6 +30,14 @@ export const DELETE: APIRoute = async ({ locals, request }) => {
     const user = locals.user;
     if (!user?.id || !user?.email) {
       return createUnauthorizedError();
+    }
+
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(request, user.id),
+      RateLimitPresets.PASSWORD_RESET
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     let body: unknown;

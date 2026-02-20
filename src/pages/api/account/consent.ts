@@ -9,6 +9,11 @@ import {
   handleUnexpectedError,
   ErrorCode,
 } from '@/lib/error-handler';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  RateLimitPresets,
+} from '@/lib/rate-limit';
 
 const patchBodySchema = z.object({
   consentType: z.enum(['health_data']),
@@ -18,11 +23,19 @@ const patchBodySchema = z.object({
  * GET /api/account/consent
  * Zwraca listę aktywnych zgód użytkownika
  */
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, request }) => {
   try {
     const user = locals.user;
     if (!user?.id) {
       return createUnauthorizedError();
+    }
+
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(request, user.id),
+      RateLimitPresets.API
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     const consents = await db
@@ -48,6 +61,14 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
     const user = locals.user;
     if (!user?.id) {
       return createUnauthorizedError();
+    }
+
+    const rateLimitResponse = checkRateLimit(
+      getRateLimitIdentifier(request, user.id),
+      RateLimitPresets.API
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     let body: unknown;

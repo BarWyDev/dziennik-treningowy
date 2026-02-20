@@ -177,6 +177,13 @@ export const RateLimitPresets = {
     windowMs: 60 * 1000, // 1 minuta
     errorMessage: 'Zbyt wiele pobrań plików. Spróbuj ponownie za chwilę.',
   },
+
+  /** Data export - 5 eksportów na godzinę */
+  EXPORT: {
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000, // 1 godzina
+    errorMessage: 'Zbyt wiele eksportów. Spróbuj ponownie za godzinę.',
+  },
 } as const;
 
 /**

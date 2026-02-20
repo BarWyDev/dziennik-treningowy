@@ -19,7 +19,13 @@ import {
   validateEntityType,
   verifyEntityOwnership,
 } from '@/lib/upload-helpers';
-import { validateFileType as getFileType } from '@/lib/validations/media';
+import {
+  validateFileType as getFileType,
+  validateFileCount,
+  MAX_IMAGES_PER_ENTITY,
+  MAX_VIDEOS_PER_ENTITY,
+} from '@/lib/validations/media';
+import { eq } from 'drizzle-orm';
 
 /**
  * POST /api/upload
@@ -75,6 +81,40 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Pobierz typ pliku (już zwalidowany w validateUploadFile)
     const fileType = getFileType(file!);
+
+    // Sprawdź limit plików per encja po stronie serwera
+    if (entityId) {
+      const existingMedia = await db
+        .select({ fileType: mediaAttachments.fileType })
+        .from(mediaAttachments)
+        .where(
+          entityType === 'training'
+            ? eq(mediaAttachments.trainingId, entityId)
+            : eq(mediaAttachments.personalRecordId, entityId)
+        );
+
+      if (!validateFileCount(existingMedia as Array<{ fileType: 'image' | 'video' }>, fileType!)) {
+        const limit = fileType === 'image' ? MAX_IMAGES_PER_ENTITY : MAX_VIDEOS_PER_ENTITY;
+        return createErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          `Przekroczono limit ${fileType === 'image' ? 'zdjęć' : 'filmów'} (max ${limit})`
+        );
+      }
+    }
+
+    // Sprawdź łączny rozmiar uploadów użytkownika (max 2GB)
+    const MAX_USER_STORAGE = 2 * 1024 * 1024 * 1024;
+    const userMediaSizes = await db
+      .select({ fileSize: mediaAttachments.fileSize })
+      .from(mediaAttachments)
+      .where(eq(mediaAttachments.userId, user.id));
+    const totalUserStorage = userMediaSizes.reduce((acc, m) => acc + (m.fileSize ?? 0), 0);
+    if (totalUserStorage + file.size > MAX_USER_STORAGE) {
+      return createErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Przekroczono limit miejsca (max 2GB). Usuń nieużywane pliki.'
+      );
+    }
 
     // Generuj ścieżkę do pliku
     // Użyj tymczasowego ID jeśli entityId nie podane (dla nowych encji)
