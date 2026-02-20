@@ -14,6 +14,7 @@ interface Training {
   ratingMotivation?: number | null;
   ratingDifficulty?: number | null;
   caloriesBurned?: number | null;
+  notes?: string | null;
   trainingType?: TrainingType | null;
 }
 
@@ -130,6 +131,36 @@ export async function generateWeeklyReport({ trainings, startDate, endDate }: We
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(107, 114, 128);
     doc.text(sanitizePolishText('Brak treningow w tym tygodniu.'), 14, yPos);
+  }
+
+  // Notes section
+  const trainingsWithNotes = trainings.filter((t) => t.notes);
+  if (trainingsWithNotes.length > 0) {
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
+
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(31, 41, 55);
+    doc.text(sanitizePolishText('Opisy treningow'), 14, yPos);
+    yPos += 10;
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    for (const t of trainingsWithNotes) {
+      const dateStr = new Date(t.date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
+      const label = `${dateStr} (${sanitizePolishText(t.trainingType?.name || 'Trening')}):`;
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(31, 41, 55);
+      doc.text(label, 14, yPos);
+      yPos += 6;
+
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(sanitizePolishText(t.notes!), pageWidth - 28);
+      doc.text(lines, 14, yPos);
+      yPos += lines.length * 5.5 + 8;
+    }
   }
 
   addFooter(doc);

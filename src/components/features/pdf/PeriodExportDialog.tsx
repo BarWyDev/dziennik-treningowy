@@ -16,6 +16,7 @@ interface Training {
   ratingMotivation?: number | null;
   ratingDifficulty?: number | null;
   caloriesBurned?: number | null;
+  notes?: string | null;
   trainingType?: {
     name: string;
   } | null;
