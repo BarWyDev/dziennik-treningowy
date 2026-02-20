@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import * as fs from 'node:fs';
+import { access, stat, readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { requireAuth } from '@/lib/api-helpers';
 import { handleUnexpectedError } from '@/lib/error-handler';
@@ -68,19 +68,21 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     const fullPath = requestedPath;
 
-    // Sprawdź czy plik istnieje
-    if (!fs.existsSync(fullPath)) {
+    // Sprawdź czy plik istnieje (access rzuca błąd jeśli nie)
+    try {
+      await access(fullPath);
+    } catch {
       return new Response('File not found', { status: 404 });
     }
 
     // Sprawdź czy to faktycznie plik (nie katalog)
-    const stats = fs.statSync(fullPath);
+    const stats = await stat(fullPath);
     if (!stats.isFile()) {
       return new Response('Not a file', { status: 400 });
     }
 
-    // Odczytaj plik
-    const fileBuffer = fs.readFileSync(fullPath);
+    // Odczytaj plik asynchronicznie (nie blokuje event loop)
+    const fileBuffer = await readFile(fullPath);
 
     // Określ content type na podstawie rozszerzenia
     const ext = path.extname(fullPath).toLowerCase();

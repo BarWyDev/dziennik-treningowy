@@ -76,8 +76,8 @@ jobs:
 
           echo "📤 Uploading to Mikrus..."
 
-          # Backup starego dist/ na serwerze (safety)
-          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd $APP_DIR && [ -d dist ] && cp -r dist dist.backup.\$(date +%Y%m%d_%H%M%S) || true"
+          # Backup starego dist/ na serwerze (safety) + usuń stare backupy (> 3 dni)
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd $APP_DIR && [ -d dist ] && cp -r dist dist.backup.\$(date +%Y%m%d_%H%M%S) || true; find $APP_DIR -maxdepth 1 -name 'dist.backup.*' -mtime +3 -exec rm -rf {} \; 2>/dev/null || true"
 
           # Upload dist/, package.json i lockfile
           scp -P ${SSH_PORT:-22} -r dist/ $SSH_USER@$SSH_HOST:$APP_DIR/
@@ -88,7 +88,7 @@ jobs:
 
           echo "✅ Upload complete"
 
-      # 8. Restart aplikacji przez PM2
+      # 8. Restart aplikacji przez PM2 (graceful reload - zero downtime)
       - name: Restart application
         env:
           SSH_PRIVATE_KEY: ${{ secrets.MIKRUS_SSH_KEY }}
@@ -96,11 +96,11 @@ jobs:
           SSH_USER: ${{ secrets.MIKRUS_USER }}
           SSH_PORT: ${{ secrets.MIKRUS_PORT }}
         run: |
-          echo "🔄 Restarting PM2 application..."
+          echo "🔄 Reloading PM2 application (zero downtime)..."
 
-          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd /var/www/dziennik-treningowy && pm2 delete dziennik-treningowy 2>/dev/null; pm2 start ecosystem.config.cjs && pm2 save"
+          ssh -p ${SSH_PORT:-22} $SSH_USER@$SSH_HOST "cd /var/www/dziennik-treningowy && (pm2 reload ecosystem.config.cjs --update-env 2>/dev/null || (pm2 start ecosystem.config.cjs && pm2 save))"
 
-          echo "✅ Application restarted"
+          echo "✅ Application reloaded"
 
       # 9. Healthcheck
       - name: Healthcheck
@@ -108,7 +108,7 @@ jobs:
           APP_URL: ${{ secrets.APP_URL }}
         run: |
           echo "🏥 Checking if application is running..."
-          sleep 5  # Poczekaj 5 sekund na restart
+          sleep 8  # Poczekaj na reload (graceful reload potrzebuje chwili)
 
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${APP_URL:-https://trainwise.fun} || echo "000")
 

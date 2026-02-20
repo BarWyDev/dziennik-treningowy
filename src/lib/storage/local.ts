@@ -1,5 +1,5 @@
-import type { StorageService, UploadedFile } from './types';
-import * as fs from 'node:fs';
+import type { StorageService } from './types';
+import { mkdir, writeFile, access, unlink, readdir, rmdir } from 'node:fs/promises';
 import * as path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -19,14 +19,12 @@ export class LocalStorageService implements StorageService {
     // Pełna ścieżka do zapisu
     const fullPath = path.join(this.baseDir, filePath);
 
-    // Upewnij się, że folder istnieje
+    // Upewnij się, że folder istnieje (recursive: true nie rzuca błędu jeśli istnieje)
     const dir = path.dirname(fullPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    await mkdir(dir, { recursive: true });
 
-    // Zapisz plik
-    fs.writeFileSync(fullPath, buffer);
+    // Zapisz plik asynchronicznie (nie blokuje event loop)
+    await writeFile(fullPath, buffer);
 
     // Zwróć publiczny URL
     return this.getFileUrl(filePath);
@@ -38,12 +36,17 @@ export class LocalStorageService implements StorageService {
       const relativePath = url.replace(this.baseUrl, '');
       const fullPath = path.join(this.baseDir, relativePath);
 
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-
-        // Opcjonalnie usuń puste foldery
-        this.cleanupEmptyDirs(path.dirname(fullPath));
+      // Sprawdź czy plik istnieje (access rzuca błąd jeśli nie istnieje)
+      try {
+        await access(fullPath);
+      } catch {
+        return; // Plik już nie istnieje
       }
+
+      await unlink(fullPath);
+
+      // Opcjonalnie usuń puste foldery
+      await this.cleanupEmptyDirs(path.dirname(fullPath));
     } catch (error) {
       console.error('Error deleting file:', error);
       // Nie rzucaj błędu - plik może już być usunięty
@@ -84,22 +87,28 @@ export class LocalStorageService implements StorageService {
   }
 
   /**
-   * Usuwa puste foldery rekursywnie
+   * Usuwa puste foldery rekursywnie (do max 5 poziomów w górę)
    */
-  private cleanupEmptyDirs(dirPath: string): void {
+  private async cleanupEmptyDirs(dirPath: string, depth = 0): Promise<void> {
+    if (depth >= 5) return;
+
     try {
       // Zatrzymaj się na baseDir
       if (dirPath === this.baseDir || !dirPath.startsWith(this.baseDir)) {
         return;
       }
 
-      if (fs.existsSync(dirPath)) {
-        const files = fs.readdirSync(dirPath);
-        if (files.length === 0) {
-          fs.rmdirSync(dirPath);
-          // Rekursywnie sprawdź folder rodzica
-          this.cleanupEmptyDirs(path.dirname(dirPath));
-        }
+      let files: string[];
+      try {
+        files = await readdir(dirPath);
+      } catch {
+        return; // Katalog nie istnieje lub brak dostępu
+      }
+
+      if (files.length === 0) {
+        await rmdir(dirPath);
+        // Rekursywnie sprawdź folder rodzica
+        await this.cleanupEmptyDirs(path.dirname(dirPath), depth + 1);
       }
     } catch (error) {
       // Ignoruj błędy cleanup

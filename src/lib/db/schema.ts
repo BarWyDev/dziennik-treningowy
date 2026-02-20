@@ -138,6 +138,7 @@ export const trainings = pgTable(
     userIdIdx: index('idx_trainings_user_id').on(table.userId),
     dateIdx: index('idx_trainings_date').on(table.date),
     userDateIdx: index('idx_trainings_user_date').on(table.userId, table.date),
+    trainingTypeIdIdx: index('idx_trainings_training_type_id').on(table.trainingTypeId),
   })
 );
 

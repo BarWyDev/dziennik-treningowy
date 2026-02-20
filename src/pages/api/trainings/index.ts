@@ -9,6 +9,7 @@ import {
   handleValidationError,
 } from '@/lib/error-handler';
 import { parseQueryParamsWithDefaults } from '@/lib/validations/query-params';
+import { cache, cacheKeys } from '@/lib/cache';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
@@ -169,6 +170,9 @@ export const POST: APIRoute = async ({ request }) => {
 
       return training;
     });
+
+    // Unieważnij cache dashboardu - dane się zmieniły
+    cache.delete(cacheKeys.dashboard(authResult.user.id));
 
     return new Response(JSON.stringify(newTraining), {
       status: 201,

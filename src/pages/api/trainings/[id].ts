@@ -10,6 +10,7 @@ import {
   handleValidationError,
   createNotFoundError,
 } from '@/lib/error-handler';
+import { cache, cacheKeys } from '@/lib/cache';
 
 export const GET: APIRoute = async ({ request, params }) => {
   try {
@@ -130,6 +131,9 @@ export const PUT: APIRoute = async ({ request, params }) => {
       return training;
     });
 
+    // Unieważnij cache dashboardu - dane się zmieniły
+    cache.delete(cacheKeys.dashboard(authResult.user.id));
+
     return new Response(JSON.stringify(updated), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -191,6 +195,9 @@ export const DELETE: APIRoute = async ({ request, params }) => {
         // Kontynuuj mimo błędu - baza danych jest już spójna
       }
     }
+
+    // Unieważnij cache dashboardu - dane się zmieniły
+    cache.delete(cacheKeys.dashboard(authResult.user.id));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
