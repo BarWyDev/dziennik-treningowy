@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTrainingSchema, type CreateTrainingInput } from '@/lib/validations/training';
 import { Button } from '@/components/ui/Button';
@@ -64,6 +64,8 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
 
   const isEditing = !!training;
 
+  const charCount = (val: string | null | undefined) => (val ?? '').length;
+
   const {
     register,
     handleSubmit,
@@ -91,6 +93,10 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       caloriesBurned: training?.caloriesBurned || undefined,
     },
   });
+
+  const descriptionValue = useWatch({ control, name: 'description' });
+  const trainingGoalValue = useWatch({ control, name: 'trainingGoal' });
+  const notesValue = useWatch({ control, name: 'notes' });
 
   useEffect(() => {
     // Załaduj istniejące media podczas edycji
@@ -229,14 +235,18 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         <textarea
           id="description"
           rows={3}
-          maxLength={1000}
           className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 break-words resize-y"
           placeholder="Opisz swój trening — ćwiczenia, serie, powtórzenia, obciążenia..."
           {...register('description')}
         />
-        {errors.description && (
-          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.description.message}</p>
-        )}
+        <div className="flex justify-between mt-1">
+          {errors.description
+            ? <p className="text-sm lg:text-base text-error-600 dark:text-error-400">{errors.description.message}</p>
+            : <span />}
+          <span className={`text-xs ${charCount(descriptionValue) > 1000 ? 'text-error-600 dark:text-error-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+            {charCount(descriptionValue)}/1000
+          </span>
+        </div>
       </div>
 
       {/* Training Goal */}
@@ -245,21 +255,25 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         <textarea
           id="trainingGoal"
           rows={2}
-          maxLength={500}
           className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 break-words resize-y"
           placeholder="Co chcesz osiągnąć podczas tego treningu?"
           {...register('trainingGoal')}
         />
-        {errors.trainingGoal && (
-          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.trainingGoal.message}</p>
-        )}
+        <div className="flex justify-between mt-1">
+          {errors.trainingGoal
+            ? <p className="text-sm lg:text-base text-error-600 dark:text-error-400">{errors.trainingGoal.message}</p>
+            : <span />}
+          <span className={`text-xs ${charCount(trainingGoalValue) > 500 ? 'text-error-600 dark:text-error-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+            {charCount(trainingGoalValue)}/500
+          </span>
+        </div>
       </div>
 
       {/* Multi-category Ratings */}
       <RatingsSection control={control} errors={errors} />
 
       {/* Reflection Fields */}
-      <ReflectionFields register={register} errors={errors} />
+      <ReflectionFields register={register} errors={errors} control={control} />
 
       {/* Other Fields */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -282,14 +296,18 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         <textarea
           id="notes"
           rows={3}
-          maxLength={1000}
           className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm lg:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 break-words resize-y"
           placeholder="Inne obserwacje lub notatki..."
           {...register('notes')}
         />
-        {errors.notes && (
-          <p className="mt-1 text-sm lg:text-base text-error-600 dark:text-error-400">{errors.notes.message}</p>
-        )}
+        <div className="flex justify-between mt-1">
+          {errors.notes
+            ? <p className="text-sm lg:text-base text-error-600 dark:text-error-400">{errors.notes.message}</p>
+            : <span />}
+          <span className={`text-xs ${charCount(notesValue) > 1000 ? 'text-error-600 dark:text-error-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+            {charCount(notesValue)}/1000
+          </span>
+        </div>
       </div>
 
       {/* Media Upload */}
