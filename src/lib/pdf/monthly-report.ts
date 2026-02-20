@@ -1,4 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries } from './common';
+import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries, ensurePageSpace } from './common';
 
 interface TrainingType {
   name: string;
@@ -183,18 +183,21 @@ export async function generateMonthlyReport({ trainings, year, month }: MonthlyR
   const trainingsWithNotes = trainings.filter((t) => t.notes);
   if (trainingsWithNotes.length > 0) {
     yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
 
+    yPos = ensurePageSpace(doc, yPos, 25);
     doc.setFontSize(15);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(31, 41, 55);
     doc.text(sanitizePolishText('Opisy treningow'), 14, yPos);
     yPos += 10;
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-
     for (const t of trainingsWithNotes) {
       const dateStr = new Date(t.date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
       const label = `${dateStr} (${sanitizePolishText(t.trainingType?.name || 'Trening')}):`;
+      const lines = doc.splitTextToSize(sanitizePolishText(t.notes!), pageWidth - 28);
+
+      yPos = ensurePageSpace(doc, yPos, 12 + lines.length * 5.5);
 
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
@@ -203,7 +206,6 @@ export async function generateMonthlyReport({ trainings, year, month }: MonthlyR
       yPos += 6;
 
       doc.setFont('helvetica', 'normal');
-      const lines = doc.splitTextToSize(sanitizePolishText(t.notes!), pageWidth - 28);
       doc.text(lines, 14, yPos);
       yPos += lines.length * 5.5 + 8;
     }
