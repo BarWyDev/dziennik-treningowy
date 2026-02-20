@@ -90,15 +90,6 @@ export const PUT: APIRoute = async ({ request, params }) => {
       return handleValidationError(validation);
     }
 
-    const [existing] = await db
-      .select()
-      .from(trainings)
-      .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)));
-
-    if (!existing) {
-      return createNotFoundError('training', id);
-    }
-
     const { mediaIds, ...trainingData } = validation.data;
 
     // Użyj transakcji aby zapewnić atomiczność operacji
@@ -109,7 +100,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
           ...trainingData,
           updatedAt: new Date(),
         })
-        .where(eq(trainings.id, id))
+        .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)))
         .returning();
 
       // Aktualizuj powiązania z media w tej samej transakcji
@@ -128,8 +119,12 @@ export const PUT: APIRoute = async ({ request, params }) => {
         }
       }
 
-      return training;
+      return training ?? null;
     });
+
+    if (!updated) {
+      return createNotFoundError('training', id);
+    }
 
     // Unieważnij cache dashboardu - dane się zmieniły
     cache.delete(cacheKeys.dashboard(authResult.user.id));
@@ -163,26 +158,21 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       });
     }
 
-    const [existing] = await db
-      .select()
-      .from(trainings)
-      .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)));
-
-    if (!existing) {
-      return createNotFoundError('training', id);
-    }
-
-    // Pobierz wszystkie media załączniki przed usunięciem
+    // Pobierz media przed usunięciem (potrzebne do usunięcia fizycznych plików)
     const media = await db
       .select()
       .from(mediaAttachments)
       .where(eq(mediaAttachments.trainingId, id));
 
-    // Usuń trening w transakcji (ON DELETE CASCADE usunie wpisy z media_attachments)
-    // Transakcja zapewnia atomiczność operacji na bazie danych
-    await db.transaction(async (tx) => {
-      await tx.delete(trainings).where(eq(trainings.id, id));
-    });
+    // Usuń trening z weryfikacją ownership (ON DELETE CASCADE usunie wpisy z media_attachments)
+    const [deleted] = await db
+      .delete(trainings)
+      .where(and(eq(trainings.id, id), eq(trainings.userId, authResult.user.id)))
+      .returning({ id: trainings.id });
+
+    if (!deleted) {
+      return createNotFoundError('training', id);
+    }
 
     // Usuń fizyczne pliki po pomyślnym usunięciu z bazy
     // Jeśli usunięcie plików się nie powiedzie, logujemy błąd ale nie rollbackujemy transakcji

@@ -84,15 +84,6 @@ export const PUT: APIRoute = async ({ request, params }) => {
       return handleValidationError(validation);
     }
 
-    const [existing] = await db
-      .select()
-      .from(personalRecords)
-      .where(and(eq(personalRecords.id, id), eq(personalRecords.userId, authResult.user.id)));
-
-    if (!existing) {
-      return createNotFoundError('personal-record', id);
-    }
-
     const { mediaIds, ...recordData } = validation.data;
 
     // Użyj transakcji aby zapewnić atomiczność operacji
@@ -103,7 +94,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
           ...recordData,
           updatedAt: new Date(),
         })
-        .where(eq(personalRecords.id, id))
+        .where(and(eq(personalRecords.id, id), eq(personalRecords.userId, authResult.user.id)))
         .returning();
 
       // Aktualizuj powiązania z media w tej samej transakcji
@@ -122,8 +113,12 @@ export const PUT: APIRoute = async ({ request, params }) => {
         }
       }
 
-      return record;
+      return record ?? null;
     });
+
+    if (!updated) {
+      return createNotFoundError('personal-record', id);
+    }
 
     return new Response(JSON.stringify(updated), {
       status: 200,
@@ -154,26 +149,21 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       });
     }
 
-    const [existing] = await db
-      .select()
-      .from(personalRecords)
-      .where(and(eq(personalRecords.id, id), eq(personalRecords.userId, authResult.user.id)));
-
-    if (!existing) {
-      return createNotFoundError('personal-record', id);
-    }
-
-    // Pobierz wszystkie media załączniki przed usunięciem
+    // Pobierz media przed usunięciem (potrzebne do usunięcia fizycznych plików)
     const media = await db
       .select()
       .from(mediaAttachments)
       .where(eq(mediaAttachments.personalRecordId, id));
 
-    // Usuń rekord w transakcji (ON DELETE CASCADE usunie wpisy z media_attachments)
-    // Transakcja zapewnia atomiczność operacji na bazie danych
-    await db.transaction(async (tx) => {
-      await tx.delete(personalRecords).where(eq(personalRecords.id, id));
-    });
+    // Usuń rekord z weryfikacją ownership (ON DELETE CASCADE usunie wpisy z media_attachments)
+    const [deleted] = await db
+      .delete(personalRecords)
+      .where(and(eq(personalRecords.id, id), eq(personalRecords.userId, authResult.user.id)))
+      .returning({ id: personalRecords.id });
+
+    if (!deleted) {
+      return createNotFoundError('personal-record', id);
+    }
 
     // Usuń fizyczne pliki po pomyślnym usunięciu z bazy
     // Jeśli usunięcie plików się nie powiedzie, logujemy błąd ale nie rollbackujemy transakcji

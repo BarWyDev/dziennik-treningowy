@@ -72,23 +72,18 @@ export const PUT: APIRoute = async ({ request, params }) => {
       return handleValidationError(validation);
     }
 
-    const [existing] = await db
-      .select()
-      .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
-
-    if (!existing) {
-      return createNotFoundError('goal', id);
-    }
-
     const [updated] = await db
       .update(goals)
       .set({
         ...validation.data,
         updatedAt: new Date(),
       })
-      .where(eq(goals.id, id))
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)))
       .returning();
+
+    if (!updated) {
+      return createNotFoundError('goal', id);
+    }
 
     return new Response(JSON.stringify(updated), {
       status: 200,
@@ -119,16 +114,14 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       });
     }
 
-    const [existing] = await db
-      .select()
-      .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
+    const [deleted] = await db
+      .delete(goals)
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)))
+      .returning({ id: goals.id });
 
-    if (!existing) {
+    if (!deleted) {
       return createNotFoundError('goal', id);
     }
-
-    await db.delete(goals).where(eq(goals.id, id));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

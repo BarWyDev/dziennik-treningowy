@@ -34,14 +34,13 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Pobierz załącznik (sprawdź ownership)
-    const [media] = await db
-      .select()
-      .from(mediaAttachments)
+    // Usuń wpis z bazy z weryfikacją ownership, pobierz fileUrl do usunięcia pliku
+    const [deleted] = await db
+      .delete(mediaAttachments)
       .where(and(eq(mediaAttachments.id, id), eq(mediaAttachments.userId, user.id)))
-      .limit(1);
+      .returning({ fileUrl: mediaAttachments.fileUrl });
 
-    if (!media) {
+    if (!deleted) {
       return createErrorResponse(
         ErrorCode.MEDIA_NOT_FOUND,
         'Załącznik nie znaleziony'
@@ -50,14 +49,11 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     // Usuń plik fizyczny
     try {
-      await storage.deleteFile(media.fileUrl);
+      await storage.deleteFile(deleted.fileUrl);
     } catch (error) {
       console.error('Error deleting physical file:', error);
       // Kontynuuj mimo błędu - plik może być już usunięty
     }
-
-    // Usuń wpis z bazy
-    await db.delete(mediaAttachments).where(eq(mediaAttachments.id, id));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

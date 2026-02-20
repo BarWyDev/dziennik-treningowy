@@ -25,15 +25,6 @@ export const PATCH: APIRoute = async ({ request, params }) => {
       });
     }
 
-    const [existing] = await db
-      .select()
-      .from(goals)
-      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)));
-
-    if (!existing) {
-      return createNotFoundError('goal', id);
-    }
-
     const [updated] = await db
       .update(goals)
       .set({
@@ -41,8 +32,12 @@ export const PATCH: APIRoute = async ({ request, params }) => {
         achievedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(goals.id, id))
+      .where(and(eq(goals.id, id), eq(goals.userId, authResult.user.id)))
       .returning();
+
+    if (!updated) {
+      return createNotFoundError('goal', id);
+    }
 
     return new Response(JSON.stringify(updated), {
       status: 200,

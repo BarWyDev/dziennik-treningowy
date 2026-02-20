@@ -35,30 +35,24 @@ export const PUT: APIRoute = async ({ request, params }) => {
       return handleValidationError(validation);
     }
 
-    // Check if the training type belongs to the user (not a default type)
-    const [existing] = await db
-      .select()
-      .from(trainingTypes)
-      .where(
-        and(
-          eq(trainingTypes.id, id),
-          eq(trainingTypes.userId, authResult.user.id),
-          eq(trainingTypes.isDefault, false)
-        )
-      );
-
-    if (!existing) {
-      return createNotFoundError('training-type', id);
-    }
-
     const [updated] = await db
       .update(trainingTypes)
       .set({
         ...validation.data,
         updatedAt: new Date(),
       })
-      .where(eq(trainingTypes.id, id))
+      .where(
+        and(
+          eq(trainingTypes.id, id),
+          eq(trainingTypes.userId, authResult.user.id),
+          eq(trainingTypes.isDefault, false)
+        )
+      )
       .returning();
+
+    if (!updated) {
+      return createNotFoundError('training-type', id);
+    }
 
     // Invalidate cache dla tego użytkownika (wszystkie strony)
     cache.deleteByPattern(cacheKeys.trainingTypesPrefix(authResult.user.id));
@@ -92,23 +86,20 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       });
     }
 
-    // Check if the training type belongs to the user (not a default type)
-    const [existing] = await db
-      .select()
-      .from(trainingTypes)
+    const [deleted] = await db
+      .delete(trainingTypes)
       .where(
         and(
           eq(trainingTypes.id, id),
           eq(trainingTypes.userId, authResult.user.id),
           eq(trainingTypes.isDefault, false)
         )
-      );
+      )
+      .returning({ id: trainingTypes.id });
 
-    if (!existing) {
+    if (!deleted) {
       return createNotFoundError('training-type', id);
     }
-
-    await db.delete(trainingTypes).where(eq(trainingTypes.id, id));
 
     // Invalidate cache dla tego użytkownika (wszystkie strony)
     cache.deleteByPattern(cacheKeys.trainingTypesPrefix(authResult.user.id));
