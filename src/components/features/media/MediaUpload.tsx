@@ -130,24 +130,32 @@ export function MediaUpload({
 
       setUploading(true);
       setProgress(0);
-      const results: UploadedFile[] = [];
 
       try {
-        for (let i = 0; i < filesArray.length; i++) {
-          const file = filesArray[i];
+        // Uploaduj wszystkie pliki równolegle (zamiast sekwencyjnie)
+        let completed = 0;
+        const uploadResults = await Promise.allSettled(
+          filesArray.map(async (file) => {
+            const result = await uploadFile(file);
+            completed++;
+            setProgress((completed / filesArray.length) * 100);
+            return result;
+          })
+        );
 
-          // Upload (walidacja już wykonana wyżej)
-          try {
-            const uploaded = await uploadFile(file);
-            if (uploaded) {
-              results.push(uploaded);
-            }
-          } catch (err) {
-            setError(err instanceof Error ? err.message : 'Błąd podczas uploadu');
+        const results: UploadedFile[] = [];
+        const errors: string[] = [];
+
+        for (const result of uploadResults) {
+          if (result.status === 'fulfilled' && result.value) {
+            results.push(result.value);
+          } else if (result.status === 'rejected') {
+            errors.push(result.reason instanceof Error ? result.reason.message : 'Błąd podczas uploadu');
           }
+        }
 
-          // Update progress
-          setProgress(((i + 1) / filesArray.length) * 100);
+        if (errors.length > 0) {
+          setError(errors[0]);
         }
 
         if (results.length > 0) {

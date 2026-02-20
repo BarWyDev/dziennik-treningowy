@@ -99,6 +99,8 @@ export function TrainingCard({ training }: TrainingCardProps) {
                 src={normalizeMediaUrl(img.fileUrl)}
                 alt={img.fileName}
                 className="inline-block h-10 w-10 rounded-lg ring-2 ring-white dark:ring-gray-800 object-cover"
+                loading="lazy"
+                decoding="async"
               />
             ))}
           </div>
