@@ -15,6 +15,7 @@ interface Training {
   ratingEnergy?: number | null;
   ratingMotivation?: number | null;
   ratingDifficulty?: number | null;
+  description?: string | null;
   trainingGoal?: string | null;
   mostSatisfiedWith?: string | null;
   improveNextTime?: string | null;

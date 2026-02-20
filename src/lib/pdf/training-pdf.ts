@@ -13,6 +13,7 @@ interface Training {
   ratingEnergy?: number | null;
   ratingMotivation?: number | null;
   ratingDifficulty?: number | null;
+  description?: string | null;
   trainingGoal?: string | null;
   mostSatisfiedWith?: string | null;
   improveNextTime?: string | null;
@@ -75,6 +76,24 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
   yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
 
   const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Description
+  if (training.description) {
+    const descLines = doc.splitTextToSize(sanitizePolishText(training.description), pageWidth - 28);
+    yPos = ensurePageSpace(doc, yPos, 20 + descLines.length * 5.5);
+
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(31, 41, 55);
+    doc.text(sanitizePolishText('Opis treningu'), 14, yPos);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    yPos += 8;
+
+    doc.text(descLines, 14, yPos);
+    yPos += descLines.length * 5.5 + 10;
+  }
 
   // Training Goal
   if (training.trainingGoal) {
