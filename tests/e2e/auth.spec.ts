@@ -29,6 +29,7 @@ test.describe('Autoryzacja', () => {
 
     test('waliduje puste pola przy submicie', async ({ page }) => {
       await page.goto('/auth/login');
+      await page.waitForLoadState('networkidle');
 
       await page.locator('button[type="submit"]').click();
 
@@ -67,6 +68,7 @@ test.describe('Autoryzacja', () => {
 
     test('waliduje wymagane pola', async ({ page }) => {
       await page.goto('/auth/register');
+      await page.waitForLoadState('networkidle');
 
       await page.locator('button[type="submit"]').click();
 
@@ -76,6 +78,7 @@ test.describe('Autoryzacja', () => {
 
     test('waliduje siłę hasła', async ({ page }) => {
       await page.goto('/auth/register');
+      await page.waitForLoadState('networkidle');
 
       await page.locator('input[name="name"], input[id="name"]').fill('Test User');
       await page.locator('input[type="email"]').fill('test@example.com');

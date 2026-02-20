@@ -103,12 +103,8 @@ describe('Resource Authorization - User Isolation', () => {
         const sessionA = createMockSessionData({ id: userA.id, email: userA.email });
         mockAuthenticatedSession(sessionA);
 
-        // Training należy do User B
-        vi.mocked(db.select).mockReturnValue({
-          from: vi.fn().mockReturnValue({
-            where: vi.fn().mockResolvedValue([]), // Nie znaleziono
-          }),
-        } as any);
+        // Training należy do User B — transaction zwraca null (nie znaleziono)
+        vi.mocked(db.transaction).mockResolvedValueOnce(null);
 
         const { PUT } = await import('@/pages/api/trainings/[id]');
 
@@ -336,11 +332,8 @@ describe('Resource Authorization - User Isolation', () => {
         const sessionA = createMockSessionData({ id: userA.id, email: userA.email });
         mockAuthenticatedSession(sessionA);
 
-        vi.mocked(db.select).mockReturnValue({
-          from: vi.fn().mockReturnValue({
-            where: vi.fn().mockResolvedValue([]),
-          }),
-        } as any);
+        // Rekord należy do User B — transaction zwraca null (nie znaleziono)
+        vi.mocked(db.transaction).mockResolvedValueOnce(null);
 
         const { PUT } = await import('@/pages/api/personal-records/[id]');
 

@@ -303,12 +303,13 @@ describe('API: /api/training-types/[id]', () => {
 
     it('nie pozwala na edycję typu innego użytkownika', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
-      // Zwraca pusty wynik bo warunek userId nie pasuje
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
+      vi.mocked(db.update).mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([]),
+          }),
         }),
       } as any);
 
@@ -391,8 +392,10 @@ describe('API: /api/training-types/[id]', () => {
         }),
       } as any);
       
-      vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+      vi.mocked(db.delete).mockReturnValueOnce({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: 'type-custom-1' }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/training-types/[id]');
@@ -401,9 +404,9 @@ describe('API: /api/training-types/[id]', () => {
         method: 'DELETE',
         params: { id: 'type-custom-1' },
       });
-      
+
       const response = await DELETE(ctx as any);
-      
+
       expect(response.status).toBe(200);
     });
 

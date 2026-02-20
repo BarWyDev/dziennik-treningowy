@@ -238,13 +238,9 @@ describe('API: /api/trainings/[id]', () => {
 
     it('zwraca 404 gdy trening nie istnieje', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
-        }),
-      } as any);
+      vi.mocked(db.transaction).mockResolvedValueOnce(null);
 
       const { PUT } = await import('@/pages/api/trainings/[id]');
       const ctx = createMockAPIContext({
@@ -253,9 +249,9 @@ describe('API: /api/trainings/[id]', () => {
         params: { id: 'non-existent' },
         body: { durationMinutes: 90 },
       });
-      
+
       const response = await PUT(ctx as any);
-      
+
       expect(response.status).toBe(404);
     });
 
@@ -292,14 +288,9 @@ describe('API: /api/trainings/[id]', () => {
 
     it('nie pozwala na edycję treningu innego użytkownika', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
-      // Zwraca pusty wynik bo warunek userId nie pasuje
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
-        }),
-      } as any);
+      vi.mocked(db.transaction).mockResolvedValueOnce(null);
 
       const { PUT } = await import('@/pages/api/trainings/[id]');
       const ctx = createMockAPIContext({
@@ -359,20 +350,18 @@ describe('API: /api/trainings/[id]', () => {
       const { db } = await import('@/lib/db');
       const { storage } = await import('@/lib/storage');
       
-      vi.mocked(db.select).mockReturnValueOnce({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([mockTraining]),
-        }),
-      } as any).mockReturnValueOnce({
+      vi.mocked(db.select).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue([
             { id: 'media-1', fileUrl: '/uploads/file1.jpg' }
           ]),
         }),
       } as any);
-      
+
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: 'training-1' }]),
+        }),
       } as any);
 
       vi.mocked(storage.deleteFile).mockResolvedValue(undefined);
@@ -383,9 +372,9 @@ describe('API: /api/trainings/[id]', () => {
         method: 'DELETE',
         params: { id: 'training-1' },
       });
-      
+
       const response = await DELETE(ctx as any);
-      
+
       expect(response.status).toBe(200);
       expect(storage.deleteFile).toHaveBeenCalled();
     });

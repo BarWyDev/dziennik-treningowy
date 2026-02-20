@@ -18,6 +18,21 @@ const publicPaths = [
   '/regulamin',
 ];
 
+function addSecurityHeaders(response: Response): Response {
+  const newResponse = new Response(response.body, response);
+  newResponse.headers.set('X-Content-Type-Options', 'nosniff');
+  newResponse.headers.set('X-Frame-Options', 'DENY');
+  newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  newResponse.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+  );
+  if (import.meta.env.PROD) {
+    newResponse.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  return newResponse;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
@@ -40,7 +55,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   if (isPublicPath) {
-    return next();
+    return addSecurityHeaders(await next());
   }
 
   // Get session from Better Auth
@@ -56,28 +71,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.user = session.user;
   context.locals.session = session.session;
 
-  // Pobierz response i dodaj security headers
-  const response = await next();
-
-  // Clone response aby móc modyfikować headers
-  const newResponse = new Response(response.body, response);
-
-  // Security headers - ochrona przed typowymi atakami
-  newResponse.headers.set('X-Content-Type-Options', 'nosniff');
-  newResponse.headers.set('X-Frame-Options', 'DENY');
-  newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  newResponse.headers.set(
-    'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
-  );
-
-  // HSTS tylko w produkcji (wymaga HTTPS)
-  if (import.meta.env.PROD) {
-    newResponse.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains'
-    );
-  }
-
-  return newResponse;
+  return addSecurityHeaders(await next());
 });

@@ -53,10 +53,12 @@ vi.mock('@/lib/db', () => ({
       })),
     })),
     delete: vi.fn(() => ({
-      where: vi.fn(() => Promise.resolve()),
+      where: vi.fn(() => ({
+        returning: vi.fn(() => Promise.resolve([])),
+      })),
     })),
     transaction: vi.fn(async (fn) => {
-      await fn({
+      return fn({
         insert: vi.fn(() => ({
           values: vi.fn(function() {
             return {
@@ -72,7 +74,9 @@ vi.mock('@/lib/db', () => ({
           })),
         })),
         delete: vi.fn(() => ({
-          where: vi.fn(async () => Promise.resolve()),
+          where: vi.fn(() => ({
+            returning: vi.fn(() => Promise.resolve([])),
+          })),
         })),
       } as any);
     }),

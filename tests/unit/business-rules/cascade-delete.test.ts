@@ -44,33 +44,21 @@ describe('Cascade Delete - Trainings with Media', () => {
         { id: 'media-3', fileUrl: 'uploads/user-123/training/video.mp4', fileType: 'video' },
       ];
 
-      // Mock: znajdź trening
-      let selectCallCount = 0;
-      vi.mocked(db.select).mockImplementation(() => {
-        selectCallCount++;
-        if (selectCallCount === 1) {
-          // Pierwszy select - sprawdzenie treningu
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue([existingTraining]),
-            }),
-          } as any;
-        } else {
-          // Drugi select - pobranie mediów
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue(attachedMedia),
-            }),
-          } as any;
-        }
-      });
+      // Mock: pobierz media (jeden select - DELETE API nie sprawdza istnienia przez select)
+      vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(attachedMedia),
+        }),
+      } as any);
 
       // Mock: usunięcie plików
       vi.mocked(storage.deleteFile).mockResolvedValue(undefined);
 
-      // Mock: usunięcie treningu
+      // Mock: usunięcie treningu (z returning)
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: trainingId }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/trainings/[id]');
@@ -107,23 +95,11 @@ describe('Cascade Delete - Trainings with Media', () => {
         { id: 'media-2', fileUrl: 'uploads/user-123/img2.jpg', fileType: 'image' }, // Ten plik "nie istnieje"
       ];
 
-      let selectCallCount = 0;
-      vi.mocked(db.select).mockImplementation(() => {
-        selectCallCount++;
-        if (selectCallCount === 1) {
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue([existingTraining]),
-            }),
-          } as any;
-        } else {
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue(attachedMedia),
-            }),
-          } as any;
-        }
-      });
+      vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(attachedMedia),
+        }),
+      } as any);
 
       // Pierwszy plik OK, drugi rzuca błąd
       vi.mocked(storage.deleteFile)
@@ -131,7 +107,9 @@ describe('Cascade Delete - Trainings with Media', () => {
         .mockRejectedValueOnce(new Error('File not found'));
 
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: trainingId }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/trainings/[id]');
@@ -161,26 +139,16 @@ describe('Cascade Delete - Trainings with Media', () => {
         userId: mockUser.user.id,
       };
 
-      let selectCallCount = 0;
-      vi.mocked(db.select).mockImplementation(() => {
-        selectCallCount++;
-        if (selectCallCount === 1) {
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue([existingTraining]),
-            }),
-          } as any;
-        } else {
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue([]), // Brak mediów
-            }),
-          } as any;
-        }
-      });
+      vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]), // Brak mediów
+        }),
+      } as any);
 
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: trainingId }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/trainings/[id]');
@@ -227,28 +195,18 @@ describe('Cascade Delete - Personal Records with Media', () => {
         { id: 'media-2', fileUrl: 'uploads/user-123/record/video-proof.mp4', fileType: 'video' },
       ];
 
-      let selectCallCount = 0;
-      vi.mocked(db.select).mockImplementation(() => {
-        selectCallCount++;
-        if (selectCallCount === 1) {
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue([existingRecord]),
-            }),
-          } as any;
-        } else {
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue(attachedMedia),
-            }),
-          } as any;
-        }
-      });
+      vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(attachedMedia),
+        }),
+      } as any);
 
       vi.mocked(storage.deleteFile).mockResolvedValue(undefined);
 
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: recordId }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/personal-records/[id]');

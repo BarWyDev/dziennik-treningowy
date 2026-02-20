@@ -72,7 +72,9 @@ describe('Training Types Business Rules - Default Types Protection', () => {
       } as any);
 
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: 'custom-type-123' }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/training-types/[id]');
@@ -96,10 +98,12 @@ describe('Training Types Business Rules - Default Types Protection', () => {
     it('powinien odrzucić edycję domyślnego typu treningu', async () => {
       mockAuthenticatedSession(mockUser);
 
-      // Typ jest domyślny - query z warunkiem isDefault=false zwróci pusty wynik
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
+      const { db } = await import('@/lib/db');
+      vi.mocked(db.update).mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([]),
+          }),
         }),
       } as any);
 

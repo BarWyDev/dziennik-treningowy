@@ -18,6 +18,11 @@ import {
   resetPasswordSchema,
 } from '@/lib/validations/auth';
 
+const validRegisterBase = {
+  acceptTerms: true as const,
+  acceptHealthData: true as const,
+};
+
 describe('Auth Validation - loginSchema', () => {
   describe('email field', () => {
     it('powinien zaakceptować poprawny email', () => {
@@ -94,6 +99,7 @@ describe('Auth Validation - registerSchema', () => {
         email: 'user@example.com',
         password: 'Haslo123',
         confirmPassword: 'Haslo123',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -129,6 +135,7 @@ describe('Auth Validation - registerSchema', () => {
         email: 'jan@example.com',
         password: 'Silne123',
         confirmPassword: 'Silne123',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -195,6 +202,7 @@ describe('Auth Validation - registerSchema', () => {
         email: 'jan@example.com',
         password: 'Silne123!@#',
         confirmPassword: 'Silne123!@#',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -205,6 +213,7 @@ describe('Auth Validation - registerSchema', () => {
         email: 'jan@example.com',
         password: 'BardzoSilneHaslo123!'.repeat(5),
         confirmPassword: 'BardzoSilneHaslo123!'.repeat(5),
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -217,6 +226,7 @@ describe('Auth Validation - registerSchema', () => {
         email: 'jan@example.com',
         password: 'Silne123',
         confirmPassword: 'Silne123',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -227,6 +237,7 @@ describe('Auth Validation - registerSchema', () => {
         email: 'jan@example.com',
         password: 'Silne123',
         confirmPassword: 'Inne123',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -345,6 +356,7 @@ describe('Auth Validation - Edge cases', () => {
         email: 'jan@example.com',
         password: 'Hasło123żółć',
         confirmPassword: 'Hasło123żółć',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -355,6 +367,7 @@ describe('Auth Validation - Edge cases', () => {
         email: 'jan@example.com',
         password: 'Haslo123🔥',
         confirmPassword: 'Haslo123🔥',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });
@@ -365,6 +378,7 @@ describe('Auth Validation - Edge cases', () => {
         email: 'jan@example.com',
         password: 'Haslo123', // exactly 8 chars
         confirmPassword: 'Haslo123',
+        ...validRegisterBase,
       });
       expect(result.success).toBe(true);
     });

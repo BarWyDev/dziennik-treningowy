@@ -399,7 +399,9 @@ describe('API: /api/goals/[id]', () => {
       } as any);
       
       vi.mocked(db.delete).mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: 'goal-1' }]),
+        }),
       } as any);
 
       const { DELETE } = await import('@/pages/api/goals/[id]');
@@ -408,9 +410,9 @@ describe('API: /api/goals/[id]', () => {
         method: 'DELETE',
         params: { id: 'goal-1' },
       });
-      
+
       const response = await DELETE(ctx as any);
-      
+
       expect(response.status).toBe(200);
     });
   });
@@ -455,11 +457,13 @@ describe('API: /api/goals/[id]/achieve', () => {
 
     it('zwraca 404 gdy cel nie istnieje', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
+      vi.mocked(db.update).mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([]),
+          }),
         }),
       } as any);
 
@@ -533,11 +537,13 @@ describe('API: /api/goals/[id]/archive', () => {
 
     it('zwraca 404 gdy cel nie istnieje', async () => {
       mockAuthenticatedSession();
-      
+
       const { db } = await import('@/lib/db');
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
+      vi.mocked(db.update).mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([]),
+          }),
         }),
       } as any);
 
