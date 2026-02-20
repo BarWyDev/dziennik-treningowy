@@ -150,6 +150,16 @@ export function addFooter(doc: jsPDF): void {
   }
 }
 
+// Check if content fits on current page; if not, add a new page and return new yPos
+export function ensurePageSpace(doc: jsPDF, yPos: number, neededHeight: number): number {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  if (yPos + neededHeight > pageHeight - 15) {
+    doc.addPage();
+    return 20;
+  }
+  return yPos;
+}
+
 export function formatDateRange(startDate: Date, endDate: Date): string {
   const formatOptions: Intl.DateTimeFormatOptions = {
     day: 'numeric',

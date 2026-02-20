@@ -1,4 +1,4 @@
-import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries } from './common';
+import { createPDF, addHeader, addFooter, formatDuration, sanitizePolishText, generateStarRating, STAR_COLOR, loadPDFLibraries, ensurePageSpace } from './common';
 
 interface TrainingType {
   name: string;
@@ -74,8 +74,13 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
 
   yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
 
+  const pageWidth = doc.internal.pageSize.getWidth();
+
   // Training Goal
   if (training.trainingGoal) {
+    const goalLines = doc.splitTextToSize(sanitizePolishText(training.trainingGoal), pageWidth - 28);
+    yPos = ensurePageSpace(doc, yPos, 20 + goalLines.length * 5.5);
+
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(37, 99, 235); // blue-600
@@ -86,13 +91,12 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
     doc.setFontSize(11);
     yPos += 8;
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const textLines = doc.splitTextToSize(sanitizePolishText(training.trainingGoal), pageWidth - 28);
-    doc.text(textLines, 14, yPos);
-    yPos += textLines.length * 5.5 + 10;
+    doc.text(goalLines, 14, yPos);
+    yPos += goalLines.length * 5.5 + 10;
   }
 
   // Ratings Section
+  yPos = ensurePageSpace(doc, yPos, 40);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(31, 41, 55);
@@ -141,15 +145,17 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
 
   // Reflection Section
   if (training.mostSatisfiedWith || training.improveNextTime || training.howToImprove) {
+    yPos = ensurePageSpace(doc, yPos, 30);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(31, 41, 55);
     doc.text(sanitizePolishText('Refleksja po treningu'), 14, yPos);
     yPos += 10;
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-
     if (training.mostSatisfiedWith) {
+      const lines1 = doc.splitTextToSize(sanitizePolishText(training.mostSatisfiedWith), pageWidth - 28);
+      yPos = ensurePageSpace(doc, yPos, 15 + lines1.length * 5.5);
+
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(22, 163, 74); // green-600
@@ -158,12 +164,14 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
 
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(31, 41, 55);
-      const lines1 = doc.splitTextToSize(sanitizePolishText(training.mostSatisfiedWith), pageWidth - 28);
       doc.text(lines1, 14, yPos);
       yPos += lines1.length * 5.5 + 8;
     }
 
     if (training.improveNextTime) {
+      const lines2 = doc.splitTextToSize(sanitizePolishText(training.improveNextTime), pageWidth - 28);
+      yPos = ensurePageSpace(doc, yPos, 15 + lines2.length * 5.5);
+
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(217, 119, 6); // amber-600
@@ -172,12 +180,14 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
 
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(31, 41, 55);
-      const lines2 = doc.splitTextToSize(sanitizePolishText(training.improveNextTime), pageWidth - 28);
       doc.text(lines2, 14, yPos);
       yPos += lines2.length * 5.5 + 8;
     }
 
     if (training.howToImprove) {
+      const lines3 = doc.splitTextToSize(sanitizePolishText(training.howToImprove), pageWidth - 28);
+      yPos = ensurePageSpace(doc, yPos, 15 + lines3.length * 5.5);
+
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(147, 51, 234); // purple-600
@@ -186,7 +196,6 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
 
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(31, 41, 55);
-      const lines3 = doc.splitTextToSize(sanitizePolishText(training.howToImprove), pageWidth - 28);
       doc.text(lines3, 14, yPos);
       yPos += lines3.length * 5.5 + 10;
     }
@@ -194,6 +203,9 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
 
   // Additional Notes
   if (training.notes) {
+    const textLines = doc.splitTextToSize(sanitizePolishText(training.notes), pageWidth - 28);
+    yPos = ensurePageSpace(doc, yPos, 20 + textLines.length * 5.5);
+
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(31, 41, 55);
@@ -203,8 +215,6 @@ export async function generateTrainingPDF(training: Training): Promise<void> {
     doc.setFontSize(11);
     yPos += 8;
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const textLines = doc.splitTextToSize(sanitizePolishText(training.notes), pageWidth - 28);
     doc.text(textLines, 14, yPos);
   }
 
