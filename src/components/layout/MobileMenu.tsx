@@ -65,12 +65,19 @@ export function MobileMenu({ isOpen, user, navigation }: MobileMenuProps) {
                 </div>
               )}
             </div>
-            <div className="ml-3">
-              <div className="font-medium text-gray-900 dark:text-gray-100" style={{ fontSize: '15px' }}>{user.name}</div>
-              <div className="text-gray-500 dark:text-gray-400" style={{ fontSize: '14px' }}>{user.email}</div>
+            <div className="ml-3 min-w-0">
+              <div className="font-medium text-gray-900 dark:text-gray-100 truncate" style={{ fontSize: '15px' }}>{user.name}</div>
+              <div className="text-gray-500 dark:text-gray-400 truncate" style={{ fontSize: '14px' }}>{user.email}</div>
             </div>
           </div>
           <div className="mt-3 space-y-1">
+            <a
+              href="/settings"
+              className="block px-4 py-2 font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              style={{ fontSize: '15px' }}
+            >
+              Ustawienia
+            </a>
             <button
               onClick={handleSignOut}
               className="block w-full text-left px-4 py-2 font-medium text-gray-600 dark:text-gray-400 hover:text-error-600 dark:hover:text-error-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"

@@ -127,8 +127,8 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
 
       <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-start justify-between">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {training.trainingType?.name || 'Trening'}
               </h1>
@@ -137,7 +137,7 @@ export function TrainingDetails({ training }: TrainingDetailsProps) {
                 {training.time && ` • ${training.time}`}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <ExportButton training={training} />
               <a href={`/trainings/${training.id}/edit`}>
                 <Button variant="secondary" size="sm">

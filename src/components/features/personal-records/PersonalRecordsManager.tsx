@@ -19,14 +19,14 @@ export function PersonalRecordsManager() {
   return (
     <ErrorBoundary>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Rekordy osobiste</h1>
           <p className="text-gray-600 dark:text-gray-400 text-base lg:text-lg">
             Śledź swoje najlepsze osiągnięcia i obserwuj postępy
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={() => setShowForm(true)} className="self-start sm:self-auto flex-shrink-0">
           <svg
             className="w-4 h-4 lg:w-5 lg:h-5 mr-2"
             fill="none"

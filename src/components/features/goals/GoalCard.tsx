@@ -131,7 +131,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
       }`}
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {isAchieved && (
               <svg className="w-5 h-5 lg:w-6 lg:h-6 text-success-500 dark:text-success-400" fill="currentColor" viewBox="0 0 20 20">
@@ -153,11 +153,11 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
 
           {hasTarget && (
             <div className="mt-2">
-              <div className="flex items-center justify-between text-sm lg:text-base">
-                <span className="text-gray-600 dark:text-gray-400">
+              <div className="flex items-baseline justify-between gap-2 text-sm lg:text-base">
+                <span className="text-gray-600 dark:text-gray-400 break-words">
                   Postęp: {goal.currentValue || 0} / {goal.targetValue} {goal.unit}
                 </span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">{valueProgress}%</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">{valueProgress}%</span>
               </div>
             </div>
           )}

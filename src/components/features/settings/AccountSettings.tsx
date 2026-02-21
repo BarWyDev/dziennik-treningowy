@@ -132,7 +132,7 @@ export function AccountSettings() {
                 key={consent.id}
                 className="flex items-start justify-between gap-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
               >
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {consentLabels[consent.consentType] ?? consent.consentType}
                   </p>
@@ -150,6 +150,7 @@ export function AccountSettings() {
                   <Button
                     variant="secondary"
                     size="sm"
+                    className="flex-shrink-0"
                     onClick={() => setWithdrawDialogOpen(true)}
                   >
                     Wycofaj
@@ -234,9 +235,10 @@ export function AccountSettings() {
             je usunąć, skorzystaj z opcji usunięcia konta.
           </p>
           {withdrawError && <Alert variant="error">{withdrawError}</Alert>}
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <Button
               variant="secondary"
+              className="w-full sm:w-auto"
               onClick={() => {
                 setWithdrawDialogOpen(false);
                 setWithdrawError('');
@@ -246,6 +248,7 @@ export function AccountSettings() {
             </Button>
             <Button
               variant="danger"
+              className="w-full sm:w-auto"
               onClick={handleWithdrawConsent}
               isLoading={withdrawing}
             >
@@ -293,9 +296,10 @@ export function AccountSettings() {
             />
           </div>
           {deleteError && <Alert variant="error">{deleteError}</Alert>}
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <Button
               variant="secondary"
+              className="w-full sm:w-auto"
               onClick={() => {
                 setDeleteDialogOpen(false);
                 setDeletePassword('');
@@ -307,6 +311,7 @@ export function AccountSettings() {
             </Button>
             <Button
               variant="danger"
+              className="w-full sm:w-auto"
               onClick={handleDeleteAccount}
               isLoading={deleting}
             >

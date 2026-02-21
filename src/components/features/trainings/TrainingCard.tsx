@@ -57,14 +57,14 @@ export function TrainingCard({ training }: TrainingCardProps) {
       href={`/trainings/${training.id}`}
       className="block bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-700 transition-all"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
               {training.trainingType?.name || 'Trening'}
             </span>
             {training.rating && (
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-0.5 flex-shrink-0">
                 {[...Array(training.rating)].map((_, i) => (
                   <svg
                     key={i}
@@ -79,7 +79,7 @@ export function TrainingCard({ training }: TrainingCardProps) {
           </div>
           <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-1">{formatDate(training.date)}</p>
         </div>
-        <div className="text-right">
+        <div className="text-right flex-shrink-0">
           <p className="text-lg lg:text-xl font-semibold text-primary-600 dark:text-primary-400">
             {formatDuration(training.durationMinutes)}
           </p>

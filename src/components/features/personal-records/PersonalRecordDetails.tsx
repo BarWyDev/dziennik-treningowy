@@ -57,8 +57,8 @@ export function PersonalRecordDetails({ record }: PersonalRecordDetailsProps) {
       {/* Wynik */}
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Wynik</p>
-        <p className="text-4xl lg:text-5xl font-bold text-blue-600 dark:text-blue-400">
-          {record.result} <span className="text-xl lg:text-2xl font-normal text-gray-700 dark:text-gray-300">{record.unit}</span>
+        <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-600 dark:text-blue-400 break-words">
+          {record.result} <span className="text-lg sm:text-xl lg:text-2xl font-normal text-gray-700 dark:text-gray-300">{record.unit}</span>
         </p>
       </div>
 

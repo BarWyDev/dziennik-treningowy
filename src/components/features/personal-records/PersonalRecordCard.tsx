@@ -48,13 +48,13 @@ export function PersonalRecordCard({ record, onEdit, onDelete, onView }: Persona
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">{record.activityName}</h3>
+      <div className="flex justify-between items-start gap-3 mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 break-words">{record.activityName}</h3>
           <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-1">{formattedDate}</p>
         </div>
-        <div className="text-right">
-          <p className="text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400">
+        <div className="text-right flex-shrink-0">
+          <p className="text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400 break-words">
             {record.result} <span className="text-sm lg:text-base font-normal text-gray-600 dark:text-gray-400">{record.unit}</span>
           </p>
         </div>
