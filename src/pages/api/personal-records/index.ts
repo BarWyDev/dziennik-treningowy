@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { db, personalRecords, mediaAttachments, type MediaAttachment } from '@/lib/db';
 import { createPersonalRecordSchema, personalRecordsQuerySchema } from '@/lib/validations/personal-record';
 import { eq, desc, and, inArray } from 'drizzle-orm';
-import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, checkHealthConsent, RateLimitPresets } from '@/lib/api-helpers';
 import {
   handleUnexpectedError,
   handleDatabaseError,
@@ -97,6 +97,9 @@ export const POST: APIRoute = async ({ request }) => {
     if (!authResult.success) {
       return authResult.response;
     }
+
+    const consentError = await checkHealthConsent(authResult.user.id);
+    if (consentError) return consentError;
 
     const body = await request.json();
     const validation = createPersonalRecordSchema.safeParse(body);

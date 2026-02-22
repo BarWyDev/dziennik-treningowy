@@ -3,7 +3,7 @@ import { db, trainings, trainingTypes, mediaAttachments } from '@/lib/db';
 import { updateTrainingSchema } from '@/lib/validations/training';
 import { eq, and, inArray } from 'drizzle-orm';
 import { storage } from '@/lib/storage';
-import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, checkHealthConsent, RateLimitPresets } from '@/lib/api-helpers';
 import {
   handleUnexpectedError,
   handleDatabaseError,
@@ -73,6 +73,9 @@ export const PUT: APIRoute = async ({ request, params }) => {
     if (!authResult.success) {
       return authResult.response;
     }
+
+    const consentError = await checkHealthConsent(authResult.user.id);
+    if (consentError) return consentError;
 
     const { id } = params;
 

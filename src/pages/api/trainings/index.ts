@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { db, trainings, trainingTypes, mediaAttachments, type MediaAttachment } from '@/lib/db';
 import { createTrainingSchema, trainingFiltersQuerySchema } from '@/lib/validations/training';
 import { eq, and, gte, lte, desc, inArray } from 'drizzle-orm';
-import { requireAuthWithRateLimit, requireAuthWithCSRF, RateLimitPresets } from '@/lib/api-helpers';
+import { requireAuthWithRateLimit, requireAuthWithCSRF, checkHealthConsent, RateLimitPresets } from '@/lib/api-helpers';
 import {
   handleUnexpectedError,
   handleDatabaseError,
@@ -101,6 +101,9 @@ export const POST: APIRoute = async ({ request }) => {
     if (!authResult.success) {
       return authResult.response;
     }
+
+    const consentError = await checkHealthConsent(authResult.user.id);
+    if (consentError) return consentError;
 
     const body = await request.json();
     const validation = createTrainingSchema.safeParse(body);
