@@ -169,8 +169,8 @@ export function AccountSettings() {
         )}
       </section>
 
-      {/* Sekcja 2 — Eksport danych */}
-      <section className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+      {/* Sekcja 2 — Eksport danych (tymczasowo ukryta) */}
+      {/* <section className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-gray-800 p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
           Eksport danych (Art. 20 RODO)
         </h2>
@@ -199,12 +199,12 @@ export function AccountSettings() {
           </svg>
           Pobierz moje dane
         </Button>
-      </section>
+      </section> */}
 
       {/* Sekcja 3 — Usuń konto */}
-      <section className="rounded-xl border border-error-300 dark:border-error-700 p-6">
-        <h2 className="text-lg font-semibold text-error-700 dark:text-error-400 mb-1">
-          Strefa niebezpieczna
+      <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+          Usunięcie konta
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane — treningi, cele, rekordy
