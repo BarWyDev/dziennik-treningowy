@@ -1,0 +1,268 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+---
+
+<AppLayout title="Health Dashboard">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Health Dashboard</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Status serwera i aplikacji — odświeża się co 30s
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="countdown" class="text-sm text-gray-400 dark:text-gray-500"></span>
+        <button
+          id="refresh-btn"
+          class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Odśwież
+        </button>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div id="status-bar" class="rounded-xl p-4 flex items-center gap-3 bg-gray-100 dark:bg-gray-800">
+      <div id="status-dot" class="w-3 h-3 rounded-full bg-gray-400 animate-pulse"></div>
+      <span id="status-text" class="font-semibold text-gray-600 dark:text-gray-300">Ładowanie...</span>
+      <span id="last-updated" class="ml-auto text-xs text-gray-400 dark:text-gray-500"></span>
+    </div>
+
+    <!-- Metrics grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+      <!-- System -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wide">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/>
+          </svg>
+          System
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Wersja</span>
+            <span id="sys-version" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Środowisko</span>
+            <span id="sys-env" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Uptime</span>
+            <span id="sys-uptime" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Database -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wide">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582 4 8 4s8 1.79 8 4"/>
+          </svg>
+          Baza danych
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+            <span id="db-status" class="text-sm font-medium">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Latencja</span>
+            <span id="db-latency" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+        </div>
+        <div id="db-latency-bar-wrap" class="space-y-1 hidden">
+          <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+            <div id="db-latency-bar" class="h-1.5 rounded-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wide">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Pamięć
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-sm text-gray-500 dark:text-gray-400">Heap</span>
+              <span id="mem-heap" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+            </div>
+            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+              <div id="mem-heap-bar" class="h-1.5 rounded-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">RSS</span>
+            <span id="mem-rss" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wide">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Statystyki
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Użytkownicy</span>
+            <span id="stat-users" class="text-sm font-mono font-bold text-gray-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Treningi</span>
+            <span id="stat-trainings" class="text-sm font-mono font-bold text-gray-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Cele</span>
+            <span id="stat-goals" class="text-sm font-mono font-bold text-gray-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Rekordy</span>
+            <span id="stat-records" class="text-sm font-mono font-bold text-gray-900 dark:text-white">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</AppLayout>
+
+<script>
+  const REFRESH_INTERVAL = 30;
+
+  function formatUptime(seconds: number): string {
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  function latencyColor(ms: number): string {
+    if (ms < 20) return 'bg-green-500';
+    if (ms < 100) return 'bg-yellow-500';
+    return 'bg-red-500';
+  }
+
+  function latencyWidth(ms: number): number {
+    return Math.min((ms / 200) * 100, 100);
+  }
+
+  async function fetchHealth() {
+    try {
+      const res = await fetch('/api/health');
+      const data = await res.json();
+
+      // Status bar
+      const bar = document.getElementById('status-bar')!;
+      const dot = document.getElementById('status-dot')!;
+      const text = document.getElementById('status-text')!;
+
+      if (data.status === 'ok') {
+        bar.className = 'rounded-xl p-4 flex items-center gap-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900';
+        dot.className = 'w-3 h-3 rounded-full bg-green-500';
+        text.textContent = 'Wszystko działa poprawnie';
+        text.className = 'font-semibold text-green-700 dark:text-green-400';
+      } else {
+        bar.className = 'rounded-xl p-4 flex items-center gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900';
+        dot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
+        text.textContent = 'Wykryto błąd serwera';
+        text.className = 'font-semibold text-red-700 dark:text-red-400';
+      }
+
+      const updated = document.getElementById('last-updated')!;
+      updated.textContent = `Ostatnia aktualizacja: ${new Date(data.timestamp).toLocaleTimeString('pl-PL')}`;
+
+      // System
+      document.getElementById('sys-version')!.textContent = data.version ?? '—';
+      document.getElementById('sys-env')!.textContent = data.env ?? '—';
+      document.getElementById('sys-uptime')!.textContent = data.uptime != null ? formatUptime(data.uptime) : '—';
+
+      // DB
+      const dbStatus = document.getElementById('db-status')!;
+      if (data.db?.status === 'ok') {
+        dbStatus.textContent = 'ok';
+        dbStatus.className = 'text-sm font-medium text-green-600 dark:text-green-400';
+      } else {
+        dbStatus.textContent = 'error';
+        dbStatus.className = 'text-sm font-medium text-red-600 dark:text-red-400';
+      }
+
+      if (data.db?.latencyMs != null) {
+        document.getElementById('db-latency')!.textContent = `${data.db.latencyMs} ms`;
+        const barWrap = document.getElementById('db-latency-bar-wrap')!;
+        barWrap.classList.remove('hidden');
+        const bar = document.getElementById('db-latency-bar')!;
+        bar.style.width = `${latencyWidth(data.db.latencyMs)}%`;
+        bar.className = `h-1.5 rounded-full transition-all duration-500 ${latencyColor(data.db.latencyMs)}`;
+      }
+
+      // Memory
+      if (data.memory) {
+        const { heapUsedMb, heapTotalMb, rssMb } = data.memory;
+        document.getElementById('mem-heap')!.textContent = `${heapUsedMb} / ${heapTotalMb} MB`;
+        document.getElementById('mem-rss')!.textContent = `${rssMb} MB`;
+        const pct = heapTotalMb > 0 ? Math.round((heapUsedMb / heapTotalMb) * 100) : 0;
+        document.getElementById('mem-heap-bar')!.style.width = `${pct}%`;
+      }
+
+      // Stats
+      if (data.stats) {
+        document.getElementById('stat-users')!.textContent = String(data.stats.users);
+        document.getElementById('stat-trainings')!.textContent = String(data.stats.trainings);
+        document.getElementById('stat-goals')!.textContent = String(data.stats.goals);
+        document.getElementById('stat-records')!.textContent = String(data.stats.personalRecords);
+      }
+    } catch {
+      const bar = document.getElementById('status-bar')!;
+      const dot = document.getElementById('status-dot')!;
+      const text = document.getElementById('status-text')!;
+      bar.className = 'rounded-xl p-4 flex items-center gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900';
+      dot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
+      text.textContent = 'Błąd połączenia z API';
+      text.className = 'font-semibold text-red-700 dark:text-red-400';
+    }
+  }
+
+  // Countdown
+  let remaining = REFRESH_INTERVAL;
+  function updateCountdown() {
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = `Odświeżenie za ${remaining}s`;
+  }
+
+  fetchHealth();
+  updateCountdown();
+
+  const countdownInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      remaining = REFRESH_INTERVAL;
+      fetchHealth();
+    }
+    updateCountdown();
+  }, 1000);
+
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    remaining = REFRESH_INTERVAL;
+    updateCountdown();
+    fetchHealth();
+  });
+
+  // Cleanup on navigation
+  document.addEventListener('astro:before-swap', () => clearInterval(countdownInterval));
+</script>
