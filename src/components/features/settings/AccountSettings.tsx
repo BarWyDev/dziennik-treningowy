@@ -28,6 +28,10 @@ export function AccountSettings() {
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 
+  const [regrantDialogOpen, setRegrantDialogOpen] = useState(false);
+  const [regranting, setRegranting] = useState(false);
+  const [regrantError, setRegrantError] = useState('');
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deletePasswordError, setDeletePasswordError] = useState('');
@@ -79,6 +83,29 @@ export function AccountSettings() {
     }
   }
 
+  async function handleRegrantConsent() {
+    setRegranting(true);
+    setRegrantError('');
+    try {
+      const res = await fetch('/api/account/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ consentType: 'health_data' }),
+      });
+      if (!res.ok) {
+        setRegrantError(await parseErrorResponse(res));
+        return;
+      }
+      setWithdrawSuccess(false);
+      setRegrantDialogOpen(false);
+      await fetchConsents();
+    } catch {
+      setRegrantError('Wystąpił błąd. Spróbuj ponownie.');
+    } finally {
+      setRegranting(false);
+    }
+  }
+
   async function handleDeleteAccount() {
     if (!deletePassword) {
       setDeletePasswordError('Wpisz hasło aby potwierdzić');
@@ -107,6 +134,7 @@ export function AccountSettings() {
 
   const healthDataConsent = consents.find((c) => c.consentType === 'health_data');
   const hasActiveHealthConsent = healthDataConsent && !healthDataConsent.withdrawnAt;
+  const hasWithdrawnHealthConsent = healthDataConsent && !!healthDataConsent.withdrawnAt;
 
   return (
     <div className="space-y-8">
@@ -127,44 +155,79 @@ export function AccountSettings() {
           <p className="text-sm text-gray-500 dark:text-gray-400">Brak aktywnych zgód</p>
         ) : (
           <div className="space-y-3">
-            {consents.map((consent) => (
-              <div
-                key={consent.id}
-                className="flex items-start justify-between gap-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {consentLabels[consent.consentType] ?? consent.consentType}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Udzielono:{' '}
-                    {new Date(consent.grantedAt).toLocaleDateString('pl-PL', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                    {' '}· Wersja {consent.version}
-                  </p>
+            {consents.map((consent) => {
+              const isWithdrawn = !!consent.withdrawnAt;
+              return (
+                <div
+                  key={consent.id}
+                  className="flex items-start justify-between gap-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {consentLabels[consent.consentType] ?? consent.consentType}
+                      </p>
+                      {isWithdrawn && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                          Wycofana
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      {isWithdrawn ? (
+                        <>
+                          Wycofano:{' '}
+                          {new Date(consent.withdrawnAt!).toLocaleDateString('pl-PL', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </>
+                      ) : (
+                        <>
+                          Udzielono:{' '}
+                          {new Date(consent.grantedAt).toLocaleDateString('pl-PL', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                          {' '}· Wersja {consent.version}
+                        </>
+                      )}
+                    </p>
+                  </div>
+
+                  {consent.consentType === 'health_data' && (
+                    isWithdrawn ? (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={() => setRegrantDialogOpen(true)}
+                      >
+                        Wyraź ponownie
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={() => setWithdrawDialogOpen(true)}
+                      >
+                        Wycofaj
+                      </Button>
+                    )
+                  )}
                 </div>
-                {consent.consentType === 'health_data' && !consent.withdrawnAt && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="flex-shrink-0"
-                    onClick={() => setWithdrawDialogOpen(true)}
-                  >
-                    Wycofaj
-                  </Button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {withdrawSuccess && (
+        {withdrawSuccess && hasWithdrawnHealthConsent && (
           <Alert variant="warning" className="mt-4">
             Zgoda na dane zdrowotne została wycofana. Korzystanie z serwisu nie jest możliwe bez tej
-            zgody — rozważ usunięcie konta poniżej.
+            zgody — możesz ją ponownie wyrazić powyżej lub rozważyć usunięcie konta.
           </Alert>
         )}
       </section>
@@ -232,7 +295,8 @@ export function AccountSettings() {
           </Alert>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Czy na pewno chcesz wycofać zgodę? Twoje dane pozostaną w systemie — jeśli chcesz
-            je usunąć, skorzystaj z opcji usunięcia konta.
+            je usunąć, skorzystaj z opcji usunięcia konta. Możesz ponownie wyrazić zgodę
+            w dowolnym momencie.
           </p>
           {withdrawError && <Alert variant="error">{withdrawError}</Alert>}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
@@ -253,6 +317,49 @@ export function AccountSettings() {
               isLoading={withdrawing}
             >
               Wycofaj zgodę
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Dialog — ponowne wyrażenie zgody */}
+      <Dialog
+        isOpen={regrantDialogOpen}
+        onClose={() => {
+          setRegrantDialogOpen(false);
+          setRegrantError('');
+        }}
+        title="Wyraź zgodę na przetwarzanie danych zdrowotnych"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Wyrażasz wyraźną zgodę na przetwarzanie Twoich danych dotyczących zdrowia
+            (samopoczucie fizyczne, poziom energii, aktywność fizyczna, spalone kalorie,
+            rekordy osobiste) w celu świadczenia usługi śledzenia treningów.
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Możesz wycofać tę zgodę w dowolnym momencie w ustawieniach konta.
+          </p>
+          {regrantError && <Alert variant="error">{regrantError}</Alert>}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+            <Button
+              variant="secondary"
+              className="w-full sm:w-auto"
+              onClick={() => {
+                setRegrantDialogOpen(false);
+                setRegrantError('');
+              }}
+            >
+              Anuluj
+            </Button>
+            <Button
+              variant="primary"
+              className="w-full sm:w-auto"
+              onClick={handleRegrantConsent}
+              isLoading={regranting}
+            >
+              Wyrażam zgodę
             </Button>
           </div>
         </div>
