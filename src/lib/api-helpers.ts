@@ -17,7 +17,7 @@ export { RateLimitPresets };
 import { createUnauthorizedError, createErrorResponse, ErrorCode } from '@/lib/error-handler';
 import { db } from '@/lib/db';
 import { userConsents } from '@/lib/db/schema';
-import { eq, and, isNotNull } from 'drizzle-orm';
+import { eq, and, isNotNull, desc } from 'drizzle-orm';
 
 /**
  * Weryfikuje Origin header dla ochrony przed CSRF
@@ -180,19 +180,20 @@ export async function requireAuthWithCSRF(
  * Zwraca Response z błędem jeśli zgoda została wycofana, null jeśli wszystko OK.
  */
 export async function checkHealthConsent(userId: string): Promise<Response | null> {
-  const withdrawn = await db
-    .select({ id: userConsents.id })
+  // Pobierz najnowszy rekord zgody — tylko on określa aktualny stan
+  const [latest] = await db
+    .select({ withdrawnAt: userConsents.withdrawnAt })
     .from(userConsents)
     .where(
       and(
         eq(userConsents.userId, userId),
-        eq(userConsents.consentType, 'health_data'),
-        isNotNull(userConsents.withdrawnAt)
+        eq(userConsents.consentType, 'health_data')
       )
     )
+    .orderBy(desc(userConsents.createdAt))
     .limit(1);
 
-  if (withdrawn.length > 0) {
+  if (latest && isNotNull(latest.withdrawnAt) && latest.withdrawnAt !== null) {
     return createErrorResponse(
       ErrorCode.UNAUTHORIZED,
       'Zgoda na przetwarzanie danych zdrowotnych została wycofana. Nie możesz dodawać ani edytować danych treningowych.'
