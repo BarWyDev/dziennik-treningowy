@@ -14,6 +14,7 @@ const publicPaths = [
   '/auth/reset-password',
   '/auth/verify',
   '/api/auth',
+  '/api/health',
   '/polityka-prywatnosci',
   '/regulamin',
 ];
