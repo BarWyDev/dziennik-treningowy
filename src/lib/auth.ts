@@ -68,9 +68,14 @@ export const auth = betterAuth({
     },
   },
   rateLimit: {
+    enabled: (import.meta.env.NODE_ENV || process.env.NODE_ENV) === 'production',
     window: 60,
     max: 100,
     customRules: {
+      '/sign-in/email': {
+        window: 60,
+        max: 10,
+      },
       '/request-password-reset': {
         window: 60,
         max: 3,
