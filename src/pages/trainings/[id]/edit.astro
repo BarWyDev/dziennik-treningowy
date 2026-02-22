@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@/layouts/AppLayout.astro';
 import { TrainingForm } from '@/components/features/trainings/TrainingForm';
-import { db, trainings } from '@/lib/db';
+import { db, trainings, mediaAttachments } from '@/lib/db';
 import { eq, and } from 'drizzle-orm';
 
 const { id } = Astro.params;
@@ -19,6 +19,11 @@ const [training] = await db
 if (!training) {
   return Astro.redirect('/trainings');
 }
+
+const media = await db
+  .select()
+  .from(mediaAttachments)
+  .where(eq(mediaAttachments.trainingId, id));
 ---
 
 <AppLayout title="Edytuj trening">
@@ -31,7 +36,7 @@ if (!training) {
 
     <div class="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
       <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Edytuj trening</h1>
-      <TrainingForm training={training} client:load />
+      <TrainingForm training={{ ...training, media }} client:load />
     </div>
   </div>
 </AppLayout>
