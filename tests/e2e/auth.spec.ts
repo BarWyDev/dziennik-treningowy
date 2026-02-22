@@ -39,13 +39,14 @@ test.describe('Autoryzacja', () => {
 
     test('waliduje format email', async ({ page }) => {
       await page.goto('/auth/login');
+      await page.waitForLoadState('networkidle');
 
       await page.locator('input[type="email"]').fill('invalid-email');
       await page.locator('input[type="password"]').fill('password123');
       await page.locator('button[type="submit"]').click();
 
       // Oczekuj błędu walidacji email
-      await expect(page.locator('text=/email|e-mail/i')).toBeVisible();
+      await expect(page.getByText('Nieprawidłowy adres email')).toBeVisible();
     });
   });
 
