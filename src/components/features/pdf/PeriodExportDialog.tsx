@@ -53,8 +53,8 @@ export function PeriodExportDialog() {
       if (reportType === 'weekly') {
         const [year, week] = selectedWeek.split('-W').map(Number);
         const dates = getWeekDates(year, week);
-        startDate = dates.start.toISOString().split('T')[0];
-        endDate = dates.end.toISOString().split('T')[0];
+        startDate = formatLocalDate(dates.start);
+        endDate = formatLocalDate(dates.end);
       } else {
         const [year, month] = selectedMonth.split('-').map(Number);
         startDate = `${year}-${String(month).padStart(2, '0')}-01`;
@@ -179,6 +179,13 @@ export function PeriodExportDialog() {
       </div>
     </Dialog>
   );
+}
+
+function formatLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function getWeekString(date: Date): string {
