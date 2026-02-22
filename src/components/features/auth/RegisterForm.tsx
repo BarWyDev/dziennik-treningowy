@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUp } from '@/lib/auth-client';
 import { registerSchema, type RegisterInput } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -27,14 +26,25 @@ export function RegisterForm() {
     setError(null);
 
     try {
-      const result = await signUp.email({
-        email: data.email,
-        password: data.password,
-        name: data.name,
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          confirmPassword: data.confirmPassword,
+          acceptTerms: data.acceptTerms,
+          acceptHealthData: data.acceptHealthData,
+        }),
       });
 
-      if (result.error) {
-        setError(result.error.message || 'Wystąpił błąd podczas rejestracji');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+        const message = typeof errorData.error === 'string'
+          ? errorData.error
+          : 'Wystąpił błąd podczas rejestracji';
+        setError(message);
         return;
       }
 
