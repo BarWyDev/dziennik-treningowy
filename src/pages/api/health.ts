@@ -1,4 +1,6 @@
 import type { APIRoute } from 'astro';
+import fs from 'node:fs';
+import path from 'node:path';
 import { db } from '@/lib/db';
 import { sql, count } from 'drizzle-orm';
 import { users, trainings, goals, personalRecords } from '@/lib/db/schema';
@@ -6,6 +8,34 @@ import { users, trainings, goals, personalRecords } from '@/lib/db/schema';
 const APP_VERSION = '0.0.1';
 
 const toMB = (bytes: number) => Math.round((bytes / 1024 / 1024) * 10) / 10;
+
+function checkBackup() {
+  try {
+    const backupDir = process.env.BACKUP_DIR ?? '/var/backups/dziennik';
+    const files = fs.readdirSync(backupDir);
+
+    const backupFiles = files.filter(
+      (f) => f.endsWith('.sql.gz') || (f.endsWith('.tar.gz') && f.startsWith('backup_'))
+    );
+
+    if (backupFiles.length === 0) {
+      return { status: 'error' as const, lastBackup: null, ageHours: null };
+    }
+
+    let latestMtime = 0;
+    for (const file of backupFiles) {
+      const stat = fs.statSync(path.join(backupDir, file));
+      if (stat.mtimeMs > latestMtime) latestMtime = stat.mtimeMs;
+    }
+
+    const ageHours = Math.round(((Date.now() - latestMtime) / 3_600_000) * 10) / 10;
+    const status = ageHours < 25 ? 'ok' : ageHours < 48 ? 'warning' : ('error' as const);
+
+    return { status, lastBackup: new Date(latestMtime).toISOString(), ageHours };
+  } catch {
+    return { status: 'unknown' as const, lastBackup: null, ageHours: null };
+  }
+}
 
 export const GET: APIRoute = async () => {
   const start = Date.now();
@@ -45,6 +75,7 @@ export const GET: APIRoute = async () => {
           goals: Number(goalsCount[0].count),
           personalRecords: Number(recordsCount[0].count),
         },
+        backup: checkBackup(),
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

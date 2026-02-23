@@ -31,7 +31,7 @@ import AppLayout from '@/layouts/AppLayout.astro';
     </div>
 
     <!-- Metrics grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="metrics-grid">
 
       <!-- System -->
       <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
@@ -134,6 +134,30 @@ import AppLayout from '@/layouts/AppLayout.astro';
           </div>
         </div>
       </div>
+
+      <!-- Backup -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wide">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Backup
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+            <span id="backup-status" class="text-sm font-medium">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Ostatni backup</span>
+            <span id="backup-time" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Wiek</span>
+            <span id="backup-age" class="text-sm font-mono font-medium text-gray-900 dark:text-white">—</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </AppLayout>
@@ -226,6 +250,45 @@ import AppLayout from '@/layouts/AppLayout.astro';
         document.getElementById('stat-trainings')!.textContent = String(data.stats.trainings);
         document.getElementById('stat-goals')!.textContent = String(data.stats.goals);
         document.getElementById('stat-records')!.textContent = String(data.stats.personalRecords);
+      }
+
+      // Backup
+      if (data.backup) {
+        const { status, lastBackup, ageHours } = data.backup;
+        const statusEl = document.getElementById('backup-status')!;
+        const timeEl = document.getElementById('backup-time')!;
+        const ageEl = document.getElementById('backup-age')!;
+
+        if (status === 'ok') {
+          statusEl.textContent = 'ok';
+          statusEl.className = 'text-sm font-medium text-green-600 dark:text-green-400';
+        } else if (status === 'warning') {
+          statusEl.textContent = 'ostrzeżenie';
+          statusEl.className = 'text-sm font-medium text-yellow-600 dark:text-yellow-400';
+        } else if (status === 'error') {
+          statusEl.textContent = 'błąd';
+          statusEl.className = 'text-sm font-medium text-red-600 dark:text-red-400';
+        } else {
+          statusEl.textContent = 'brak danych';
+          statusEl.className = 'text-sm font-medium text-gray-500 dark:text-gray-400';
+        }
+
+        if (lastBackup) {
+          timeEl.textContent = new Date(lastBackup).toLocaleString('pl-PL', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+          });
+        } else {
+          timeEl.textContent = 'brak';
+        }
+
+        if (ageHours != null) {
+          const h = Math.floor(ageHours);
+          const m = Math.round((ageHours - h) * 60);
+          ageEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+        } else {
+          ageEl.textContent = '—';
+        }
       }
     } catch {
       const bar = document.getElementById('status-bar')!;
