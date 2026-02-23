@@ -4,6 +4,7 @@ import { WeekSummary } from './WeekSummary';
 import { RecentTrainings } from './RecentTrainings';
 import { ActiveGoals } from './ActiveGoals';
 import { QuickAddButton } from './QuickAddButton';
+import { PersonalRecordsWidget } from './PersonalRecordsWidget';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -39,6 +40,14 @@ interface Goal {
   createdAt: string;
 }
 
+interface PersonalRecord {
+  id: string;
+  activityName: string;
+  result: string | number;
+  unit?: string | null;
+  date: string;
+}
+
 interface DashboardData {
   recentTrainings: Training[];
   weekSummary: {
@@ -51,6 +60,11 @@ interface DashboardData {
     trainingsCount: number;
     totalDuration: number;
   };
+  personalRecordsStats: {
+    totalCount: number;
+    lastRecord: PersonalRecord | null;
+  };
+  streak: number;
 }
 
 interface DashboardProps {
@@ -136,13 +150,18 @@ export function Dashboard({ userName }: DashboardProps) {
               trainingsCount={data.weekSummary.trainingsCount}
               totalDuration={data.weekSummary.totalDuration}
               totalCalories={data.weekSummary.totalCalories}
+              streak={data.streak}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-5">
           <RecentTrainings trainings={data.recentTrainings} />
           <ActiveGoals goals={data.activeGoals} />
+          <PersonalRecordsWidget
+            totalCount={data.personalRecordsStats.totalCount}
+            lastRecord={data.personalRecordsStats.lastRecord}
+          />
         </div>
       </div>
     </ErrorBoundary>

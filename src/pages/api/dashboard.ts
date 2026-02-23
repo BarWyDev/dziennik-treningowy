@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, trainings, trainingTypes, goals, mediaAttachments } from '@/lib/db';
+import { db, trainings, trainingTypes, goals, mediaAttachments, personalRecords } from '@/lib/db';
 import { eq, and, gte, lte, desc, sql, count, inArray } from 'drizzle-orm';
 import { requireAuthWithRateLimit, RateLimitPresets } from '@/lib/api-helpers';
 import { handleUnexpectedError, handleDatabaseError } from '@/lib/error-handler';
@@ -22,6 +22,8 @@ export const GET: APIRoute = async ({ request }) => {
       weekSummary: { trainingsCount: number; totalDuration: number; totalCalories: number };
       activeGoals: unknown[];
       totalStats: { trainingsCount: number; totalDuration: number };
+      personalRecordsStats: { totalCount: number; lastRecord: unknown | null };
+      streak: number;
     }>(cacheKey);
     
     if (cached) {
@@ -108,6 +110,44 @@ export const GET: APIRoute = async ({ request }) => {
       )
       .limit(3);
 
+    // Personal records stats
+    const [[prCountResult], [lastRecord]] = await Promise.all([
+      db.select({ count: count() }).from(personalRecords).where(eq(personalRecords.userId, userId)),
+      db.select().from(personalRecords).where(eq(personalRecords.userId, userId)).orderBy(desc(personalRecords.createdAt)).limit(1),
+    ]);
+
+    // Training streak (last 365 distinct dates, descending)
+    const recentDates = await db
+      .selectDistinct({ date: trainings.date })
+      .from(trainings)
+      .where(eq(trainings.userId, userId))
+      .orderBy(desc(trainings.date))
+      .limit(365);
+
+    const toDateStr = (d: unknown): string => {
+      if (d instanceof Date) return d.toISOString().split('T')[0];
+      return String(d);
+    };
+    const dateSet = new Set(recentDates.map((r) => toDateStr(r.date)));
+
+    const subtractDay = (dateStr: string): string => {
+      const [y, m, day] = dateStr.split('-').map(Number);
+      const d = new Date(y, m - 1, day);
+      d.setDate(d.getDate() - 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
+    const nowLocal = new Date();
+    const todayStr = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}-${String(nowLocal.getDate()).padStart(2, '0')}`;
+    const yesterdayStr = subtractDay(todayStr);
+
+    let streak = 0;
+    let current: string | null = dateSet.has(todayStr) ? todayStr : dateSet.has(yesterdayStr) ? yesterdayStr : null;
+    while (current && dateSet.has(current)) {
+      streak++;
+      current = subtractDay(current);
+    }
+
     const response = {
       recentTrainings,
       weekSummary,
@@ -116,6 +156,11 @@ export const GET: APIRoute = async ({ request }) => {
         trainingsCount: Number(statsResult?.totalCount) || 0,
         totalDuration: Number(statsResult?.totalDuration) || 0,
       },
+      personalRecordsStats: {
+        totalCount: Number(prCountResult?.count) || 0,
+        lastRecord: lastRecord || null,
+      },
+      streak,
     };
 
     // Zapisz do cache
