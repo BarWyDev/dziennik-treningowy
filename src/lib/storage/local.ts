@@ -106,7 +106,13 @@ export class LocalStorageService implements StorageService {
       }
 
       if (files.length === 0) {
-        await rmdir(dirPath);
+        try {
+          await rmdir(dirPath);
+        } catch (rmdirError: unknown) {
+          // Katalog mógł już zostać usunięty przez równoległe wywołanie
+          if ((rmdirError as NodeJS.ErrnoException).code === 'ENOENT') return;
+          throw rmdirError;
+        }
         // Rekursywnie sprawdź folder rodzica
         await this.cleanupEmptyDirs(path.dirname(dirPath), depth + 1);
       }
