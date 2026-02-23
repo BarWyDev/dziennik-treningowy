@@ -79,6 +79,12 @@ const defaultTrainingTypes = [
     isDefault: true,
   },
   {
+    name: 'Sporty walki',
+    description: 'Boks, MMA, judo, karate, zapasy i inne sztuki walki',
+    icon: 'sword',
+    isDefault: true,
+  },
+  {
     name: 'Inne',
     description: 'Inne rodzaje aktywności fizycznej',
     icon: 'activity',
