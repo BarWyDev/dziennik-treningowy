@@ -67,7 +67,7 @@ const defaultTrainingTypes = [
     isDefault: true,
   },
   {
-    name: 'CrossFit',
+    name: 'Trening funkcjonalny',
     description: 'Funkcjonalny trening o wysokiej intensywności łączący elementy siłowe i wytrzymałościowe',
     icon: 'flame',
     isDefault: true,
