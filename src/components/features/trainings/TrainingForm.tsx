@@ -36,7 +36,7 @@ interface Training {
   date: string;
   time?: string | null;
   durationMinutes: number;
-  ratingOverall: number;
+  ratingOverall?: number | null;
   ratingPhysical?: number | null;
   ratingEnergy?: number | null;
   ratingMotivation?: number | null;
@@ -56,6 +56,10 @@ interface TrainingFormProps {
   onSuccess?: () => void;
 }
 
+function getTodayStr(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
 export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,17 +74,17 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
     register,
     handleSubmit,
     control,
+    setError: setFormError,
     formState: { errors },
-    reset,
   } = useForm<CreateTrainingInput>({
     resolver: zodResolver(createTrainingSchema),
     defaultValues: {
       trainingTypeId: training?.trainingTypeId || '',
-      date: training?.date || new Date().toISOString().split('T')[0],
+      date: training?.date || getTodayStr(),
       time: training?.time || '',
-      durationMinutes: training?.durationMinutes || 30,
+      durationMinutes: training?.durationMinutes || 60,
       description: training?.description || '',
-      ratingOverall: training?.ratingOverall || 3,
+      ratingOverall: training?.ratingOverall || undefined,
       ratingPhysical: training?.ratingPhysical || undefined,
       ratingEnergy: training?.ratingEnergy || undefined,
       ratingMotivation: training?.ratingMotivation || undefined,
@@ -97,15 +101,29 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   const descriptionValue = useWatch({ control, name: 'description' });
   const trainingGoalValue = useWatch({ control, name: 'trainingGoal' });
   const notesValue = useWatch({ control, name: 'notes' });
+  const selectedDate = useWatch({ control, name: 'date' });
+
+  const isScheduled = selectedDate > getTodayStr();
 
   useEffect(() => {
-    // Załaduj istniejące media podczas edycji
     if (training?.media) {
       setUploadedMedia(training.media);
     }
   }, [training]);
 
   const onSubmit = async (data: CreateTrainingInput) => {
+    // Dla zakończonych treningów wymagamy oceny ogólnej
+    if (!isScheduled && !data.ratingOverall) {
+      setFormError('ratingOverall', { type: 'manual', message: 'Ocena ogólna jest wymagana' });
+      return;
+    }
+
+    // Dla zaplanowanych treningów wymagamy celu
+    if (isScheduled && !data.trainingGoal?.trim()) {
+      setFormError('trainingGoal', { type: 'manual', message: 'Cel treningu jest wymagany dla planowanego treningu' });
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -113,11 +131,22 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       const url = isEditing ? `/api/trainings/${training.id}` : '/api/trainings';
       const method = isEditing ? 'PUT' : 'POST';
 
-      // Dodaj mediaIds do payload
-      const payload = {
+      const payload: Record<string, unknown> = {
         ...data,
         mediaIds: uploadedMedia.map((m) => m.id),
       };
+
+      // Dla zaplanowanych treningów nie wysyłamy ocen ani refleksji
+      if (isScheduled) {
+        payload.ratingOverall = undefined;
+        payload.ratingPhysical = undefined;
+        payload.ratingEnergy = undefined;
+        payload.ratingMotivation = undefined;
+        payload.ratingDifficulty = undefined;
+        payload.mostSatisfiedWith = undefined;
+        payload.improveNextTime = undefined;
+        payload.howToImprove = undefined;
+      }
 
       const response = await fetch(url, {
         method,
@@ -160,7 +189,6 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         throw new Error(errorMessage);
       }
 
-      // Tylko jeśli sukces - usuń ze stanu
       setUploadedMedia((prev) => prev.filter((f) => f.id !== fileId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Nie udało się usunąć pliku');
@@ -170,6 +198,19 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && <Alert variant="error">{error}</Alert>}
+
+      {/* Baner dla zaplanowanych treningów */}
+      {isScheduled && (
+        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-4">
+          <svg className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <div>
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Planujesz przyszły trening</p>
+            <p className="text-sm text-blue-700 dark:text-blue-400 mt-0.5">Oceny i refleksje możesz uzupełnić po jego ukończeniu. Określ cel, który chcesz osiągnąć.</p>
+          </div>
+        </div>
+      )}
 
       <div>
         <Label htmlFor="trainingTypeId" required>
@@ -215,7 +256,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
       </div>
 
       <div>
-        <Label required>Czas trwania</Label>
+        <Label required={!isScheduled}>{isScheduled ? 'Szacowany czas trwania' : 'Czas trwania'}</Label>
         <Controller
           name="durationMinutes"
           control={control}
@@ -251,7 +292,9 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
 
       {/* Training Goal */}
       <div>
-        <Label htmlFor="trainingGoal">Mój cel na trening (mentalny i fizyczny)</Label>
+        <Label htmlFor="trainingGoal" required={isScheduled}>
+          Mój cel na trening (mentalny i fizyczny)
+        </Label>
         <textarea
           id="trainingGoal"
           rows={2}
@@ -269,11 +312,24 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
         </div>
       </div>
 
-      {/* Multi-category Ratings */}
-      <RatingsSection control={control} errors={errors} />
+      {/* Sekcja ocen i refleksji — tylko dla zakończonych treningów */}
+      {isScheduled ? (
+        <div className="rounded-lg border border-dashed border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/10 p-4 text-center">
+          <svg className="w-6 h-6 text-blue-400 dark:text-blue-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Oceny i refleksja dostępne po treningu</p>
+          <p className="text-xs text-blue-500 dark:text-blue-500 mt-1">Wróć do edycji po ukończeniu treningu, aby uzupełnić oceny i przemyślenia.</p>
+        </div>
+      ) : (
+        <>
+          {/* Multi-category Ratings */}
+          <RatingsSection control={control} errors={errors} />
 
-      {/* Reflection Fields */}
-      <ReflectionFields register={register} errors={errors} control={control} />
+          {/* Reflection Fields */}
+          <ReflectionFields register={register} errors={errors} control={control} />
+        </>
+      )}
 
       {/* Other Fields */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -326,7 +382,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
 
       <div className="flex gap-4">
         <Button type="submit" isLoading={isLoading} className="flex-1">
-          {isEditing ? 'Zapisz zmiany' : 'Dodaj trening'}
+          {isEditing ? 'Zapisz zmiany' : isScheduled ? 'Zaplanuj trening' : 'Dodaj trening'}
         </Button>
         <Button
           type="button"

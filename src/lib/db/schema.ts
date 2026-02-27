@@ -116,7 +116,7 @@ export const trainings = pgTable(
     description: text('description'),
 
     // Multi-category ratings (1-5 scale)
-    ratingOverall: integer('rating_overall').notNull(), // Required
+    ratingOverall: integer('rating_overall'), // Wymagane dla zakończonych, null dla zaplanowanych
     ratingPhysical: integer('rating_physical'), // Optional
     ratingEnergy: integer('rating_energy'), // Optional
     ratingMotivation: integer('rating_motivation'), // Optional

@@ -16,7 +16,7 @@ interface MediaAttachment {
 interface Training {
   id: string;
   date: string;
-  durationMinutes: number;
+  durationMinutes?: number | null;
   notes?: string | null;
   rating?: number | null;
   caloriesBurned?: number | null;
@@ -47,23 +47,38 @@ function formatDate(dateString: string): string {
   });
 }
 
+function isScheduled(dateStr: string): boolean {
+  const today = new Date().toISOString().split('T')[0];
+  return dateStr > today;
+}
+
 export function TrainingCard({ training }: TrainingCardProps) {
   const images = training.media?.filter((m) => m.fileType === 'image') || [];
   const videos = training.media?.filter((m) => m.fileType === 'video') || [];
   const hasMedia = images.length > 0 || videos.length > 0;
+  const scheduled = isScheduled(training.date);
 
   return (
     <a
       href={`/trainings/${training.id}`}
-      className="block bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-700 transition-all"
+      className={`block bg-white dark:bg-[#161b22] rounded-xl shadow-sm border p-4 hover:shadow-md transition-all ${
+        scheduled
+          ? 'border-blue-300 dark:border-blue-700 border-l-4 border-l-blue-500 dark:border-l-blue-500 hover:border-blue-400 dark:hover:border-blue-600'
+          : 'border-gray-200 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-700'
+      }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
               {training.trainingType?.name || 'Trening'}
             </span>
-            {training.rating && (
+            {scheduled && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 flex-shrink-0">
+                Zaplanowany
+              </span>
+            )}
+            {!scheduled && training.rating && (
               <div className="flex items-center gap-0.5 flex-shrink-0">
                 {[...Array(training.rating)].map((_, i) => (
                   <svg
@@ -80,9 +95,13 @@ export function TrainingCard({ training }: TrainingCardProps) {
           <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-1">{formatDate(training.date)}</p>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-lg lg:text-xl font-semibold text-primary-600 dark:text-primary-400">
-            {formatDuration(training.durationMinutes)}
-          </p>
+          {training.durationMinutes != null ? (
+            <p className="text-lg lg:text-xl font-semibold text-primary-600 dark:text-primary-400">
+              {formatDuration(training.durationMinutes)}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-400 dark:text-gray-500 italic">czas nieznany</p>
+          )}
           {training.caloriesBurned && (
             <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400">{training.caloriesBurned} kcal</p>
           )}

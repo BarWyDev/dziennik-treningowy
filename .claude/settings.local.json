@@ -5,7 +5,12 @@
       "Bash(pnpm test:unit:*)",
       "WebSearch",
       "WebFetch(domain:wiki.mikr.us)",
-      "WebFetch(domain:mikr.us)"
+      "WebFetch(domain:mikr.us)",
+      "Bash(head:*)",
+      "Bash(ssh:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

@@ -23,7 +23,7 @@ interface MediaAttachment {
 interface Training {
   id: string;
   date: string;
-  durationMinutes: number;
+  durationMinutes?: number | null;
   notes?: string | null;
   rating?: number | null;
   caloriesBurned?: number | null;
@@ -132,11 +132,41 @@ export function TrainingList() {
         <EmptyState />
       ) : (
         <>
-          <div className="space-y-3">
-            {trainings.map((training) => (
-              <TrainingCard key={training.id} training={training} />
-            ))}
-          </div>
+          {(() => {
+            const today = new Date().toISOString().split('T')[0];
+            const upcoming = trainings
+              .filter((t) => t.date > today)
+              .sort((a, b) => a.date.localeCompare(b.date));
+            const past = trainings.filter((t) => t.date <= today);
+
+            return (
+              <>
+                {upcoming.length > 0 && (
+                  <div className="space-y-3">
+                    <h2 className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                      Nadchodzące ({upcoming.length})
+                    </h2>
+                    {upcoming.map((training) => (
+                      <TrainingCard key={training.id} training={training} />
+                    ))}
+                  </div>
+                )}
+
+                {past.length > 0 && (
+                  <div className="space-y-3">
+                    {upcoming.length > 0 && (
+                      <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-2">
+                        Historia
+                      </h2>
+                    )}
+                    {past.map((training) => (
+                      <TrainingCard key={training.id} training={training} />
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {hasMore && (
             <div className="flex justify-center pt-4">
