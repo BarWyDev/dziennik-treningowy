@@ -106,7 +106,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 items-end">
         <div>
           <Label htmlFor="targetValue">Wartość docelowa</Label>
           <Input
