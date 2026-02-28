@@ -158,6 +158,7 @@ export async function generateWeeklyReport({ trainings, goals, startDate, endDat
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(107, 114, 128);
     doc.text(sanitizePolishText('Brak treningow w tym tygodniu.'), 14, yPos);
+    yPos += 10;
   }
 
   // Notes section
@@ -194,7 +195,7 @@ export async function generateWeeklyReport({ trainings, goals, startDate, endDat
 
   // Goals section
   if (goals.length > 0) {
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
+    yPos = Math.max(doc.lastAutoTable?.finalY ?? 0, yPos) + 15;
     yPos = ensurePageSpace(doc, yPos, 25);
 
     doc.setFontSize(15);
