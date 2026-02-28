@@ -13,6 +13,7 @@ interface Goal {
   status: string;
   achievedAt?: string | null;
   createdAt: string;
+  lowerIsBetter?: boolean | null;
 }
 
 interface GoalCardProps {
@@ -30,8 +31,17 @@ function formatDate(dateString: string): string {
   });
 }
 
-function getProgress(current: number | null | undefined, target: number | null | undefined): number {
+function getProgress(
+  current: number | null | undefined,
+  target: number | null | undefined,
+  lowerIsBetter: boolean | null | undefined
+): number {
   if (!target || target === 0) return 0;
+  if (lowerIsBetter) {
+    const currentVal = current || 0;
+    if (currentVal === 0) return 0;
+    return Math.min(100, Math.round((target / currentVal) * 100));
+  }
   const currentVal = current || 0;
   return Math.min(100, Math.round((currentVal / target) * 100));
 }
@@ -68,7 +78,7 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const valueProgress = getProgress(goal.currentValue, goal.targetValue);
+  const valueProgress = getProgress(goal.currentValue, goal.targetValue, goal.lowerIsBetter);
   const timeProgress = getTimeProgress(goal.createdAt, goal.deadline);
   const remainingDays = getRemainingDays(goal.deadline);
   const isAchieved = goal.status === 'achieved';
@@ -155,7 +165,11 @@ export function GoalCard({ goal, onUpdate, onEdit }: GoalCardProps) {
             <div className="mt-2">
               <div className="flex items-baseline justify-between gap-2 text-sm lg:text-base">
                 <span className="text-gray-600 dark:text-gray-400 break-words">
-                  Postęp: {goal.currentValue || 0} / {goal.targetValue} {goal.unit}
+                  {goal.lowerIsBetter ? (
+                    <>Wynik: {goal.currentValue ?? 0} {goal.unit} → cel: ≤{goal.targetValue} {goal.unit}</>
+                  ) : (
+                    <>Postęp: {goal.currentValue || 0} / {goal.targetValue} {goal.unit}</>
+                  )}
                 </span>
                 <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">{valueProgress}%</span>
               </div>

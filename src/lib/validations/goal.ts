@@ -20,10 +20,11 @@ export const createGoalSchema = z.object({
     },
     { message: 'Data deadline nie może być wcześniejsza niż dzisiaj' }
   ),
+  lowerIsBetter: z.boolean().optional(),
 });
 
 export const updateGoalSchema = createGoalSchema.partial().extend({
-  currentValue: z.number().min(0, 'Aktualny postęp nie może być ujemny').optional(),
+  currentValue: z.number().optional(),
 });
 
 export type CreateGoalInput = z.infer<typeof createGoalSchema>;

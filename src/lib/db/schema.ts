@@ -157,6 +157,7 @@ export const goals = pgTable(
     deadline: date('deadline'),
     status: text('status').notNull().default('active'),
     isArchived: boolean('is_archived').notNull().default(false),
+    lowerIsBetter: boolean('lower_is_better').notNull().default(false),
     achievedAt: timestamp('achieved_at'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),

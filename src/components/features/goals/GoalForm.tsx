@@ -17,6 +17,7 @@ interface Goal {
   unit?: string | null;
   deadline?: string | null;
   status: string;
+  lowerIsBetter?: boolean | null;
 }
 
 interface GoalFormProps {
@@ -34,6 +35,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<CreateGoalInput | UpdateGoalInput>({
     resolver: zodResolver(isEditMode ? updateGoalSchema : createGoalSchema),
@@ -44,10 +46,14 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
       currentValue: goal.currentValue || 0,
       unit: goal.unit || '',
       deadline: goal.deadline || '',
+      lowerIsBetter: goal.lowerIsBetter ?? false,
     } : {
       currentValue: 0,
+      lowerIsBetter: false,
     },
   });
+
+  const lowerIsBetter = watch('lowerIsBetter');
 
   const onSubmit = async (data: CreateGoalInput | UpdateGoalInput) => {
     setIsLoading(true);
@@ -108,7 +114,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
 
       <div className="grid grid-cols-2 gap-4 items-end">
         <div>
-          <Label htmlFor="targetValue">Wartość docelowa</Label>
+          <Label htmlFor="targetValue">{lowerIsBetter ? 'Wartość docelowa (max)' : 'Wartość docelowa'}</Label>
           <Input
             id="targetValue"
             type="number"
@@ -129,8 +135,25 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
         </div>
       </div>
 
+      <div className="flex items-center gap-3 py-1">
+        <input
+          id="lowerIsBetter"
+          type="checkbox"
+          className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          {...register('lowerIsBetter')}
+        />
+        <div>
+          <label htmlFor="lowerIsBetter" className="text-sm lg:text-base font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+            Mniejsza wartość = lepszy wynik
+          </label>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Np. czas biegu, waga ciała — chcesz osiągnąć wynik poniżej wartości docelowej
+          </p>
+        </div>
+      </div>
+
       <div>
-        <Label htmlFor="currentValue">Aktualny postęp</Label>
+        <Label htmlFor="currentValue">{lowerIsBetter ? 'Aktualny wynik' : 'Aktualny postęp'}</Label>
         <Input
           id="currentValue"
           type="number"
@@ -140,7 +163,9 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
           {...register('currentValue', { valueAsNumber: true })}
         />
         <p className="mt-1 text-xs lg:text-sm text-gray-500 dark:text-gray-400">
-          Wprowadź ile już osiągnąłeś z wartości docelowej (domyślnie 0)
+          {lowerIsBetter
+            ? 'Twój obecny wynik (np. ile minut zajmuje Ci teraz przebiegnięcie dystansu)'
+            : 'Wprowadź ile już osiągnąłeś z wartości docelowej (domyślnie 0)'}
         </p>
       </div>
 
