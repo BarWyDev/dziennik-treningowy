@@ -18,13 +18,40 @@ interface Training {
   trainingType?: TrainingType | null;
 }
 
+interface Goal {
+  title: string;
+  targetValue?: number | null;
+  currentValue?: number | null;
+  unit?: string | null;
+  deadline?: string | null;
+  status: string;
+  achievedAt?: string | null;
+  lowerIsBetter?: boolean | null;
+}
+
 interface MonthlyReportData {
   trainings: Training[];
+  goals: Goal[];
   year: number;
   month: number;
 }
 
-export async function generateMonthlyReport({ trainings, year, month }: MonthlyReportData): Promise<void> {
+function getGoalProgress(
+  current: number | null | undefined,
+  target: number | null | undefined,
+  lowerIsBetter: boolean | null | undefined
+): number {
+  if (!target || target === 0) return 0;
+  if (lowerIsBetter) {
+    const currentVal = current || 0;
+    if (currentVal === 0) return 0;
+    return Math.min(100, Math.round((target / currentVal) * 100));
+  }
+  const currentVal = current || 0;
+  return Math.min(100, Math.round((currentVal / target) * 100));
+}
+
+export async function generateMonthlyReport({ trainings, goals, year, month }: MonthlyReportData): Promise<void> {
   const { autoTable } = await loadPDFLibraries();
   const doc = await createPDF();
 
@@ -208,6 +235,115 @@ export async function generateMonthlyReport({ trainings, year, month }: MonthlyR
       doc.setFont('helvetica', 'normal');
       doc.text(lines, 14, yPos);
       yPos += lines.length * 5.5 + 8;
+    }
+  }
+
+  // Goals section
+  if (goals.length > 0) {
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
+    yPos = ensurePageSpace(doc, yPos, 25);
+
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(31, 41, 55);
+    doc.text(sanitizePolishText('Cele treningowe'), 14, yPos);
+    yPos += 10;
+
+    // Goals achieved this month (highlighted separately)
+    const achievedThisMonth = goals.filter((g) => {
+      if (!g.achievedAt) return false;
+      const d = new Date(g.achievedAt);
+      return d.getFullYear() === year && d.getMonth() + 1 === month;
+    });
+
+    const activeGoals = goals.filter((g) => g.status === 'active');
+    const otherAchieved = goals.filter(
+      (g) => g.status === 'achieved' && !achievedThisMonth.includes(g)
+    );
+
+    const buildRow = (g: Goal) => {
+      const hasTarget = g.targetValue && g.targetValue > 0;
+      const progress = hasTarget ? getGoalProgress(g.currentValue, g.targetValue, g.lowerIsBetter) : null;
+
+      let progressCell = '-';
+      if (hasTarget) {
+        const currentDisplay = g.currentValue ?? 0;
+        progressCell = g.lowerIsBetter
+          ? `${currentDisplay} / cel: <=${g.targetValue} ${g.unit || ''}`.trim()
+          : `${currentDisplay} / ${g.targetValue} ${g.unit || ''}`.trim();
+        progressCell = sanitizePolishText(progressCell);
+      }
+
+      const statusLabel = g.status === 'achieved'
+        ? sanitizePolishText('Osiagniety')
+        : sanitizePolishText('Aktywny');
+
+      const deadlineLabel = g.deadline
+        ? new Date(g.deadline).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '-';
+
+      return [
+        sanitizePolishText(g.title),
+        progressCell,
+        progress !== null ? `${progress}%` : '-',
+        statusLabel,
+        sanitizePolishText(deadlineLabel),
+      ];
+    };
+
+    if (achievedThisMonth.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 163, 74); // green-600
+      doc.text(sanitizePolishText('Osiagniete w tym miesiacu'), 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Cel', sanitizePolishText('Postep'), '%', 'Status', 'Termin']],
+        body: achievedThisMonth.map(buildRow),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+        styles: { fontSize: 10, cellPadding: 4 },
+        columnStyles: {
+          0: { cellWidth: 65 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 15, halign: 'right' },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 30 },
+        },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 12;
+    }
+
+    const remainingGoals = [...activeGoals, ...otherAchieved];
+    if (remainingGoals.length > 0) {
+      if (achievedThisMonth.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(31, 41, 55);
+        doc.text(sanitizePolishText('Pozostale cele'), 14, yPos);
+        yPos += 8;
+      }
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Cel', sanitizePolishText('Postep'), '%', 'Status', 'Termin']],
+        body: remainingGoals.map(buildRow),
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+        styles: { fontSize: 10, cellPadding: 4 },
+        columnStyles: {
+          0: { cellWidth: 65 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 15, halign: 'right' },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 30 },
+        },
+        margin: { left: 14, right: 14 },
+      });
     }
   }
 

@@ -18,13 +18,40 @@ interface Training {
   trainingType?: TrainingType | null;
 }
 
+interface Goal {
+  title: string;
+  targetValue?: number | null;
+  currentValue?: number | null;
+  unit?: string | null;
+  deadline?: string | null;
+  status: string;
+  achievedAt?: string | null;
+  lowerIsBetter?: boolean | null;
+}
+
 interface WeeklyReportData {
   trainings: Training[];
+  goals: Goal[];
   startDate: Date;
   endDate: Date;
 }
 
-export async function generateWeeklyReport({ trainings, startDate, endDate }: WeeklyReportData): Promise<void> {
+function getGoalProgress(
+  current: number | null | undefined,
+  target: number | null | undefined,
+  lowerIsBetter: boolean | null | undefined
+): number {
+  if (!target || target === 0) return 0;
+  if (lowerIsBetter) {
+    const currentVal = current || 0;
+    if (currentVal === 0) return 0;
+    return Math.min(100, Math.round((target / currentVal) * 100));
+  }
+  const currentVal = current || 0;
+  return Math.min(100, Math.round((currentVal / target) * 100));
+}
+
+export async function generateWeeklyReport({ trainings, goals, startDate, endDate }: WeeklyReportData): Promise<void> {
   const { autoTable } = await loadPDFLibraries();
   const doc = await createPDF();
 
@@ -163,6 +190,83 @@ export async function generateWeeklyReport({ trainings, startDate, endDate }: We
       doc.text(lines, 14, yPos);
       yPos += lines.length * 5.5 + 8;
     }
+  }
+
+  // Goals section
+  if (goals.length > 0) {
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15;
+    yPos = ensurePageSpace(doc, yPos, 25);
+
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(31, 41, 55);
+    doc.text(sanitizePolishText('Cele treningowe'), 14, yPos);
+    yPos += 10;
+
+    const activeGoals = goals.filter((g) => g.status === 'active');
+    const achievedGoals = goals.filter((g) => g.status === 'achieved');
+
+    const goalsData = [
+      ...activeGoals,
+      ...achievedGoals,
+    ].map((g) => {
+      const hasTarget = g.targetValue && g.targetValue > 0;
+      const progress = hasTarget ? getGoalProgress(g.currentValue, g.targetValue, g.lowerIsBetter) : null;
+
+      let progressCell = '-';
+      if (hasTarget) {
+        const direction = g.lowerIsBetter ? sanitizePolishText('↓ cel: ≤') : '';
+        const currentDisplay = g.currentValue ?? 0;
+        if (g.lowerIsBetter) {
+          progressCell = `${currentDisplay} / cel: <=${g.targetValue} ${g.unit || ''}`.trim();
+        } else {
+          progressCell = `${currentDisplay} / ${g.targetValue} ${g.unit || ''}`.trim();
+        }
+        progressCell = sanitizePolishText(progressCell);
+        void direction;
+      }
+
+      const statusLabel = g.status === 'achieved'
+        ? sanitizePolishText('Osiagniety')
+        : sanitizePolishText('Aktywny');
+
+      const deadlineLabel = g.deadline
+        ? new Date(g.deadline).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '-';
+
+      return [
+        sanitizePolishText(g.title),
+        progressCell,
+        progress !== null ? `${progress}%` : '-',
+        statusLabel,
+        sanitizePolishText(deadlineLabel),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Cel', sanitizePolishText('Postep'), '%', 'Status', 'Termin']],
+      body: goalsData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 11,
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 4,
+      },
+      columnStyles: {
+        0: { cellWidth: 65 },
+        1: { cellWidth: 45 },
+        2: { cellWidth: 15, halign: 'right' },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 30 },
+      },
+      margin: { left: 14, right: 14 },
+    });
   }
 
   addFooter(doc);

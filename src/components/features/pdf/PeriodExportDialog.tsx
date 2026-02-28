@@ -22,6 +22,19 @@ interface Training {
   } | null;
 }
 
+interface Goal {
+  id: string;
+  title: string;
+  targetValue?: number | null;
+  currentValue?: number | null;
+  unit?: string | null;
+  deadline?: string | null;
+  status: string;
+  isArchived: boolean;
+  achievedAt?: string | null;
+  lowerIsBetter?: boolean | null;
+}
+
 type ReportType = 'weekly' | 'monthly';
 
 export function PeriodExportDialog() {
@@ -62,25 +75,31 @@ export function PeriodExportDialog() {
         endDate = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
       }
 
-      const response = await fetch(
-        `/api/trainings?startDate=${startDate}&endDate=${endDate}&limit=100`
-      );
+      const [trainingsResponse, goalsResponse] = await Promise.all([
+        fetch(`/api/trainings?startDate=${startDate}&endDate=${endDate}&limit=100`),
+        fetch('/api/goals?limit=100'),
+      ]);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch trainings');
+      if (!trainingsResponse.ok || !goalsResponse.ok) {
+        throw new Error('Failed to fetch data');
       }
 
-      const data = await safeJsonParse<{ data: Training[] }>(response);
-      if (!data) {
+      const trainingsData = await safeJsonParse<{ data: Training[] }>(trainingsResponse);
+      const goalsData = await safeJsonParse<{ goals: Goal[] }>(goalsResponse);
+
+      if (!trainingsData || !goalsData) {
         throw new Error('Invalid response from server');
       }
-      const trainings: Training[] = data.data;
+
+      const trainings: Training[] = trainingsData.data;
+      const goals: Goal[] = goalsData.goals.filter((g) => !g.isArchived);
 
       if (reportType === 'weekly') {
         const [year, week] = selectedWeek.split('-W').map(Number);
         const dates = getWeekDates(year, week);
         generateWeeklyReport({
           trainings,
+          goals,
           startDate: dates.start,
           endDate: dates.end,
         });
@@ -88,6 +107,7 @@ export function PeriodExportDialog() {
         const [year, month] = selectedMonth.split('-').map(Number);
         generateMonthlyReport({
           trainings,
+          goals,
           year,
           month,
         });
