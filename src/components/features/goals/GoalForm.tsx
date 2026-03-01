@@ -175,6 +175,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
           id="deadline"
           type="date"
           min={new Date().toISOString().split('T')[0]}
+          max="2099-12-31"
           error={errors.deadline?.message}
           {...register('deadline')}
         />

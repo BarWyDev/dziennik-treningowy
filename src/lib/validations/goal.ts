@@ -16,9 +16,9 @@ export const createGoalSchema = z.object({
       today.setHours(0, 0, 0, 0);
       const selectedDate = new Date(date);
       selectedDate.setHours(0, 0, 0, 0);
-      return selectedDate >= today;
+      return selectedDate >= today && selectedDate.getFullYear() <= 2099;
     },
-    { message: 'Data deadline nie może być wcześniejsza niż dzisiaj' }
+    { message: 'Podaj prawidłową datę (dziś lub w przyszłości, maksymalnie rok 2099)' }
   ),
   lowerIsBetter: z.boolean().optional(),
 });

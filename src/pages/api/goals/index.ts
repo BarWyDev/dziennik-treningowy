@@ -10,6 +10,7 @@ import {
   createBusinessRuleError,
   ErrorCode,
 } from '@/lib/error-handler';
+import { cache, cacheKeys } from '@/lib/cache';
 
 const MAX_ACTIVE_GOALS = 5;
 
@@ -113,6 +114,8 @@ export const POST: APIRoute = async ({ request }) => {
         status: 'active',
       })
       .returning();
+
+    cache.delete(cacheKeys.dashboard(authResult.user.id));
 
     return new Response(JSON.stringify(newGoal), {
       status: 201,
