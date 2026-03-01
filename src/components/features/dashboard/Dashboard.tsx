@@ -38,6 +38,7 @@ interface Goal {
   unit?: string | null;
   deadline?: string | null;
   createdAt: string;
+  lowerIsBetter?: boolean | null;
 }
 
 interface PersonalRecord {
