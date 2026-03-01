@@ -177,6 +177,8 @@ export function PersonalRecordForm({ record, onSuccess, onCancel }: PersonalReco
         <Input
           id="date"
           type="date"
+          min="1900-01-01"
+          max={new Date().toISOString().split('T')[0]}
           error={errors.date?.message}
           {...register('date')}
         />

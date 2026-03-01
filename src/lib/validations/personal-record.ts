@@ -18,7 +18,20 @@ export const createPersonalRecordSchema = z.object({
     .string()
     .min(1, 'Jednostka jest wymagana')
     .max(20, 'Jednostka nie może być dłuższa niż 20 znaków'),
-  date: z.string().min(1, 'Data jest wymagana'),
+  date: z
+    .string()
+    .min(1, 'Data jest wymagana')
+    .refine((date) => {
+      const selected = new Date(date);
+      return selected.getFullYear() >= 1900;
+    }, 'Data nie może być wcześniejsza niż 1 stycznia 1900')
+    .refine((date) => {
+      const selected = new Date(date);
+      selected.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selected <= today;
+    }, 'Data rekordu nie może być w przyszłości'),
   notes: z.string().max(500, 'Notatki nie mogą być dłuższe niż 500 znaków').optional(),
 
   // Media attachments
