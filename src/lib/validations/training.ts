@@ -3,7 +3,16 @@ import { mediaIdsSchema } from './media';
 
 export const createTrainingSchema = z.object({
   trainingTypeId: z.string().uuid('Wybierz typ treningu'),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty'),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty')
+    .refine(
+      (date) => {
+        const year = parseInt(date.split('-')[0], 10);
+        return year >= 2000 && year <= 2099;
+      },
+      { message: 'Data musi być z lat 2000–2099' }
+    ),
   time: z.string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Nieprawidłowy format czasu (HH:MM)')
     .or(z.literal(''))

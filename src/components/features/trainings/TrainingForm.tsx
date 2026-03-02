@@ -237,6 +237,9 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
           <Input
             id="date"
             type="date"
+            min="2000-01-01"
+            max="2099-12-31"
+            onInvalid={(e) => e.preventDefault()}
             error={errors.date?.message}
             {...register('date')}
           />
