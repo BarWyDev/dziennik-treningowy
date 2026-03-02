@@ -83,7 +83,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {error && <Alert variant="error">{error}</Alert>}
 
       <div>

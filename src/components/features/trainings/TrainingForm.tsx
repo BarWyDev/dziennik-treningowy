@@ -78,6 +78,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
     formState: { errors },
   } = useForm<CreateTrainingInput>({
     resolver: zodResolver(createTrainingSchema),
+    mode: 'onTouched',
     defaultValues: {
       trainingTypeId: training?.trainingTypeId || '',
       date: training?.date || getTodayStr(),
@@ -196,7 +197,7 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       {error && <Alert variant="error">{error}</Alert>}
 
       {/* Baner dla zaplanowanych treningów */}
@@ -239,7 +240,6 @@ export function TrainingForm({ training, onSuccess }: TrainingFormProps) {
             type="date"
             min="2000-01-01"
             max="2099-12-31"
-            onInvalid={(e) => e.preventDefault()}
             error={errors.date?.message}
             {...register('date')}
           />
