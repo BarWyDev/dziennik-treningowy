@@ -39,17 +39,25 @@ function formatDuration(minutes: number): string {
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'T12:00:00');
   return date.toLocaleDateString('pl-PL', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
+    year: 'numeric',
   });
 }
 
+function getLocalToday(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function isScheduled(dateStr: string): boolean {
-  const today = new Date().toISOString().split('T')[0];
-  return dateStr > today;
+  return dateStr > getLocalToday();
 }
 
 export function TrainingCard({ training }: TrainingCardProps) {
